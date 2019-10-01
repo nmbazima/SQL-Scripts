@@ -1,0 +1,10 @@
+SELECT [TblPupilManagementPupilsID]
+,[txtSchoolID]
+,[txtForename]
+,[txtSurname]
+,[txtDOB]
+,[txtForm]
+,[txtAcademicHouse]
+,[txtBoardingHouse]
+,[intEnrolmentNCYear]
+FROM [iSAMS].[dbo].[TblPupilManagementPupils];

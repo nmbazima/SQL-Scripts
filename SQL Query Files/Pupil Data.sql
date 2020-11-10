@@ -7,4 +7,4 @@ SELECT [TblPupilManagementPupilsID]
 ,[txtAcademicHouse]
 ,[txtBoardingHouse]
 ,[intEnrolmentNCYear]
-FROM [iSAMS].[dbo].[TblPupilManagementPupils];
+FROM [TblPupilManagementPupils];

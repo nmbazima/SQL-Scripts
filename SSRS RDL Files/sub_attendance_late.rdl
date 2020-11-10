@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <DataSourceReference>iSAMS</DataSourceReference>
+      <rd:DataSourceID>9b728533-28b1-48a6-8b3e-d462e4902901</rd:DataSourceID>
+      <rd:SecurityType>None</rd:SecurityType>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="Main">
+      <Fields>
+        <Field Name="TblRegistrationSchoolRegistrationDateTimeID">
+          <DataField>TblRegistrationSchoolRegistrationDateTimeID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtDateTime">
+          <DataField>txtDateTime</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitBy">
+          <DataField>txtSubmitBy</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="OOStxtSchoolID">
+          <DataField>OOStxtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtTime">
+          <DataField>txtTime</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtReason">
+          <DataField>txtReason</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Expr1">
+          <DataField>Expr1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="blnLate">
+          <DataField>blnLate</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="intMinutesLate">
+          <DataField>intMinutesLate</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationStatus">
+          <DataField>txtRegistrationStatus</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationCode">
+          <DataField>txtRegistrationCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationCodeName">
+          <DataField>txtRegistrationCodeName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intCodeOrder">
+          <DataField>intCodeOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intSystemStatus">
+          <DataField>intSystemStatus</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intRegistrationWeek">
+          <DataField>intRegistrationWeek</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtCountIntoStatistics">
+          <DataField>txtCountIntoStatistics</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtWeekStart">
+          <DataField>txtWeekStart</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistaredAsStatistics">
+          <DataField>txtRegistaredAsStatistics</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtIsOnRoll">
+          <DataField>txtIsOnRoll</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAmPm">
+          <DataField>txtAmPm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationGroup">
+          <DataField>txtRegistrationGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAuthorisedAbsence">
+          <DataField>txtAuthorisedAbsence</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intPresentCodeID">
+          <DataField>intPresentCodeID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtTimeAsAMPM">
+          <DataField>txtTimeAsAMPM</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RegistrationTeacherTitle">
+          <DataField>RegistrationTeacherTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intCodeID">
+          <DataField>intCodeID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="RegistrationTeacherFirstname">
+          <DataField>RegistrationTeacherFirstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RegistrationTeacherSurname">
+          <DataField>RegistrationTeacherSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RegistrationTeacherID">
+          <DataField>RegistrationTeacherID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID, TblRegistrationSchoolRegistrationDateTime.txtDateTime, TblRegistrationSchoolRegistrationPupils.txtSubmitBy, 
+                         TblRegistrationSchoolRegistrationPupils.txtSchoolID, LEFT(CONVERT(varchar(8), TblRegistrationSchoolRegistrationDateTime.txtDateTime, 108), 5) AS txtTime, TblRegistrationSchoolRegistrationPupils.txtReason, 
+                         TblRegistrationSchoolRegistrationPupils.blnLate, TblRegistrationSchoolRegistrationPupils.intMinutesLate, TblRegistrationSchoolRegistrationPupils.txtSubmitBy AS Expr1, 
+                         TblRegistrationOutOfSchoolPupils.txtSchoolID AS OOStxtSchoolID, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1) 
+                         THEN 'Absent' ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN 'Absent' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) AND TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL 
+                         THEN 'Present' ELSE 'Not Registered' END END AS txtRegistrationStatus, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN OOSCodes.txtCode ELSE '5' END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) THEN TblRegistrationSchoolRegistrationCodes.txtCode WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) 
+                         THEN '5' WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN '8' WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN TblRegistrationSchoolRegistrationPresentCodes.txtCode ELSE 'Not Registered' END END AS txtRegistrationCode, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN OOSCodes.txtName ELSE '' END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) THEN TblRegistrationSchoolRegistrationCodes.txtName WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) 
+                         THEN '' WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN '' WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN TblRegistrationSchoolRegistrationPresentCodes.txtName ELSE 'Not Registered' END END AS txtRegistrationCodeName, TblPupilManagementPupils.intSystemStatus, 
+                         CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN (CASE WHEN OOSCodes.blnStatistic = 1 THEN 'Yes' WHEN OOSCodes.blnStatistic = 0 THEN 'No' ELSE 'Yes' END) 
+                         ELSE (CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnStatistic = 1) 
+                         THEN 'Yes' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnStatistic = 0) 
+                         THEN 'No' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) THEN 'Yes' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 'Yes' ELSE 'Yes' END) END AS txtCountIntoStatistics, 
+                         CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN (CASE WHEN OOSCodes.blnAbsence = 1 THEN 'Absent' WHEN OOSCodes.blnAbsence = 0 THEN 'Present' ELSE 'Absent' END) 
+                         ELSE (CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnAbsence = 1) 
+                         THEN 'Absent' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationCodes.blnAbsence = 0) THEN 'Present' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) THEN 'Absent' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 'Present' ELSE 'Not Registered' END) 
+                         END AS txtRegistaredAsStatistics, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) 
+                         THEN (CASE WHEN OOSCodes.blnAuthorised = 1 THEN 'Authorised' WHEN OOSCodes.blnAuthorised = 0 THEN 'UnAuthorised' ELSE 'UnAuthorised' END) 
+                         ELSE (CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationCodes.blnAuthorised = 1) THEN 'Authorised' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnAuthorised = 0) THEN 'UnAuthorised' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL 
+                         AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) 
+                         THEN 'UnAuthorised' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 'Present' ELSE 'Not Registered' END) END AS txtAuthorisedAbsence, 
+                         CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN OOSCodes.intOrder ELSE 0 END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN TblRegistrationSchoolRegistrationCodes.intOrder WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) THEN 0 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 0 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN TblRegistrationSchoolRegistrationPresentCodes.intOrder ELSE 1000 END END AS intCodeOrder, DATEPART(wk, TblRegistrationSchoolRegistrationDateTime.txtDateTime) AS intRegistrationWeek, 
+                         TblRegistrationSchoolRegistrationDateTime.txtDateTime - (DATEPART(DW, TblRegistrationSchoolRegistrationDateTime.txtDateTime) - 1) AS txtWeekStart, 
+                         (CASE WHEN (TblPupilManagementPupils.intSystemStatus = 1 AND (TblRegistrationSchoolRegistrationDateTime.txtDateTime &gt;= TblPupilManagementPupils.txtEnrolmentDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate IS NULL) AND (TblRegistrationSchoolRegistrationDateTime.txtDateTime &lt;= DATEADD(day, 1, TblPupilManagementPupils.txtLeavingDate) OR
+                         TblPupilManagementPupils.txtLeavingDate IS NULL)) THEN 'Yes' WHEN (TblPupilManagementPupils.intSystemStatus = - 1 AND 
+                         (TblRegistrationSchoolRegistrationDateTime.txtDateTime &gt;= TblPupilManagementPupils.txtEnrolmentDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate IS NULL) AND TblRegistrationSchoolRegistrationDateTime.txtDateTime &lt;= DATEADD(day, 1, TblPupilManagementPupils.txtLeavingDate)) THEN 'Yes' ELSE 'No' END) 
+                         AS txtIsOnRoll, TblRegistrationSchoolRegistrationDateTime.txtAmPm, TblRegistrationSchoolRegistrationPupilsGroups.txtValue AS txtRegistrationGroup, (CASE WHEN (DATEPART(HOUR, 
+                         TblRegistrationSchoolRegistrationDateTime.txtDateTime)) &lt; 12 THEN 'AM' ELSE 'PM' END) AS txtTimeAsAMPM, RegistrationTeacher.Title AS RegistrationTeacherTitle, 
+                         RegistrationTeacher.Firstname AS RegistrationTeacherFirstname, RegistrationTeacher.Surname AS RegistrationTeacherSurname, 
+                         TblRegistrationSchoolRegistrationPupilsGroups.txtTeacher AS RegistrationTeacherID, (CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN - 5 ELSE - 5 END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN - 5 WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL)
+                          THEN - 5 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN - 5 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN TblRegistrationSchoolRegistrationPupils.intPresentCode ELSE - 5 END END) AS intPresentCodeID, (CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN TblRegistrationOutOfSchoolPupils.intCode ELSE - 5 END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN TblRegistrationSchoolRegistrationPupils.intCode WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL) THEN - 5 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN - 5 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN - 5 ELSE - 5 END END) AS intCodeID
+FROM            TblRegistrationSchoolRegistrationRegister INNER JOIN
+                         TblRegistrationSchoolRegistrationDateTime ON 
+                         TblRegistrationSchoolRegistrationRegister.intRegistrationDateTime = TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID AND 
+                         TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @txtStartDate AND @txtEndDate INNER JOIN
+                         TblRegistrationSchoolRegistrationPupils ON TblRegistrationSchoolRegistrationPupils.intRegister = TblRegistrationSchoolRegistrationRegister.TblRegistrationSchoolRegistrationRegisterID INNER JOIN
+                         TblPupilManagementPupils ON TblRegistrationSchoolRegistrationPupils.txtSchoolID = TblPupilManagementPupils.txtSchoolID LEFT OUTER JOIN
+                         TblRegistrationOutOfSchoolPupils ON TblRegistrationOutOfSchoolPupils.txtSchoolID = TblPupilManagementPupils.txtSchoolID AND TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN 
+                         TblRegistrationOutOfSchoolPupils.txtStartDateTime AND TblRegistrationOutOfSchoolPupils.txtEndDateTime LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationCodes ON TblRegistrationSchoolRegistrationPupils.intCode = TblRegistrationSchoolRegistrationCodes.TblRegistrationSchoolRegistrationCodesID LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationPresentCodes ON 
+                         TblRegistrationSchoolRegistrationPupils.intPresentCode = TblRegistrationSchoolRegistrationPresentCodes.TblRegistrationSchoolRegistrationPresentCodesID LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationCodes AS OOSCodes ON TblRegistrationOutOfSchoolPupils.intCode = OOSCodes.TblRegistrationSchoolRegistrationCodesID LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationPupilsGroups ON TblRegistrationSchoolRegistrationPupils.txtSchoolID = TblRegistrationSchoolRegistrationPupilsGroups.txtSchoolId AND 
+                         TblRegistrationSchoolRegistrationPupilsGroups.intRegister = TblRegistrationSchoolRegistrationRegister.TblRegistrationSchoolRegistrationRegisterID LEFT OUTER JOIN
+                         TblStaff AS RegistrationTeacher ON TblRegistrationSchoolRegistrationPupilsGroups.txtTeacher = RegistrationTeacher.User_Code
+WHERE        (TblPupilManagementPupils.txtSchoolID = @txtSchoolID) AND ((CASE WHEN (TblPupilManagementPupils.intSystemStatus = 1 AND 
+                         (TblRegistrationSchoolRegistrationDateTime.txtDateTime &gt;= TblPupilManagementPupils.txtEnrolmentDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate IS NULL) AND (TblRegistrationSchoolRegistrationDateTime.txtDateTime &lt;= DATEADD(day, 1, TblPupilManagementPupils.txtLeavingDate) OR
+                         TblPupilManagementPupils.txtLeavingDate IS NULL)) THEN 'Yes' WHEN (TblPupilManagementPupils.intSystemStatus = - 1 AND 
+                         (TblRegistrationSchoolRegistrationDateTime.txtDateTime &gt;= TblPupilManagementPupils.txtEnrolmentDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate IS NULL) AND TblRegistrationSchoolRegistrationDateTime.txtDateTime &lt;= DATEADD(day, 1, TblPupilManagementPupils.txtLeavingDate)) THEN 'Yes' ELSE 'No' END) 
+                         = 'Yes')</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@txtStartDate">
+            <Value>=Parameters!txtStartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtEndDate">
+            <Value>=Parameters!txtEndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Body>
+    <ReportItems>
+      <Tablix Name="Tablix1">
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn>
+              <Width>1.80334cm</Width>
+            </TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>0.6cm</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox19">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=IIF(
+SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" AND Fields!blnLate.Value=true,1,0))&gt;0,
+Round(
+(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" AND Fields!blnLate.Value=true,1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100,1),"0"
+)</Value>
+                              <Style>
+                                <FontFamily>Calibri Light</FontFamily>
+                                <FontSize>10.5pt</FontSize>
+                                <FontWeight>Bold</FontWeight>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox19</rd:DefaultName>
+                      <ZIndex>1</ZIndex>
+                      <Style>
+                        <Border>
+                          <Style>None</Style>
+                        </Border>
+                        <BackgroundColor>LightGrey</BackgroundColor>
+                        <VerticalAlign>Middle</VerticalAlign>
+                        <PaddingLeft>4pt</PaddingLeft>
+                        <PaddingRight>4pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember />
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember />
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <DataSetName>Main</DataSetName>
+        <Height>0.6cm</Height>
+        <Width>1.80334cm</Width>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Tablix>
+    </ReportItems>
+    <Height>0.23622in</Height>
+    <Style>
+      <Border />
+    </Style>
+  </Body>
+  <ReportParameters>
+    <ReportParameter Name="txtStartDate">
+      <DataType>DateTime</DataType>
+      <Prompt>txtStartDate</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <Prompt>txtSchool ID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtEndDate">
+      <DataType>DateTime</DataType>
+      <Prompt>txtEndDate</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <Width>0.70998in</Width>
+  <Page>
+    <LeftMargin>1in</LeftMargin>
+    <RightMargin>1in</RightMargin>
+    <TopMargin>1in</TopMargin>
+    <BottomMargin>1in</BottomMargin>
+    <Style />
+  </Page>
+  <rd:ReportID>dfcb6c22-f992-46a0-b711-6c89c8b319e3</rd:ReportID>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+</Report>

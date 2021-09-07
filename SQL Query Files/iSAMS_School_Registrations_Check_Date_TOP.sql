@@ -1,1 +1,0 @@
-SELECT TOP 1 txtDateTime FROM (  SELECT txtDateTime, Row_Number() OVER(ORDER BY txtDateTime DESC) AS highest  FROM TblRegistrationSchoolRegistrationDateTime  WHERE DATEDIFF(day, DATEADD(n, -(intBack + 10), txtDateTime), @date) >= 0  ) as x  WHERE highest <= '40'  ORDER BY highest DESC 

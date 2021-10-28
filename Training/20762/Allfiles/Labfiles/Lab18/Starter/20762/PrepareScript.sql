@@ -1,0 +1,13 @@
+USE [master]
+GO
+
+IF (DB_ID('baseline') IS NOT NULL)
+	ALTER DATABASE [baseline] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE
+	DROP DATABASE [baseline]
+	GO
+
+CREATE DATABASE baseline
+GO
+
+DBCC SQLPERF (N'sys.dm_os_wait_stats', CLEAR); 
+GO

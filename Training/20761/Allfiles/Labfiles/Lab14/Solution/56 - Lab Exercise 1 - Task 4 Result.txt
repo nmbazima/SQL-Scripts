@@ -1,0 +1,16 @@
+custid      Beverages             Condiments            Confections           Dairy Products        Grains/Cereals        Meat/Poultry          Produce               Seafood
+----------- --------------------- --------------------- --------------------- --------------------- --------------------- --------------------- --------------------- ---------------------
+1           NULL                  426,00                NULL                  1255,00               NULL                  NULL                  91,20                 530,00
+2           NULL                  NULL                  64,40                 390,00                NULL                  NULL                  NULL                  60,00
+3           380,00                NULL                  NULL                  NULL                  280,00                NULL                  NULL                  NULL
+...
+...
+...
+89          7077,50               NULL                  2712,15               1737,50               NULL                  1638,00               NULL                  2113,75
+90          216,00                353,00                510,40                550,00                NULL                  NULL                  136,80                220,80
+91          340,50                627,00                591,60                NULL                  NULL                  NULL                  306,00                NULL
+
+(81 row(s) affected)
+
+
+

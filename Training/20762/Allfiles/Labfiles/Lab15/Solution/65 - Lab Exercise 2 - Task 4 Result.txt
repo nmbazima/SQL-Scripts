@@ -1,0 +1,7 @@
+custid      contactname                    productid   productname                              totalsalesamount
+----------- ------------------------------ ----------- ---------------------------------------- ---------------------
+22          Bueno, Janaina Burdan, Neville NULL        NULL                                     NULL
+57          Tollevsen, Bjørn               NULL        NULL                                     NULL
+
+(2 row(s) affected)
+

@@ -1,0 +1,17 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# SQL Server Management Studio Solution File, Format Version 13.00
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "Solution", "Solution.ssmssqlproj", "{C3507C84-6B48-4085-9854-9AE67ADBFA75}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C3507C84-6B48-4085-9854-9AE67ADBFA75}.Default|Default.ActiveCfg = Default
+		{1D7400BD-A813-4769-9D1B-DE6C8FEBC913}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

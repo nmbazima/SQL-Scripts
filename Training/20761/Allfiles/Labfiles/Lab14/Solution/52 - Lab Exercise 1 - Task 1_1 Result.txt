@@ -1,0 +1,14 @@
+custid      custgroup country
+----------- --------- ---------------
+1           B         Germany
+2           C         Mexico
+3           A         Mexico
+...
+...
+...
+89          C         USA
+90          A         Finland
+91          B         Poland
+
+(91 row(s) affected)
+

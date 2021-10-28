@@ -1,0 +1,14 @@
+contactname                    numberofa
+------------------------------ -----------
+Raghav, Amritansh              4
+Bueno, Janaina Burdan, Neville 4
+Khanna, Karan                  4
+...
+...
+...
+McLin, Nkenge                  0
+Conn, Steve                    0
+Young, Robin                   0
+
+(91 row(s) affected)
+

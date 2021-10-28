@@ -1,0 +1,17 @@
+USE tempdb
+GO
+
+DROP TABLE IF EXISTS dbo.PotentialCustomers
+GO
+
+DROP TABLE IF EXISTS Sales.Customers
+GO
+
+DROP TABLE IF EXISTS HR.employees
+GO
+
+DROP SCHEMA  IF EXISTS Hr
+GO
+
+DROP SCHEMA  IF EXISTS Sales
+GO

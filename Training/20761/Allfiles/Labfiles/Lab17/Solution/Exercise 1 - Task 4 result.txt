@@ -1,0 +1,6 @@
+Error Number: 8134
+Error Message: Divide by zero error encountered.
+Error Severity: 16
+Error State: 1
+Error Line: 4
+Error Proc: Not within procedure

@@ -1,0 +1,3 @@
+Handling conversion error...
+Error Number: 8114
+Error Message: Error converting data type varchar to numeric.

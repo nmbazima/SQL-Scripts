@@ -1,0 +1,5 @@
+mynumber
+-----------
+5
+
+(1 row(s) affected)

@@ -1,0 +1,13 @@
+custid      contactname                    salesvalue
+----------- ------------------------------ ---------------------------------------
+63          Veronesi, Giorgio              61109.92
+71          Navarro, Tomás                 57713.58
+20          Kane, John                     48096.27
+...
+...
+...
+5           Higginbotham, Tom              13849.02
+35          Langohr, Kris                  13482.74
+24          San Juan, Patricia             13314.67
+
+(10 row(s) affected)

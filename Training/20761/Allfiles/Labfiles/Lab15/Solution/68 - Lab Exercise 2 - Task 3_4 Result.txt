@@ -1,0 +1,14 @@
+custid      contactname                    salesvalue
+----------- ------------------------------ ---------------------------------------
+63          Veronesi, Giorgio              110277.32
+20          Kane, John                     104874.99
+71          Navarro, Tomás                 104361.96
+...
+...
+...
+10          Bassols, Pilar Colome          20801.61
+68          Myrcha, Jacek                  19343.78
+44          Louverdis, George              19261.42
+
+(20 row(s) affected)
+

@@ -1,0 +1,7 @@
+productid   productname                              totalsalesamount
+----------- ---------------------------------------- ---------------------
+63          Product ICKNK                            878,00
+59          Product UKXRI                            825,00
+28          Product OFBNT                            775,20
+
+(3 row(s) affected)

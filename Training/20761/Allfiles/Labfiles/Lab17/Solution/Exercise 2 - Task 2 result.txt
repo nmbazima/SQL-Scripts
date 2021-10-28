@@ -1,0 +1,9 @@
+Error Number: 8114
+Error Message: Error converting data type varchar to numeric.
+Error Severity: 16
+Error State: 5
+Error Line: 4
+Error Proc: Not within procedure
+Throwing original error
+Msg 8114, Level 16, State 5, Line 4
+Error converting data type varchar to numeric.

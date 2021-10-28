@@ -1,0 +1,5 @@
+currentdatetime         currentdate currenttime      currentyear currentmonth currentday  currentweeknumber currentmonthname
+----------------------- ----------- ---------------- ----------- ------------ ----------- ----------------- ------------------------------
+2011-10-12 02:19:30.567 2011-10-12  02:19:30.5670000 2011        10           12          42                October
+
+(1 row(s) affected)

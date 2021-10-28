@@ -1,0 +1,12 @@
+country
+---------------
+Argentina
+Austria
+Belgium
+...
+...
+UK
+USA
+Venezuela
+
+(21 row(s) affected)

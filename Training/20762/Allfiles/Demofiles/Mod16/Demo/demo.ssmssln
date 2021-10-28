@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 13.00
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C20A6278-44EB-4529-B31A-CF21FAF7FC14}"
+	ProjectSection(SolutionItems) = preProject
+		1 - AdventureWorks BLOBs.sql = 1 - AdventureWorks BLOBs.sql
+		2 - Configuring FILESTREAM and FileTables.sql = 2 - Configuring FILESTREAM and FileTables.sql
+		3 - Configuring and Using Full-Text Search.sql = 3 - Configuring and Using Full-Text Search.sql
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28E69D18-CD56-455E-A85B-E0CD9E35BBF4}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

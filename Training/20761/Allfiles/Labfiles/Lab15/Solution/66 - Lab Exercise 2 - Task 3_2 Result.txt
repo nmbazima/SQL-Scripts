@@ -1,0 +1,9 @@
+custid      contactname                    salesvalue
+----------- ------------------------------ ---------------------------------------
+20          Kane, John                     41210.65
+63          Veronesi, Giorgio              37217.32
+71          Navarro, Tomás                 36310.11
+34          Cohen, Shy                     23821.20
+65          Moore, Michael                 21238.27
+
+(5 row(s) affected)

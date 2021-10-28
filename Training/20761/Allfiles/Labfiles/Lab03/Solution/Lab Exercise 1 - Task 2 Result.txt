@@ -1,0 +1,13 @@
+custid      companyname                              contactname                    contacttitle                   address                                                      city            region          postalcode country         phone                    fax
+----------- ---------------------------------------- ------------------------------ ------------------------------ ------------------------------------------------------------ --------------- --------------- ---------- --------------- ------------------------ ------------------------
+1           Customer NRZBB                           Allen, Michael                 Sales Representative           Obere Str. 0123                                              Berlin          NULL            10092      Germany         030-3456789              030-0123456
+2           Customer MLTDN                           Hassall, Mark                  Owner                          Avda. de la Constitución 5678                                México D.F.     NULL            10077      Mexico          (5) 789-0123             (5) 456-7890
+3           Customer KBUDE                           Peoples, John                  Owner                          Mataderos  7890                                              México D.F.     NULL            10097      Mexico          (5) 123-4567             NULL
+...
+...
+...
+89          Customer YBQTI                           Smith Jr., Ronaldo             Owner                          8901 - 14th Ave. S. Suite 3B                                 Seattle         WA              10049      USA             (206) 555-0123           (206) 555-0132
+90          Customer XBBVR                           Larsson, Katarina              Owner/Marketing Assistant      Keskuskatu 2345                                              Helsinki        NULL            10055      Finland         90-012 3456              90-789 0123
+91          Customer CCFIZ                           Conn, Steve                    Owner                          ul. Filtrowa 6789                                            Warszawa        NULL            10068      Poland          (26) 234-5678            (26) 901-2345
+
+(91 row(s) affected)

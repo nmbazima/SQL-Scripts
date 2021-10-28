@@ -1,0 +1,17 @@
+Text
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE PROCEDURE Sales.GetTopCustomers 
+	@customerpos int = 1,
+	@customername nvarchar(30) OUTPUT
+AS
+SET @customername = (
+	SELECT
+		c.contactname
+	FROM Sales.OrderValues AS o
+	INNER JOIN Sales.Customers AS c ON c.custid = o.custid
+	GROUP BY c.custid, c.contactname
+	ORDER BY SUM(o.val) DESC
+	OFFSET @customerpos - 1 ROWS FETCH NEXT 1 ROW ONLY
+);
+
+

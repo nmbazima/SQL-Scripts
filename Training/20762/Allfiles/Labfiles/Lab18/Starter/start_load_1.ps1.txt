@@ -1,0 +1,2 @@
+﻿."$PSScriptRoot\Workload\Run-Workload.ps1" "$PSScriptRoot\Workload\load_script1.sql" 10
+

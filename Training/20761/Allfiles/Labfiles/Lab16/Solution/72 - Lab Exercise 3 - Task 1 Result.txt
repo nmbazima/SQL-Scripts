@@ -1,0 +1,13 @@
+empid       firstname  lastname
+----------- ---------- --------------------
+1           Sara       Davis
+2           Don        Funk
+3           Judy       Lew
+4           Yael       Peled
+5           Sven       Buck
+6           Paul       Suurs
+7           Russell    King
+8           Maria      Cameron
+9           Zoya       Dolgopyatova
+
+(9 row(s) affected)

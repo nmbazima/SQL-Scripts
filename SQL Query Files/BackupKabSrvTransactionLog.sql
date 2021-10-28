@@ -1,0 +1,1 @@
+BACKUP DATABASE [ReportServer] TO  DISK = N'\\KABITAKA-NAS\Kabitaka Shared Drive\43.IT support Software\iSAMS BAK\ReportServer-2018104-9-56-35.bak' WITH FORMAT, INIT,  MEDIADESCRIPTION = N'Shared Drive',  MEDIANAME = N'Kabitaka NAS',  NAME = N'ReportServer--2018-10-04T07:56:35', SKIP, REWIND, NOUNLOAD,  STATS = 10

@@ -1,0 +1,12 @@
+categoryid  productname
+----------- ----------------------------------------
+1           Product HHYDP
+1           Product RECZE
+2           Product IMEHJ
+...
+...
+1           Product BWRLG
+1           Product JYGFE
+2           Product LUNZZ
+
+(77 row(s) affected)

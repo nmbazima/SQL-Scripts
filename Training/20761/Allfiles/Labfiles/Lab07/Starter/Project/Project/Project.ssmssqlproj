@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Project">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="MIA-SQL:ADVENTUREWORKS\Student">
+          <Created>2016-02-03T04:05:05.1298879-08:00</Created>
+          <Type>SQL</Type>
+          <Server>MIA-SQL</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName />
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="01 setup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:MIA-SQL:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>MIA-SQL</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>01 setup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="41 - Lab Exercise 1 Solution.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:MIA-SQL:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>MIA-SQL</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>41 - Lab Exercise 1 Solution.sql</FullPath>
+        </FileNode>
+        <FileNode Name="42 - Lab exercise 1b Solution.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:MIA-SQL:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>MIA-SQL</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>42 - Lab exercise 1b Solution.sql</FullPath>
+        </FileNode>
+        <FileNode Name="43 - Lab exercise 2 Solution.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:MIA-SQL:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>MIA-SQL</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>43 - Lab exercise 2 Solution.sql</FullPath>
+        </FileNode>
+        <FileNode Name="44 - Lab Exercise 2b Solution.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:MIA-SQL:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>MIA-SQL</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>44 - Lab Exercise 2b Solution.sql</FullPath>
+        </FileNode>
+        <FileNode Name="99 - Cleanup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:MIA-SQL:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>MIA-SQL</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>99 - Cleanup.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

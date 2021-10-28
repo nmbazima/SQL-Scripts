@@ -1,0 +1,77 @@
+﻿Product HHYDP	Beverages
+Product RECZE	Beverages
+Product IMEHJ	Condiments
+Product KSBRM	Condiments
+Product EPEIM	Condiments
+Product VAIIV	Condiments
+Product HMLNI	Produce
+Product WVJFP	Condiments
+Product AOZBW	Meat/Poultry
+Product YHXGE	Seafood
+Product QMVUN	Dairy Products
+Product OSFNS	Dairy Products
+Product POXFU	Seafood
+Product PWCJB	Produce
+Product KSZOI	Condiments
+Product PAFRH	Confections
+Product BLCAX	Meat/Poultry
+Product CKEDC	Seafood
+Product XKXDO	Confections
+Product QHFFP	Confections
+Product VJZZH	Confections
+Product CPHFY	Grains/Cereals
+Product JLUDZ	Grains/Cereals
+Product QOGNU	Beverages
+Product LYLNI	Confections
+Product HLGZA	Confections
+Product SMIOH	Confections
+Product OFBNT	Produce
+Product VJXYN	Meat/Poultry
+Product LYERX	Seafood
+Product XWOXC	Dairy Products
+Product NUNAW	Dairy Products
+Product ASTMN	Dairy Products
+Product SWNJY	Beverages
+Product NEVTJ	Beverages
+Product GMKIJ	Seafood
+Product EVFFA	Seafood
+Product QDOMO	Beverages
+Product LSOFL	Beverages
+Product YZIXQ	Seafood
+Product TTEEX	Seafood
+Product RJVNM	Grains/Cereals
+Product ZZZHR	Beverages
+Product VJIEO	Condiments
+Product AQOKR	Seafood
+Product CBRRL	Seafood
+Product EZZPR	Confections
+Product MYNXN	Confections
+Product FPYPN	Confections
+Product BIUDV	Confections
+Product APITJ	Produce
+Product QSRXF	Grains/Cereals
+Product BKGEA	Meat/Poultry
+Product QAQRL	Meat/Poultry
+Product YYWRT	Meat/Poultry
+Product VKCMF	Grains/Cereals
+Product OVLQI	Grains/Cereals
+Product ACRVI	Seafood
+Product UKXRI	Dairy Products
+Product WHBYK	Dairy Products
+Product XYZPE	Condiments
+Product WUXYK	Confections
+Product ICKNK	Condiments
+Product HCQDE	Grains/Cereals
+Product XYWBZ	Condiments
+Product LQMGN	Condiments
+Product XLXQF	Beverages
+Product TBTBL	Confections
+Product COAXA	Dairy Products
+Product TOONT	Beverages
+Product MYMOI	Dairy Products
+Product GEEOO	Dairy Products
+Product WEUJZ	Seafood
+Product BKAZJ	Produce
+Product BWRLG	Beverages
+Product JYGFE	Beverages
+Product LUNZZ	Condiments

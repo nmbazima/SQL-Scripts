@@ -1,0 +1,12 @@
+Name                           Title                          Company Name
+------------------------------ ------------------------------ ----------------------------------------
+Allen, Michael                 Sales Representative           Customer NRZBB
+Hassall, Mark                  Owner                          Customer MLTDN
+Peoples, John                  Owner                          Customer KBUDE
+...
+...
+Smith Jr., Ronaldo             Owner                          Customer YBQTI
+Larsson, Katarina              Owner/Marketing Assistant      Customer XBBVR
+Conn, Steve                    Owner                          Customer CCFIZ
+
+(91 row(s) affected)

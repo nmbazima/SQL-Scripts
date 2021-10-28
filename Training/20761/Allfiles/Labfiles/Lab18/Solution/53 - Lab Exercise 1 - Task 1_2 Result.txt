@@ -1,0 +1,15 @@
+empid       lastname             firstname
+----------- -------------------- ----------
+11          Robertson            Test 2
+10          Johnson              Test 1
+9           Dolgopyatova         Zoya
+8           Cameron              Maria
+7           King                 Russell
+6           Suurs                Paul
+5           Buck                 Sven
+4           Peled                Yael
+3           Lew                  Judy
+2           Funk                 Don
+1           Davis                Sara
+
+(11 row(s) affected)

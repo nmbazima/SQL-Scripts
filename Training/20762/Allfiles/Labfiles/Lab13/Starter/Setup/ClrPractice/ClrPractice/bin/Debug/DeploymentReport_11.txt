@@ -1,0 +1,22 @@
+﻿** Highlights
+     Tables that will be rebuilt
+       None
+     Clustered indexes that will be dropped
+       None
+     Clustered indexes that will be created
+       None
+     Possible data issues
+       None
+
+** User actions
+     Drop
+       [MS_Description] (Extended Property)
+       [PRIMARY].[MS_Description] (Extended Property)
+     Create
+       [ClrPractice] (Assembly)
+       [dbo].[Rectangle] (User-Defined Type)
+       [dbo].[StringAggregate] (Aggregate)
+       [dbo].[IsRegexMatch] (Function)
+       [dbo].[RegexMatches] (Function)
+
+** Supporting actions

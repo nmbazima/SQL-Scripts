@@ -1,0 +1,2 @@
+Msg 50001, Level 16, State 1, Line 4
+You are doing the exercise for Module 17 on July 7, 2014. It's not an error but it means that you are near the final module!

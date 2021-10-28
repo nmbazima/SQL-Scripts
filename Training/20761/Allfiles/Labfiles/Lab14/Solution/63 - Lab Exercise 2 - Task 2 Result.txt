@@ -1,0 +1,14 @@
+custgroup                                                                                                                        country         numberofcustomers
+-------------------------------------------------------------------------------------------------------------------------------- --------------- -----------------
+A                                                                                                                                Argentina       2
+B                                                                                                                                Argentina       1
+C                                                                                                                                Argentina       0
+...
+...
+...
+A                                                                                                                                Venezuela       1
+B                                                                                                                                Venezuela       1
+C                                                                                                                                Venezuela       2
+
+(63 row(s) affected)
+

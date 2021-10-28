@@ -1,0 +1,12 @@
+contactname                    contacttitle
+------------------------------ ------------------------------
+Allen, Michael                 Sales Representative
+Hassall, Mark                  Owner
+Peoples, John                  Owner
+...
+...
+Smith Jr., Ronaldo             Owner
+Larsson, Katarina              Owner/Marketing Assistant
+Conn, Steve                    Owner
+
+(91 row(s) affected)

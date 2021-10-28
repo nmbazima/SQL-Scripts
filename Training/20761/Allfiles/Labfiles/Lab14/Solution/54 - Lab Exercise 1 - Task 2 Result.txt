@@ -1,0 +1,14 @@
+country         city            contactname                    A           B           C
+--------------- --------------- ------------------------------ ----------- ----------- -----------
+Argentina       Buenos Aires    Gaffney, Lawrie                0           1           0
+Argentina       Buenos Aires    Ray, Mike                      1           0           0
+Argentina       Buenos Aires    Tiano, Mike                    1           0           0
+...
+...
+...
+Venezuela       Caracas         Sigurdarson, Hallur            1           0           0
+Venezuela       I. de Margarita Lupu, Cornel                   0           0           1
+Venezuela       San Cristóbal   Langohr, Kris                  0           0           1
+
+(91 row(s) affected)
+

@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>afcb3ec8-8016-45dd-9343-1ca1e6b82d39</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="AddressTypeDDL"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT        Name AS NameValue, Name AS NameLabel
+FROM            TblUsefulLists
+WHERE        (ListType = N'AddressType')
+ORDER BY NameValue</CommandText></Query><Fields><Field Name="NameValue"><DataField>NameValue</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="NameLabel"><DataField>NameLabel</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="AddressTypeSelect"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT        Name AS NameValue, Name AS NameLabel
+FROM            TblUsefulLists
+WHERE        (ListType = N'AddressType')
+AND Name = 'Home'
+ORDER BY NameValue</CommandText></Query><Fields><Field Name="NameValue"><DataField>NameValue</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="NameLabel"><DataField>NameLabel</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="StaffListDDL"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT 
+	TblStaff.TblStaffID,
+	TblStaff.Fullname, 
+	TblStaff.Initials
+
+FROM TblStaff
+
+WHERE TblStaff.SystemStatus = 1
+
+ORDER BY TblStaff.Surname</CommandText></Query><Fields><Field Name="TblStaffID"><DataField>TblStaffID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="Fullname"><DataField>Fullname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Initials"><DataField>Initials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="StaffDisplayName"><Value>=Fields!Fullname.Value &amp; " (" &amp; Fields!Initials.Value &amp; ")"</Value></Field></Fields></DataSet><DataSet Name="StaffContactDS"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@TblStaffID"><Value>=Parameters!TblStaffID.Value</Value></QueryParameter><QueryParameter Name="@txtAddressType"><Value>=Parameters!txtAddressType.Value</Value></QueryParameter><QueryParameter Name="@intJustContact"><Value>=Parameters!intJustContact.Value</Value></QueryParameter></QueryParameters><CommandText>SELECT 
+tblstaff.TblStaffID, 
+TblStaffManagementAddresses.TblStaffManagementAddressesID, 
+TblStaffManagementAddresses.txtCounty,
+TblStaffManagementAddresses.txtCountry,
+TblStaffManagementAddresses.txtPostcode,
+TblStaffManagementAddresses.txtLabelSalutation,
+TblStaffManagementAddresses.txtTown,
+TblStaffManagementAddresses.txtAddress1,
+TblStaffManagementAddresses.txtAddress2,
+TblStaffManagementAddresses.txtAddress3, 
+TblStaff.Surname, 
+TblStaff.Firstname
+FROM tblstaff
+LEFT OUTER JOIN TblStaffManagementAddressLink ON tblstaff.tblStaffID = TblStaffManagementAddressLink.intStaffID
+LEFT OUTER JOIN TblStaffManagementAddresses ON TblStaffManagementAddressLink.intAddressID = TblStaffManagementAddresses.TblStaffManagementAddressesID
+WHERE 
+(
+TblStaff.TblStaffID IN ( SELECT ID FROM dbo.SplitCSV(@TblStaffID) AS SplitCSV_1 )
+OR (@TblStaffID IS NULL)
+)
+AND
+ (txtAddressType = @txtAddressType) 
+AND (TblStaffManagementAddresses.intJustContact = @intJustContact OR TblStaffManagementAddresses.intJustContact IS NULL)
+AND (txtRelationType = 'Self')</CommandText></Query><Fields><Field Name="TblStaffID"><DataField>TblStaffID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="TblStaffManagementAddressesID"><DataField>TblStaffManagementAddressesID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtCounty"><DataField>txtCounty</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtCountry"><DataField>txtCountry</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPostcode"><DataField>txtPostcode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtLabelSalutation"><DataField>txtLabelSalutation</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTown"><DataField>txtTown</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtAddress1"><DataField>txtAddress1</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtAddress2"><DataField>txtAddress2</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtAddress3"><DataField>txtAddress3</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Surname"><DataField>Surname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Firstname"><DataField>Firstname</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="list2"><TablixBody><TablixColumns><TablixColumn><Width>9.91cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>3.81cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="list2_Contents"><ReportItems><Textbox Name="textbox1"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=trim(Fields!txtLabelSalutation.Value) &amp; chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtAddress1.Value) &amp; 
+iif(trim(Fields!txtAddress2.Value)&lt;&gt;"",chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtAddress2.Value),"") &amp; 
+iif(trim(Fields!txtAddress3.Value)&lt;&gt;"",chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtAddress3.Value),"") &amp; 
+iif(trim(Fields!txtTown.Value)&lt;&gt;"",chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtTown.Value),"") &amp; 
+iif(trim(Fields!txtCounty.Value)&lt;&gt;"",chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtCounty.Value),"") &amp; 
+iif(trim(Fields!txtCountry.Value)&lt;&gt;"",chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtCountry.Value),"") &amp; 
+iif(trim(Fields!txtPostcode.Value)&lt;&gt;"",chr(13) &amp; chr(10) &amp; 
+trim(Fields!txtPostcode.Value),"")</Value><Style><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><FontFamily /><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>textbox1</rd:DefaultName><Top>0.1cm</Top><Left>0.1cm</Left><Height>3.61cm</Height><Width>9.71cm</Width><Style><FontFamily /><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></ReportItems><KeepTogether>true</KeepTogether><Style /></Rectangle></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="TblStaffID_TblStaffManagementAddressesID"><GroupExpressions><GroupExpression>=Fields!TblStaffID.Value</GroupExpression><GroupExpression>=Fields!TblStaffManagementAddressesID.Value</GroupExpression></GroupExpressions><DataElementName>Item</DataElementName></Group><SortExpressions><SortExpression><Value>=Fields!Surname.Value</Value></SortExpression><SortExpression><Value>=Fields!Firstname.Value</Value></SortExpression><SortExpression><Value>=Fields!TblStaffID.Value</Value></SortExpression></SortExpressions><DataElementName>Item_Collection</DataElementName><DataElementOutput>Output</DataElementOutput><KeepTogether>true</KeepTogether></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>StaffContactDS</DataSetName><Height>3.81cm</Height><Width>9.91cm</Width><Style /></Tablix></ReportItems><Height>3.89cm</Height><Style /></Body><Width>9.91cm</Width><Page><PageHeight>29.5cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>0.49cm</LeftMargin><RightMargin>0.49cm</RightMargin><TopMargin>1.515cm</TopMargin><BottomMargin>1.515cm</BottomMargin><Columns>2</Columns><ColumnSpacing>0.2cm</ColumnSpacing><Style /></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="TblStaffID"><DataType>String</DataType><Prompt>Tbl Staff ID</Prompt></ReportParameter><ReportParameter Name="txtAddressType"><DataType>String</DataType><DefaultValue><DataSetReference><DataSetName>AddressTypeSelect</DataSetName><ValueField>NameValue</ValueField></DataSetReference></DefaultValue><Prompt>Select Address Type:</Prompt><ValidValues><DataSetReference><DataSetName>AddressTypeDDL</DataSetName><ValueField>NameValue</ValueField><LabelField>NameLabel</LabelField></DataSetReference></ValidValues></ReportParameter><ReportParameter Name="intJustContact"><DataType>Boolean</DataType><DefaultValue><Values><Value>false</Value></Values></DefaultValue><Prompt>Just Contact</Prompt><ValidValues><ParameterValues><ParameterValue><Value>true</Value><Label>Yes</Label></ParameterValue><ParameterValue><Value>false</Value><Label>No</Label></ParameterValue></ParameterValues></ValidValues></ReportParameter></ReportParameters><Language>en-GB</Language><ConsumeContainerWhitespace>true</ConsumeContainerWhitespace><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>eecb2c22-2421-4586-b8ce-4cd2150f9f98</rd:ReportID></Report>

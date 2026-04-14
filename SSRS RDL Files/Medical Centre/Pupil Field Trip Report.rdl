@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>298584b7-dfde-459e-b959-8ad9bc82da4f</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="MedicalData"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@userCode"><Value>=Parameters!userCode.Value</Value></QueryParameter><QueryParameter Name="@personIds"><Value>=Parameters!personIds.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @ConditionsPermissionCheck AS NVARCHAR(MAX);
+
+SET @ConditionsPermissionCheck  = (SELECT dbo.f_CheckUserHasActivityPermission(@userCode, 'iSAMS_MEDICALCENTRE', 'Condition', 'Read', 5));
+
+WITH MainTable AS 
+    (SELECT * 
+     FROM	(SELECT	dbo.f_CanViewMedicalRecord(@userCode, intMedicalRecordTypeID, AuditBaseData.intSensitivity) AS 'txtAllowed',*, RANK() OVER(PARTITION BY gKey ORDER BY dSubmitDateTime DESC) AS 'intRnk'
+			 FROM	TblMedicalAuditBase AuditBaseData
+			 JOIN	TblMedicalAuditLog AuditLogData ON AuditBaseData.TblMedicalAuditBaseId = AuditLogData.intMedicalAuditBaseId
+			 WHERE	AuditBaseData.intMedicalRecordTypeId IN (10, 2)) MostRecentRecord
+     WHERE  intRnk = 1
+			AND intMedicalAuditActionId NOT IN (4,5)
+			AND intMedicalRecordTypeId IN (10, 2)
+    ),
+
+
+     AllConditions AS 
+(
+	SELECT 
+		condition.intPersonId,
+		bAllergy,
+		CASE WHEN txtAllowed = 1 THEN CAST(txtGroup AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS txtGroup,
+		txtSeverity,
+		CASE WHEN txtAllowed = 1 THEN CAST(txtType AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS txtAllergen
+		
+	FROM MainTable INNER JOIN 
+
+		VwMedicalRecordCondition AS condition ON MainTable.TblMedicalAuditBaseId = condition.intMedicalAuditBaseId
+	JOIN
+		dbo.SplitCSV(@personIds) AS personIds
+			ON personIds.ID = condition.intPersonId
+	JOIN
+		TblMedicalConditionGroup AS conditionType 
+			ON condition.intMedicalConditionGroupId = conditionType.TblMedicalConditionGroupId
+	JOIN
+		TblMedicalConditionSeverity AS severity
+			ON condition.intMedicalConditionSeverityId = severity.TblMedicalConditionSeverityId
+	WHERE
+		isnull(condition.bDeleted,0) &lt;&gt; 1
+		AND isnull(condition.bArchived,0) &lt;&gt;1
+),
+
+PupilConditionOnOneRow AS
+(
+SELECT
+	intPersonId,
+	STUFF((	SELECT 
+				DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+			FROM
+				AllConditions conditions
+			WHERE 
+				conditions.intPersonId = AllConditions.intPersonId
+				AND conditions.bAllergy = 1
+				AND conditions.txtSeverity = 'Severe'
+			FOR XML PATH('')), 
+			1, 2, '') AS txtSevereAllergies,
+	STUFF((	SELECT 
+				DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+			FROM
+				AllConditions conditions
+			WHERE 
+				conditions.intPersonId = AllConditions.intPersonId
+				AND conditions.bAllergy = 1
+				AND conditions.txtSeverity = 'Moderate'
+			FOR XML PATH('')), 
+			1, 2, '') AS txtModerateAllergies,
+	STUFF((	SELECT 
+				DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+			FROM
+				AllConditions conditions
+			WHERE 
+				conditions.intPersonId = AllConditions.intPersonId
+				AND conditions.bAllergy = 1
+				AND conditions.txtSeverity &lt;&gt; 'Severe'
+				AND conditions.txtSeverity &lt;&gt; 'Moderate'
+			FOR XML PATH('')), 
+			1, 2, '') AS txtNotSevereOrModerateAllergies,
+	STUFF((	SELECT 
+				DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+			FROM
+				AllConditions conditions
+			WHERE 
+				conditions.intPersonId = AllConditions.intPersonId
+				AND (conditions.bAllergy = 0 OR conditions.bAllergy IS NULL)
+			FOR XML PATH('')), 
+			1, 2, '') AS txtConditions
+FROM
+	AllConditions
+GROUP BY
+	intPersonId
+	),
+
+PupilPictures AS
+(
+	SELECT txtPath AS txtPupilPicturePath, 
+	txtSchoolID,
+	DENSE_RANK() OVER (PARTITION BY txtSchoolID ORDER BY txtSubmitDateTime DESC) AS intPictureRank
+	FROM TblPupilManagementPictures
+),
+
+NoteHistory AS
+(
+	SELECT DISTINCT
+	MedicalNotes.intPersonId,
+	TblMedicalNoteType.txtType AS txtMedicalNoteType
+	FROM VwMedicalRecordNote AS MedicalNotes
+	INNER JOIN TblMedicalNoteType ON TblMedicalNoteType.TblMedicalNoteTypeId = MedicalNotes.intMedicalNoteTypeId
+	WHERE isNull(MedicalNotes.bDeleted,0) = 0 
+	AND ISNULL(MedicalNotes.bArchived,0) = 0
+	AND MedicalNotes.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))
+),
+
+CurrentMedication AS
+(
+	SELECT 
+	Medication.TblMedicalRecordMedicationId AS intMedicationID,
+	CASE WHEN txtAllowed = 1 THEN CAST(txtMedication AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS txtMedicationName,
+	Medication.intPersonId
+	FROM vwMedicalRecordMedication AS Medication
+	INNER JOIN MainTable ON Medication.intMedicalAuditBaseId = MainTable.intMedicalAuditBaseId
+	WHERE isNull(Medication.bDeleted,0) = 0
+	AND ISNULL(Medication.bArchived,0) = 0
+	AND Medication.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds)) 
+),
+
+
+ASConsent AS
+(
+	SELECT txtName AS txtConsentTypeName,
+	TblMedicalConsentTypeId,
+	TblMedicalConsentType.intOrder AS intConsentOrder
+	FROM TblMedicalConsentType
+	WHERE (TblMedicalConsentType.txtName like '%Administer%' OR TblMedicalConsentType.txtName like '%Swim%')
+),
+
+ConsentGiven AS 
+(
+	SELECT
+	ASConsent.TblMedicalConsentTypeId,
+	CASE WHEN txtAllowed = 1 THEN CAST(ASConsent.txtConsentTypeName AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS 'txtConsentTypeName', 
+	ASConsent.intConsentOrder,
+	TblPupilManagementPupils.intPersonId,
+	CASE WHEN txtAllowed = 1 THEN CAST(bConsentAnswer AS NVARCHAR(MAX)) ELSE NULL END AS 'bConsentAnswer',
+	DENSE_RANK() OVER (PARTITION BY TblPupilManagementPupils.intPersonId, ASConsent.TblMedicalConsentTypeId ORDER BY dReceivedDate DESC) AS intConsentRank
+
+	FROM ASConsent
+	INNER JOIN TblPupilManagementPupils ON 1=1
+	LEFT OUTER JOIN VwMedicalRecordConsent AS ParentalConsent ON TblPupilManagementPupils.intPersonID = ParentalConsent.intPersonId
+	AND ParentalConsent.intMedicalConsentTypeId = ASConsent.TblMedicalConsentTypeId
+	AND isNull(ParentalConsent.bDeleted,0) = 0 AND isNull(ParentalConsent.bArchived,0) = 0 
+	LEFT OUTER JOIN MainTable ON ParentalConsent.intMedicalAuditBaseId = MainTable.intMedicalAuditBaseId
+	WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))
+	
+),
+
+DTPVaccinations AS
+(	
+	SELECT 
+	txtName AS txtVaccinationName,
+	TblMedicalVaccinationType.TblMedicalVaccinationTypeId
+	FROM TblMedicalVaccinationType
+	WHERE TblMedicalVaccinationType.txtName IN ('Diphtheria', 'Pertussis', 'Tetanus')
+),
+
+
+
+PupilVaccinationRecord AS
+(
+	SELECT 
+	CASE WHEN txtAllowed = 1 THEN CAST(DTPVaccinations.txtVaccinationName AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS 'txtVaccinationName', 
+	TblPupilManagementPupils.intPersonID,
+	CASE WHEN txtAllowed = 1 THEN Vaccination.dGiven ELSE '1986-04-30 08:46' END AS 'dVaccinationGivenDate', 
+	DENSE_RANK() OVER (PARTITION BY TblPupilManagementPupils.intPersonId, DTPVaccinations.TblMedicalVaccinationTypeId ORDER BY dGiven DESC) AS intVaccinationRank
+	FROM DTPVaccinations
+	INNER JOIN TblPupilManagementPupils ON 1=1
+	LEFT OUTER JOIN VwMedicalRecordVaccination AS Vaccination ON TblPupilManagementPupils.intPersonID = Vaccination.intPersonId
+	AND isNull(Vaccination.bDeleted,0) = 0
+	AND isNull(Vaccination.bArchived,0) = 0
+	AND Vaccination.intMedicalVaccinationTypeId = DTPVaccinations.TblMedicalVaccinationTypeId
+	LEFT OUTER JOIN MainTable ON MainTable.TblMedicalAuditBaseId = Vaccination.intMedicalAuditBaseId
+	WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds)) 
+),
+
+Passports AS
+(
+	SELECT TblPupilManagementPupils.intPersonID,
+	TblPupilManagementPassports.txtPassportNumber,
+	TblPupilManagementPassports.txtPassportNationality,
+	TblPupilManagementPassports.txtPassportExpiry AS dtPassportExpiryDate,
+	TblPupilManagementPassports.TblPupilManagementPassportsID
+	FROM TblPupilManagementPassports
+	INNER JOIN TblPupilManagementPupils ON TblPupilManagementPassports.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+	WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))
+	AND TblPupilManagementPassports.txtPassportExpiry &gt;= GETDATE()
+),
+
+Visas AS
+(
+	SELECT 
+	TblPupilManagementPupils.intPersonID,
+	TblPupilManagementVisas.txtVisaID,
+	TblPupilManagementVisas.txtNationality AS txtVisaNationality,
+	TblPupilManagementVisas.dteExpires AS dtVissaExpiryDate,
+	TblPupilManagementVisas.TblPupilManagementVisasId
+	FROM TblPupilManagementVisas
+	INNER JOIN TblPupilManagementPupils ON TblPupilManagementVisas.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+	WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))
+	AND TblPupilManagementVisas.dteExpires &gt;= GETDATE()
+),
+
+Addresses AS
+(
+	SELECT 
+	TblPupilManagementPupils.intPersonID,
+	TblPupilManagementAddresses.TblPupilManagementAddressesID,
+	TblPupilManagementAddresses.intStudentHome,
+	TblPupilManagementAddresses.intOrder AS intAddressPriorityOrder,
+	TblPupilManagementAddresses.txtRelationType,
+	TblPupilManagementAddresses.txtMobile1,
+	TblPupilManagementAddresses.txtMobile2,
+	TblPupilManagementAddresses.txtDayTelephone,
+	TblPupilManagementAddresses.txtContactsForename,
+	TblPupilManagementAddresses.txtContactsSurname,
+	TblPupilManagementAddresses.txtSecondaryForename,
+	TblPupilManagementAddresses.txtSecondarySurname
+	FROM TblPupilManagementAddresses
+	INNER JOIN TblPupilManagementAddressLink ON TblPupilManagementAddresses.TblPupilManagementAddressesID = TblPupilManagementAddressLink.intAddressID
+	INNER JOIN TblPupilManagementPupils ON TblPupilManagementAddressLink.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+	WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))
+	AND TblPupilManagementAddresses.txtAddressType &lt;&gt;'Work'
+	AND (TblPupilManagementAddresses.intStudentHome = 1 OR TblPupilManagementAddresses.txtRelationType LIKE '%Mother%' OR TblPupilManagementAddresses.txtRelationType LIKE '%Father%' OR TblPupilManagementAddresses.txtRelationType LIKE '%Parent%')
+	AND (TblPupilManagementAddresses.intPrivate =0 OR TblPupilManagementAddresses.intPrivate IS NULL)
+	AND (TblPupilManagementAddresses.txtMobile1 IS NOT NULL OR TblPupilManagementAddresses.txtMobile1 &lt;&gt; '' 
+	OR TblPupilManagementAddresses.txtMobile2 IS NOT NULL OR TblPupilManagementAddresses.txtMobile2 &lt;&gt; '' 
+	OR TblPupilManagementAddresses.txtDayTelephone IS NOT NULL OR TblPupilManagementAddresses.txtDayTelephone &lt;&gt; '' )
+),
+
+SOS AS
+(
+	SELECT
+	TblPupilManagementPupils.intPersonID,
+	TblPupilManagementAddressesID AS intSOSID,
+	txtSOS
+	FROM TblPupilManagementAddresses
+	INNER JOIN TblPupilManagementAddressLink ON TblPupilManagementAddresses.TblPupilManagementAddressesID = TblPupilManagementAddressLink.intAddressID
+	INNER JOIN TblPupilManagementPupils ON TblPupilManagementAddressLink.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+	WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))
+	AND CONVERT(nvarchar(max),txtSOS) &lt;&gt;'' AND txtSOS IS NOT NULL
+)
+
+
+SELECT 
+TblPupilManagementPupils.intPersonId,
+TblPupilManagementPupils.txtSchoolID,
+TblPupilManagementPupils.txtSurname,
+TblPupilManagementPupils.txtForename,
+TblPupilManagementPupils.txtPreName,
+TblPupilManagementPupils.txtDOB AS dtDOB,
+TblPupilManagementPupils.txtForm,
+TblPupilManagementPupils.intNCYear,
+TblSchoolManagementYears.txtYearName,
+TblPupilManagementPupils.txtAdditionalHealth,
+TblPupilManagementPupils.intMedicalFlag,
+PupilPictures.txtPupilPicturePath,
+
+
+NoteHistory.txtMedicalNoteType,
+
+PupilConditionOnOneRow.txtSevereAllergies,
+PupilConditionOnOneRow.txtModerateAllergies,
+PupilConditionOnOneRow.txtNotSevereOrModerateAllergies,
+PupilConditionOnOneRow.txtConditions,
+
+CurrentMedication.intMedicationID,
+CurrentMedication.txtMedicationName, 
+
+ConsentGiven.intConsentOrder,
+ConsentGiven.bConsentAnswer,
+ConsentGiven.txtConsentTypeName,
+
+PupilVaccinationRecord.txtVaccinationName,
+PupilVaccinationRecord.dVaccinationGivenDate,
+
+Passports.TblPupilManagementPassportsID,
+Passports.txtPassportNumber,
+Passports.txtPassportNationality,
+Passports.dtPassportExpiryDate,
+
+Visas.TblPupilManagementVisasId,
+Visas.txtVisaID,
+Visas.txtVisaNationality,
+Visas.dtVissaExpiryDate,
+
+Addresses.TblPupilManagementAddressesID,
+Addresses.intStudentHome,
+Addresses.intAddressPriorityOrder,
+Addresses.txtRelationType,
+Addresses.txtContactsForename,
+Addresses.txtContactsSurname,
+Addresses.txtSecondaryForename,
+Addresses.txtSecondarySurname,
+Addresses.txtMobile1,
+Addresses.txtMobile2,
+Addresses.txtDayTelephone,
+
+SOS.intSOSID,
+SOS.txtSOS
+
+FROM TblPupilManagementPupils
+LEFT OUTER JOIN TblSchoolManagementYears ON TblPupilManagementPupils.intNCYear = TblSchoolManagementYears.intNCYear
+LEFT OUTER JOIN PupilConditionOnOneRow ON TblPupilManagementPupils.intPersonID = PupilConditionOnOneRow.intPersonId
+LEFT OUTER JOIN PupilPictures ON TblPupilManagementPupils.txtSchoolID = PupilPictures.txtSchoolID AND PupilPictures.intPictureRank = 1
+LEFT OUTER JOIN NoteHistory ON TblPupilManagementPupils.intPersonID = NoteHistory.intPersonId
+LEFT OUTER JOIN CurrentMedication ON TblPupilManagementPupils.intPersonID = CurrentMedication.intPersonId
+LEFT OUTER JOIN ConsentGiven ON TblPupilManagementPupils.intPersonID = ConsentGiven.intPersonId AND ConsentGiven.intConsentRank = 1
+LEFT OUTER JOIN PupilVaccinationRecord ON TblPupilManagementPupils.intPersonID = PupilVaccinationRecord.intPersonId AND PupilVaccinationRecord.intVaccinationRank = 1
+LEFT OUTER JOIN Passports ON TblPupilManagementPupils.intPersonID = Passports.intPersonID
+LEFT OUTER JOIN Visas ON TblPupilManagementPupils.intPersonID = Visas.intPersonID
+LEFT OUTER JOIN Addresses ON TblPupilManagementPupils.intPersonID = Addresses.intPersonID
+LEFT OUTER JOIN SOS ON TblPupilManagementPupils.intPersonID = SOS.intPersonID
+WHERE TblPupilManagementPupils.intPersonID IN (SELECT ID FROM  dbo.SplitCSV(@personIds))</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="intPersonId"><DataField>intPersonId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSurname"><DataField>txtSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForename"><DataField>txtForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPreName"><DataField>txtPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForm"><DataField>txtForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dtDOB"><DataField>dtDOB</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="intNCYear"><DataField>intNCYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtAdditionalHealth"><DataField>txtAdditionalHealth</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPupilPicturePath"><DataField>txtPupilPicturePath</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intMedicalFlag"><DataField>intMedicalFlag</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtMedicalNoteType"><DataField>txtMedicalNoteType</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSevereAllergies"><DataField>txtSevereAllergies</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtModerateAllergies"><DataField>txtModerateAllergies</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtNotSevereOrModerateAllergies"><DataField>txtNotSevereOrModerateAllergies</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtConditions"><DataField>txtConditions</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intMedicationID"><DataField>intMedicationID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtMedicationName"><DataField>txtMedicationName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intConsentOrder"><DataField>intConsentOrder</DataField><rd:TypeName>System.Byte</rd:TypeName></Field><Field Name="bConsentAnswer"><DataField>bConsentAnswer</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtConsentTypeName"><DataField>txtConsentTypeName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtVaccinationName"><DataField>txtVaccinationName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dVaccinationGivenDate"><DataField>dVaccinationGivenDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="TblPupilManagementPassportsID"><DataField>TblPupilManagementPassportsID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtPassportNumber"><DataField>txtPassportNumber</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPassportNationality"><DataField>txtPassportNationality</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dtPassportExpiryDate"><DataField>dtPassportExpiryDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="TblPupilManagementVisasId"><DataField>TblPupilManagementVisasId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtVisaID"><DataField>txtVisaID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtVisaNationality"><DataField>txtVisaNationality</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dtVissaExpiryDate"><DataField>dtVissaExpiryDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="TblPupilManagementAddressesID"><DataField>TblPupilManagementAddressesID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intStudentHome"><DataField>intStudentHome</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intAddressPriorityOrder"><DataField>intAddressPriorityOrder</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtRelationType"><DataField>txtRelationType</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtContactsForename"><DataField>txtContactsForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtContactsSurname"><DataField>txtContactsSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSecondaryForename"><DataField>txtSecondaryForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSecondarySurname"><DataField>txtSecondarySurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtMobile1"><DataField>txtMobile1</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtMobile2"><DataField>txtMobile2</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDayTelephone"><DataField>txtDayTelephone</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intSOSID"><DataField>intSOSID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSOS"><DataField>txtSOS</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="Server"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT        txtInternaliSAMSAddress
+FROM            TbliSAMSManagerSettings</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="txtInternaliSAMSAddress"><DataField>txtInternaliSAMSAddress</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="Tablix1"><TablixBody><TablixColumns><TablixColumn><Width>21cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>11.1cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Rectangle1"><ReportItems><Textbox Name="Textbox17"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Ucase(Fields!txtSurname.Value)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>, </Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Fields!txtForename.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value> (</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Fields!txtPreName.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtYearName.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Fields!txtForm.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>4pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>Birthdate </Value><Style><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Fields!dtDOB.Value</Value><Style><FontWeight>Normal</FontWeight><Format>dd MMM yyyy</Format></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox17</rd:DefaultName><Left>1cm</Left><Height>1.8cm</Height><Width>15cm</Width><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Tablix Name="Tablix2"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn><TablixColumn><Width>0.3cm</Width></TablixColumn><TablixColumn><Width>8.2cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>3.7cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox18"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Allergies</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>=IIF(Fields!txtSevereAllergies.Value="","","Severe: " + Fields!txtSevereAllergies.Value)</Value><Style><FontWeight>Normal</FontWeight><Color>Red</Color></Style></TextRun><TextRun><Value>=IIF(Fields!txtModerateAllergies.Value="","",
+IIF(Fields!txtSevereAllergies.Value="",
+"Moderate: " + Fields!txtModerateAllergies.Value, vbcrlf + "Moderate: " + Fields!txtModerateAllergies.Value))</Value><Style><FontWeight>Normal</FontWeight><Color>Orange</Color></Style></TextRun><TextRun><Value>=IIF(Fields!txtNotSevereOrModerateAllergies.Value="","",
+IIF(Fields!txtModerateAllergies.Value="" and Fields!txtSevereAllergies.Value="",
+Fields!txtNotSevereOrModerateAllergies.Value, vbcrlf + Fields!txtNotSevereOrModerateAllergies.Value))</Value><Style><FontWeight>Normal</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontWeight>Normal</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>Record Summary</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtAdditionalHealth.Value</Value><Style><Color>=IIF(Fields!intMedicalFlag.Value=1,"Red","Black")</Color></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontWeight>Normal</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>Conditions</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtConditions.Value</Value><Style><FontWeight>Normal</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontWeight>Normal</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox18</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox36"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox36</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="Rectangle2"><ReportItems><Tablix Name="Tablix4"><TablixBody><TablixColumns><TablixColumn><Width>8.2cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox22"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Medical History</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox24"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtMedicalNoteType.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="txtMedicalNoteType"><GroupExpressions><GroupExpression>=Fields!txtMedicalNoteType.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!txtMedicalNoteType.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>1.1cm</Height><Width>8.2cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.3cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox6"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox6</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox7"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox7</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox9"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox9</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Top>2cm</Top><Left>1cm</Left><Height>4cm</Height><Width>15cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix3"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn><TablixColumn><Width>0.3cm</Width></TablixColumn><TablixColumn><Width>7.3cm</Width></TablixColumn><TablixColumn><Width>0.3cm</Width></TablixColumn><TablixColumn><Width>4.7cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>1.6cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Rectangle3"><ReportItems><Tablix Name="Tablix5"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox25"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Medication</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox27"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtMedicationName.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="intMedicationID"><GroupExpressions><GroupExpression>=Fields!intMedicationID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!txtMedicationName.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>1.1cm</Height><Width>6.5cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox50"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox50</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="Rectangle4"><ReportItems><Tablix Name="Tablix6"><TablixBody><TablixColumns><TablixColumn><Width>4.6cm</Width></TablixColumn><TablixColumn><Width>0.5cm</Width></TablixColumn><TablixColumn><Width>1cm</Width></TablixColumn><TablixColumn><Width>0.5cm</Width></TablixColumn><TablixColumn><Width>0.7cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox28"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Parental Consent</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>3</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /><TablixCell><CellContents><Textbox Name="Textbox56"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox56</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox58"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox58</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox29"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Replace(Fields!txtConsentTypeName.Value,"Administer ","")</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox53"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(isNothing(Fields!bConsentAnswer.Value),"",
+Fields!bConsentAnswer.Value=true,"x")</Value><Style /></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox53</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox55"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Yes</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox55</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox57"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(isNothing(Fields!bConsentAnswer.Value),"",
+Fields!bConsentAnswer.Value=false,"x")</Value><Style /></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox57</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox59"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>No</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox59</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox35"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Replace(Fields!txtConsentTypeName.Value,"Administer ","")</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox54"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(isNothing(Fields!bConsentAnswer.Value),"",
+Fields!bConsentAnswer.Value=true,"x")</Value><Style /></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox53</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox65"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Yes</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox55</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox66"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(isNothing(Fields!bConsentAnswer.Value),"",
+Fields!bConsentAnswer.Value=false,"x")</Value><Style /></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox57</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox67"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>No</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox59</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="txtConsentTypeName_NoSwimming"><GroupExpressions><GroupExpression>=Fields!txtConsentTypeName.Value</GroupExpression></GroupExpressions><Filters><Filter><FilterExpression>=IIF(inStr(Fields!txtConsentTypeName.Value,"Swim")&gt;0,false,true)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=true</FilterValue></FilterValues></Filter></Filters></Group><SortExpressions><SortExpression><Value>=Fields!intConsentOrder.Value</Value></SortExpression></SortExpressions></TablixMember><TablixMember><Group Name="txtConsentTypeName_Swimming"><GroupExpressions><GroupExpression>=Fields!txtConsentTypeName.Value</GroupExpression></GroupExpressions><Filters><Filter><FilterExpression>=IIF(inStr(Fields!txtConsentTypeName.Value,"Swim")&gt;0,true,false)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=true</FilterValue></FilterValues></Filter><Filter><FilterExpression>=IIF(isnothing(Fields!bConsentAnswer.Value),false,true)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=true</FilterValue></FilterValues></Filter></Filters></Group><SortExpressions><SortExpression><Value>=Fields!txtConsentTypeName.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>1.6cm</Height><Width>7.3cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox26"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox26</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="Rectangle5"><ReportItems><Tablix Name="Tablix7"><TablixBody><TablixColumns><TablixColumn><Width>0.5cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2.2cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox60"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Vaccinations</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox56</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>3</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox63"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Fields!dVaccinationGivenDate.Value&gt; "1986-04-30 08:46","x","")</Value><Style /></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox57</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox64"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtVaccinationName.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox59</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="dVaccinationGivenDate"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!dVaccinationGivenDate.Value</Value><Style><Format>dd MMM yyyy</Format></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>dVaccinationGivenDate</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="txtVaccinationName"><GroupExpressions><GroupExpression>=Fields!txtVaccinationName.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!txtVaccinationName.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>1.1cm</Height><Width>4.7cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.3cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox10"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox10</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox11"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox11</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox13"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox13</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox15"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox15</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox16"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox16</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Top>6cm</Top><Left>1cm</Left><Height>1.9cm</Height><Width>19.1cm</Width><ZIndex>2</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix8"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn><TablixColumn><Width>0.3cm</Width></TablixColumn><TablixColumn><Width>12.3cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>2.7cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Rectangle6"><ReportItems><Tablix Name="Tablix9"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="txtRelationType"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtRelationType.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtRelationType</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>1cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox31"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Fields!txtRelationType.Value="Parents",
+
+Fields!txtSecondaryForename.Value + " " + Fields!txtSecondarySurname.Value 
++ vbcrlf + IIF(Fields!txtMobile2.Value="",Fields!txtDayTelephone.Value,Fields!txtMobile2.Value)
++ vbcrlf + Fields!txtContactsForename.Value + " " + Fields!txtSecondarySurname.Value 
++ vbcrlf + IIF(Fields!txtMobile1.Value="",Fields!txtDayTelephone.Value,Fields!txtMobile1.Value)
+,
+
+Fields!txtContactsForename.Value + " " + Fields!txtContactsSurname.Value 
++ vbcrlf + IIF(Fields!txtMobile1.Value="",Fields!txtDayTelephone.Value,Fields!txtMobile1.Value)
++ IIF(Fields!txtSecondarySurname.Value="","",vbcrlf + Fields!txtSecondaryForename.Value + " " + Fields!txtSecondarySurname.Value 
++ vbcrlf + IIF(Fields!txtMobile2.Value="",Fields!txtDayTelephone.Value,Fields!txtMobile2.Value))
+)</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="TblPupilManagementAddressesID"><GroupExpressions><GroupExpression>=Fields!TblPupilManagementAddressesID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intStudentHome.Value</Value><Direction>Descending</Direction></SortExpression><SortExpression><Value>=Fields!intAddressPriorityOrder.Value</Value></SortExpression><SortExpression><Value>=Fields!txtRelationType.Value</Value></SortExpression></SortExpressions><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>1.6cm</Height><Width>6.5cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix11"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox12"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Emergency Contacts</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox12</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox33"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSOS.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="intSOSID"><GroupExpressions><GroupExpression>=Fields!intSOSID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intSOSID.Value</Value><Direction>Descending</Direction></SortExpression></SortExpressions><TablixMembers><TablixMember /></TablixMembers></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Top>1.6cm</Top><Height>1.1cm</Height><Width>6.5cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox51"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox50</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="Rectangle7"><ReportItems><Tablix Name="Tablix10"><TablixBody><TablixColumns><TablixColumn><Width>12.3cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox30"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Passport/Visa</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox32"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>="Passport: " + Fields!txtPassportNumber.Value + vbcrlf + Fields!txtPassportNationality.Value + vbcrlf + "Exp: " + Format(Fields!dtPassportExpiryDate.Value,"d MMM yyyy")</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox22</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox8"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>="Visa: " + Fields!txtVisaID.Value + vbcrlf + Fields!txtVisaNationality.Value + vbcrlf + "Exp: " + Format(Fields!dtVissaExpiryDate.Value,"d MMM yyyy")</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox8</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox14"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox14</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="TblPupilManagementPassportsID"><GroupExpressions><GroupExpression>=Fields!TblPupilManagementPassportsID.Value</GroupExpression></GroupExpressions><Filters><Filter><FilterExpression>=IIF(isNothing(Fields!TblPupilManagementPassportsID.Value),false,true)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=true</FilterValue></FilterValues></Filter></Filters></Group><SortExpressions><SortExpression><Value>=Fields!dtPassportExpiryDate.Value</Value></SortExpression></SortExpressions></TablixMember><TablixMember><Group Name="TblPupilManagementVisasId"><GroupExpressions><GroupExpression>=Fields!TblPupilManagementVisasId.Value</GroupExpression></GroupExpressions><Filters><Filter><FilterExpression>=IIF(isNothing(Fields!TblPupilManagementVisasId.Value),false,true)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=true</FilterValue></FilterValues></Filter></Filters></Group><SortExpressions><SortExpression><Value>=Fields!dtVissaExpiryDate.Value</Value></SortExpression></SortExpressions></TablixMember><TablixMember><KeepWithGroup>Before</KeepWithGroup></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>2.1cm</Height><Width>12.3cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox3</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox4"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox5"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox5</rd:DefaultName><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Top>7.9cm</Top><Left>1cm</Left><Height>3.2cm</Height><Width>19.1cm</Width><ZIndex>3</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix><Image Name="Image1"><Source>External</Source><Value>=IIF(Fields!txtPupilPicturePath.Value="","",
+
+
+IIF(Right(First(Fields!txtInternaliSAMSAddress.Value, "Server"),1)="/",
+
+Left(First(Fields!txtInternaliSAMSAddress.Value, "Server"), Len(First(Fields!txtInternaliSAMSAddress.Value, "Server"))-1)
+,First(Fields!txtInternaliSAMSAddress.Value, "Server")
+) + Fields!txtPupilPicturePath.Value
+)</Value><Sizing>FitProportional</Sizing><Left>16.4cm</Left><Height>5.5cm</Height><Width>3.7cm</Width><ZIndex>4</ZIndex><Style><Border><Style>None</Style></Border></Style></Image></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="txtSchoolID"><GroupExpressions><GroupExpression>=Fields!txtSchoolID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intNCYear.Value</Value></SortExpression><SortExpression><Value>=Fields!txtForm.Value</Value></SortExpression><SortExpression><Value>=Fields!txtSurname.Value</Value></SortExpression><SortExpression><Value>=Fields!txtForename.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>MedicalData</DataSetName><Height>11.1cm</Height><Width>21cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><Height>4.37008in</Height><Style /></Body><Width>8.26772in</Width><Page><PageHeader><Height>0.82966cm</Height><PrintOnFirstPage>true</PrintOnFirstPage><PrintOnLastPage>true</PrintOnLastPage><ReportItems><Textbox Name="Textbox1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>MEDICAL SUMMARY</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Left>1cm</Left><Height>0.6cm</Height><Width>10cm</Width><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Textbox Name="Textbox2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>printed </Value><Style /></TextRun><TextRun><Value>=Now()</Value><Style><Format>d MMM yyyy</Format></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Left>11cm</Left><Height>0.6cm</Height><Width>9cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></ReportItems><Style><Border><Style>None</Style></Border></Style></PageHeader><PageHeight>29.7cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>0cm</LeftMargin><RightMargin>0cm</RightMargin><TopMargin>0.5cm</TopMargin><BottomMargin>0.5cm</BottomMargin><ColumnSpacing>0.13cm</ColumnSpacing><Style /></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="personIds"><DataType>String</DataType><Prompt>person Ids</Prompt></ReportParameter><ReportParameter Name="userCode"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>userCode</Prompt></ReportParameter></ReportParameters><Language>=User!Language</Language><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>f265c6e2-fdb0-402b-94e7-0302eb5cba0f</rd:ReportID></Report>

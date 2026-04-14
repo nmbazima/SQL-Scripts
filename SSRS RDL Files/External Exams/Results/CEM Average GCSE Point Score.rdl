@@ -1,0 +1,283 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>292d6e93-dc04-438b-a0ca-1888354d3ec1</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="EntriesResults"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@ExamEntryCycle"><Value>=Parameters!ExamEntryCycle.Value</Value></QueryParameter><QueryParameter Name="@ResultsCycle"><Value>=Parameters!ResultsCycle.Value</Value></QueryParameter></QueryParameters><CommandText>With ExamEntries AS (
+SELECT DISTINCT 
+			CASE WHEN pupils.intSystemStatus =  10 AND pupils.intIsCandidate = 1
+			   OR pupils.txtSchoolID IN ( SELECT txtSchoolID FROM TblExamManagerReturningCandidates
+								   ) THEN 10
+				ELSE 1 END AS intStatus , 
+			 pupils.txtSchoolID , 
+			 options.txtQualification , 
+			 modules.txtSubject , 
+			 uabs.txtUABName , 
+			 programmes.txtHeaderName,
+			DENSE_RANK(
+							)OVER( PARTITION BY  pupils.txtSchoolID  ORDER BY  programmes.txtHeaderName
+								)AS Subjectrank
+  FROM
+	  TblExamManagerEntries AS entries
+	  INNER JOIN
+	  TblPupilManagementPupils AS pupils
+	  ON entries.txtSchoolID = pupils.txtSchoolID
+	  INNER JOIN
+	  TblExamManagerTeachingProgram AS modules
+	  ON entries.txtModuleCode = modules.txtModuleCode
+	 AND entries.intUABCode = modules.intUABCode
+	  INNER JOIN
+	  TblExamManagerTeachingProgramHeaders AS programmes
+	  ON modules.intProgram = programmes.TblExamManagerTeachingProgramHeadersID
+	  INNER JOIN
+	  TblExamManagerBaseDataOptions AS options
+	  ON entries.txtModuleCode = options.txtOptionEntryCode
+	  INNER JOIN
+	  TblExamsManagerUABIdentifiers AS uabs
+	  ON entries.intUABCode = uabs.intUABCode
+Where entries.intCycle IN (@ExamEntryCycle) ) ,
+
+Results AS 
+(
+SELECT
+
+ROW_NUMBER() OVER(ORDER BY results.ResultID) AS intResultID, 
+results.Cycle, 
+results.SchoolId AS txtSchoolID, 
+results.Surname, 
+results.Forename,
+results.CandidateSurname, 
+results.CandidateForenames, 
+Coalesce(PupilArchive.txtForm,TblPupilManagementPupils.txtForm,TblPupilManagementPupils.txtLeavingForm) AS txtForm,
+results.UCI, 
+results.CandidateNumber, 
+results.OptionCode, 
+results.OptionTitle, 
+results.UABCode, 
+results.UABName, 
+results.CertificationType, 
+results.Qualification, 
+results.QualificationLevel, 
+results.Programme, 
+results.FirstGrade, 
+results.ResultGradeset, 
+
+results.TakenInNCYear, 
+results.Subject,
+gradesets.txtGradesetCode,
+gradesets.intSequenceNumber
+FROM VwExamManagerResults AS results
+INNER JOIN TblExamManagerCycles ON results.Cycle = TblExamManagerCycles.TblExamManagerCyclesID
+INNER JOIN TblExamManagerGradesets AS Gradesets ON gradesets.txtGradesetCode = results.ResultGradeset AND Gradesets.txtGradeShortCode = results.FirstGrade
+--
+INNER JOIN TblExamManagerGradesetHistory AS gradesetFiles ON gradesets.intGradesetID = gradesetFiles.TblExamManagerGradesetHistoryID  AND gradesetFiles.intCycle = results.Cycle 
+LEFT OUTER JOIN TblExamManagerCandidateDetail AS candDetail ON results.SchoolId = candDetail.txtSchoolID
+CROSS APPLY dbo.uf_Registration_getPupilArchive (results.SchoolId,Convert(Date,Convert(nvarchar(2),TblExamManagerCycles.intFormatMonth) + '-13-' + Convert(nvarchar(4),TblExamManagerCycles.intFormatYear))) AS PupilArchive
+LEFT OUTER JOIN TblPupilManagementPupils ON results.SchoolId = TblPupilManagementPupils.txtSchoolID
+WHERE results.FirstGrade &lt;&gt;''
+AND results.FirstGrade IS NOT NULL
+AND (results.Cycle IN (@ResultsCycle)) 
+and CertificationType &lt;&gt; 'u'
+and FirstGrade &lt;&gt; 'X' AND FirstGrade &lt;&gt; '0'
+and (Qualification = 'GCSE' or Qualification = 'IGCSE') 
+
+),
+
+DoubleGrades AS
+(
+SELECT DISTINCT
+gradesets.txtGradesetCode
+
+FROM         TblExamManagerGradesets AS gradesets 
+INNER JOIN 
+TblExamManagerGradesetHistory AS gradesetFiles ON gradesets.intGradesetID = gradesetFiles.TblExamManagerGradesetHistoryID 
+LEFT OUTER JOIN VwExamManagerResults AS results ON gradesets.txtGradesetCode = results.ResultGradeset AND gradesetFiles.intCycle = results.Cycle
+
+WHERE 
+results.Cycle IN (@ResultsCycle)
+AND 
+gradesets.intSequenceNumber = 1
+AND gradesets.txtGradeShortCode IN ('**','99')
+and CertificationType &lt;&gt; 'u'
+and FirstGrade &lt;&gt; 'X' AND FirstGrade &lt;&gt; '0'
+and (Qualification = 'GCSE' or Qualification = 'IGCSE') 
+),
+
+AllGrades AS
+(
+SELECT
+Results.txtGradesetCode,
+Results.intSequenceNumber,
+results.intResultID,
+results.Cycle, 
+results.txtSchoolId, 
+results.Surname, 
+results.Forename,
+results.CandidateSurname, 
+results.CandidateForenames, 
+results.UCI, 
+results.CandidateNumber, 
+results.OptionCode, 
+results.OptionTitle, 
+results.UABCode, 
+results.UABName, 
+results.CertificationType, 
+results.Qualification, 
+results.QualificationLevel, 
+results.Programme, 
+results.FirstGrade, 
+results.ResultGradeset,  
+results.TakenInNCYear, 
+results.txtForm,
+TblSchoolManagementYears.txtYearName,
+results.Subject
+FROM Results
+LEFT OUTER JOIN TblSchoolManagementYears ON results.TakenInNCYear = TblSchoolManagementYears.intNCYear 
+WHERE (results.txtGradesetCode NOT IN (SELECT txtGradesetCode FROM DoubleGrades))
+
+UNION ALL
+
+
+SELECT
+Results.txtGradesetCode,
+Results.intSequenceNumber,
+results.intResultID,
+results.Cycle, 
+results.txtSchoolId, 
+results.Surname, 
+results.Forename,
+results.CandidateSurname, 
+results.CandidateForenames, 
+results.UCI, 
+results.CandidateNumber, 
+results.OptionCode, 
+results.OptionTitle, 
+results.UABCode, 
+results.UABName, 
+results.CertificationType, 
+results.Qualification, 
+results.QualificationLevel, 
+results.Programme, 
+Replace(Left(results.FirstGrade,1),'*','A*') AS FirstGrade, 
+results.ResultGradeset, 
+results.TakenInNCYear, 
+results.txtForm,
+TblSchoolManagementYears.txtYearName,
+results.Subject + ' 1' AS Subject
+FROM Results
+LEFT OUTER JOIN TblSchoolManagementYears ON results.TakenInNCYear = TblSchoolManagementYears.intNCYear 
+WHERE (results.txtGradesetCode IN (SELECT txtGradesetCode FROM DoubleGrades))
+
+UNION ALL
+
+SELECT
+Results.txtGradesetCode,
+Results.intSequenceNumber, 
+results.intResultID,
+results.Cycle, 
+results.txtSchoolId, 
+results.Surname, 
+results.Forename,
+results.CandidateSurname, 
+results.CandidateForenames, 
+results.UCI, 
+results.CandidateNumber, 
+results.OptionCode, 
+results.OptionTitle, 
+results.UABCode, 
+results.UABName, 
+results.CertificationType, 
+results.Qualification, 
+results.QualificationLevel, 
+results.Programme, 
+Replace(Right(results.FirstGrade,1),'*','A*') AS FirstGrade, 
+results.ResultGradeset, 
+results.TakenInNCYear, 
+results.txtForm,
+TblSchoolManagementYears.txtYearName,
+results.Subject + ' 2' AS Subject
+FROM Results
+LEFT OUTER JOIN TblSchoolManagementYears ON results.TakenInNCYear = TblSchoolManagementYears.intNCYear 
+WHERE (results.txtGradesetCode IN (SELECT txtGradesetCode FROM DoubleGrades))
+)
+SELECT
+AllGrades.*
+,TblExamManagerCandidateDetail.txtUniqueLearnerNumber
+,ExamEntries.txtHeaderName
+,txtPostcode
+,Pupils.txtUPN
+,Pupils.txtDOB
+,txtGender
+,	Pupils.txtEthnicGroup
+,	CensusEthnicityData.txtCensusValue as txtEthnicCode
+	,ExamEntries.txtQualification
+	,ExamEntries.txtSubject
+	,SubjectRank
+	,(cast (ExamEntries.txtQualification as nvarchar) + ';' + cast(ExamEntries.txtHeaderName AS nvarchar)) AS txtQualifcationHeaderName
+FROM AllGrades
+
+LEFT OUTER JOIN 
+ExamEntries
+ON AllGrades.txtSchoolID = ExamEntries.txtSchoolID 
+
+LEFT OUTER JOIN
+TblExamManagerCandidateDetail
+ON AllGrades.txtschoolid = TblExamManagerCandidateDetail.txtschoolid
+
+LEFT OUTER JOIN  
+TblPupilManagementPupils as Pupils on AllGrades.txtschoolid = Pupils.txtSchoolID
+
+OUTER APPLY (Select top (1) txtPostcode
+			FROM TblPupilManagementAddressLink 
+					INNER JOIN TblPupilManagementAddresses on TblPupilManagementAddressLink.intaddressid = TblPupilManagementAddresses.TblPupilManagementAddressesID
+			WHERE TblPupilManagementAddressLink.txtSchoolID = Pupils.txtSchoolID and 
+			TblPupilManagementAddresses.intStudentHome = 1
+			ORDER BY intOrder) 
+			as HomeAddress
+
+OUTER APPLY (
+		    SELECT TOP (1) txtCensusValue 
+			From TblUsefulLists
+				LEFT OUTER JOIN TblUsefulListsCensusValue ON TblUsefulLists.TblUsefulListsid = TblUsefulListsCensusValue.tblusefullistsid
+			WHERE  txtEthnicGroup= TblUsefulLists.Name) AS  CensusEthnicityData</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="txtGradesetCode"><DataField>txtGradesetCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intSequenceNumber"><DataField>intSequenceNumber</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intResultID"><DataField>intResultID</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="Cycle"><DataField>Cycle</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSchoolId"><DataField>txtSchoolId</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Surname"><DataField>Surname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Forename"><DataField>Forename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="CandidateSurname"><DataField>CandidateSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="CandidateForenames"><DataField>CandidateForenames</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="UCI"><DataField>UCI</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="CandidateNumber"><DataField>CandidateNumber</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="OptionCode"><DataField>OptionCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="OptionTitle"><DataField>OptionTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="UABCode"><DataField>UABCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="UABName"><DataField>UABName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="CertificationType"><DataField>CertificationType</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Qualification"><DataField>Qualification</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="QualificationLevel"><DataField>QualificationLevel</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Programme"><DataField>Programme</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="FirstGrade"><DataField>FirstGrade</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="ResultGradeset"><DataField>ResultGradeset</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="TakenInNCYear"><DataField>TakenInNCYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtForm"><DataField>txtForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Subject"><DataField>Subject</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtUniqueLearnerNumber"><DataField>txtUniqueLearnerNumber</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtHeaderName"><DataField>txtHeaderName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPostcode"><DataField>txtPostcode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtUPN"><DataField>txtUPN</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDOB"><DataField>txtDOB</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="txtGender"><DataField>txtGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtEthnicGroup"><DataField>txtEthnicGroup</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtEthnicCode"><DataField>txtEthnicCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtQualification"><DataField>txtQualification</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubject"><DataField>txtSubject</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="SubjectRank"><DataField>SubjectRank</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="txtQualifcationHeaderName"><DataField>txtQualifcationHeaderName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="ExamCycle"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT        
+TblExamManagerCyclesID, 
+DATENAME(month, CONVERT(datetime, '2007-' + CAST(intFormatMonth AS varchar(2)) + '-01', 120)) + ' ' + CAST(intFormatYear AS nvarchar(4)) AS txtName
+FROM            TblExamManagerCycles
+
+ORDER BY 
+intFormatYear desc, intFormatMonth desc, TblExamManagerCyclesID desc</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="TblExamManagerCyclesID"><DataField>TblExamManagerCyclesID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="ExamEntryCycle"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>Select 
+0 AS TblExamManagerCyclesID, 
+'None' AS txtName,
+10000000000000000 AS intFormatMonth,
+10000000000000000 AS intFormatYear
+
+UNION ALL
+SELECT       
+TblExamManagerCyclesID, 
+DATENAME(month, CONVERT(datetime, '2007-' + CAST(intFormatMonth AS varchar(2)) + '-01', 120)) + ' ' + CAST(intFormatYear AS nvarchar(4)) AS txtName,
+intFormatMonth,
+intFormatYear
+FROM            TblExamManagerCycles
+
+ORDER BY 
+intFormatYear desc, intFormatMonth desc, TblExamManagerCyclesID desc</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="TblExamManagerCyclesID"><DataField>TblExamManagerCyclesID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intFormatMonth"><DataField>intFormatMonth</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field><Field Name="intFormatYear"><DataField>intFormatYear</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="Tablix1"><TablixBody><TablixColumns><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>3.66417cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.76458cm</Width></TablixColumn><TablixColumn><Width>5.48979cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>First name</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Surname</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox3</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox5"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Date Of Birth</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox5</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox7"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Sex</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox7</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox9"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>UPN_Student Code</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox9</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox16"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>MISID</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox15</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox11"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>ULN</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox11</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox13"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>UCI</Value><Style><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox13</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox17"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>PostCode</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox17</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox19"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Ethnic Origin</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox19</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox21"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Average GCSE Score 9-1 scale</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox21</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="TitleSubject1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Subject</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun><TextRun><Value>=Fields!SubjectRank.Value</Value><Style><FontStyle>Normal</FontStyle><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="txtForename"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!CandidateForenames.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtForename</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtSurname"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!CandidateSurname.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtSurname</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtDOB"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!txtDOB.Value, "dd/MM/yyyy")</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtDOB</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtGender"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtGender.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtGender</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtUPN"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtUPN.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtUPN</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox4"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSchoolId.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtUniqueLearnerNumber"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtUniqueLearnerNumber.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtUniqueLearnerNumber</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="UCI"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!UCI.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>UCI</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtPostCode"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPostcode.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtPostCode</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtEthnicGroup"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isnothing(Fields!txtEthnicGroup.Value), "Please populate the code for" + Fields!txtEthnicGroup.Value ,Fields!txtEthnicCode.Value)</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtEthnicGroup</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="AverageGCSEScore09scale"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Avg
+(
+	Switch
+	(
+		Fields!FirstGrade.Value = "9", 9,
+		Fields!FirstGrade.Value = "8", 8,
+		Fields!FirstGrade.Value = "7", 7,
+		Fields!FirstGrade.Value = "6", 6,
+		Fields!FirstGrade.Value = "5", 5,
+		Fields!FirstGrade.Value = "4", 4,
+		Fields!FirstGrade.Value = "3", 3,
+		Fields!FirstGrade.Value = "2", 2,
+		Fields!FirstGrade.Value = "1", 1,
+		Fields!FirstGrade.Value = "A^", 9,
+		Fields!FirstGrade.Value = "A*", 8.5,
+		Fields!FirstGrade.Value = "*", 8.5,
+		Fields!FirstGrade.Value = "A", 7,
+		Fields!FirstGrade.Value = "B", 5.5,
+		Fields!FirstGrade.Value = "C", 4,
+		Fields!FirstGrade.Value = "D", 3,
+		Fields!FirstGrade.Value = "E", 2,
+		Fields!FirstGrade.Value = "F", 1.5,
+		Fields!FirstGrade.Value = "G", 1,
+	true,0
+	)
+)</Value><Style><Format>0.00;- 0.00</Format></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><rd:Selected>true</rd:Selected></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtQualifcationHeaderName.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox2</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember><Group Name="SubjectRank"><GroupExpressions><GroupExpression>=Fields!SubjectRank.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!SubjectRank.Value</Value></SortExpression></SortExpressions><TablixMembers><TablixMember><Visibility><Hidden>=IIF(Max(Fields!SubjectRank.Value) &lt; 1, True ,False)</Hidden></Visibility></TablixMember></TablixMembers></TablixMember></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="SchoolID"><GroupExpressions><GroupExpression>=Fields!txtSchoolId.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!CandidateSurname.Value</Value></SortExpression><SortExpression><Value>=Fields!CandidateForenames.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>EntriesResults</DataSetName><Height>1cm</Height><Width>34.41854cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><Height>0.3937in</Height><Style /></Body><Width>13.55061in</Width><Page><PageHeight>29.7cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>2cm</LeftMargin><RightMargin>2cm</RightMargin><TopMargin>2cm</TopMargin><BottomMargin>2cm</BottomMargin><ColumnSpacing>0.13cm</ColumnSpacing><Style /></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="ResultsCycle"><DataType>String</DataType><Prompt>Results Cycle:</Prompt><ValidValues><DataSetReference><DataSetName>ExamCycle</DataSetName><ValueField>TblExamManagerCyclesID</ValueField><LabelField>txtName</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter><ReportParameter Name="ExamEntryCycle"><DataType>Integer</DataType><Prompt>Exam Cycle For A level Entries:</Prompt><ValidValues><DataSetReference><DataSetName>ExamEntryCycle</DataSetName><ValueField>TblExamManagerCyclesID</ValueField><LabelField>txtName</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter></ReportParameters><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>59ecaf82-69d9-421a-bd93-8b6cc2688036</rd:ReportID></Report>

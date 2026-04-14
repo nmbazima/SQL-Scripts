@@ -1,0 +1,1916 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <DataSourceReference>iSAMS</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>100ed8fb-e4a2-4b82-96f2-9bf7e7bae13d</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="Attendance">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtTime">
+            <Value>=Parameters!txtTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtRegistrationType">
+            <Value>=Parameters!txtRegistrationType.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtLateCode">
+            <Value>=Parameters!txtLateCode.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE @Students AS NVARCHAR(MAX);
+SET @Students = STUFF((SELECT DISTINCT ',' + txtSchoolID FROM TblPupilManagementPupils WHERE txtSchoolID IN (@txtSchoolID) FOR XML PATH('')), 1, 1, '');
+
+WITH SessionsCount AS
+	(SELECT	Attendance.txtSchoolID, COUNT(DISTINCT Attendance.intRegistrationDateTimeID) AS 'intSessionCount'
+	 FROM	dbo.uf_Registration_AttendanceBetweenDates(@StartDate, DATEADD(DAY, 1, @EndDate), @Students) AS Attendance
+	 WHERE	LEFT(CONVERT(VARCHAR(8), Attendance.dtRegistrationDateTime, 108), 5) IN (@txtTime)
+			AND CASE WHEN Attendance.txtRegistrationAMPM IS NULL THEN 'Other' ELSE UPPER(Attendance.txtRegistrationAMPM) END IN (@txtRegistrationType)
+			AND ((Attendance.txtRegistrationStatisticalStatus = 'Absent' AND Attendance.txtCode = 'U') OR (Attendance.txtRegistrationStatisticalStatus = 'Present' AND Attendance.intIsLate = 1))
+			AND (CASE WHEN Attendance.txtRegistrationStatisticalStatus = 'Present' AND Attendance.intIsLate = 1 THEN 'L' ELSE 'U' END) IN (@txtLateCode)
+	 GROUP BY Attendance.txtSchoolID
+	 --HAVING COUNT(DISTINCT Attendance.intRegistrationDateTimeID) &lt; @Sessions
+	)
+
+SELECT	SessionsCount.*,
+		PupilArchive.txtForename, 
+		PupilArchive.txtPreName, 
+		PupilArchive.txtMiddleNames, 
+		PupilArchive.txtSurname, 
+		PupilArchive.txtAcademicHouse, 
+		PupilArchive.txtBoardingHouse, 
+		PupilArchive.intNCYear, 
+		PupilArchive.txtYearName, 
+		PupilArchive.txtYearCode, 
+		PupilArchive.txtForm, 
+		PupilArchive.Initials AS 'txtTutorInitials',
+		TblPupilManagementPupils.txtGender, 
+		TblPupilManagementPupils.txtEthnicGroup
+FROM	SessionsCount
+CROSS APPLY dbo.uf_Registration_getPupilArchive(SessionsCount.txtSchoolID, @EndDate) AS PupilArchive 
+INNER JOIN TblPupilManagementPupils ON SessionsCount.txtSchoolID = TblPupilManagementPupils.txtSchoolID</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtForename">
+          <DataField>txtForename</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtMiddleNames">
+          <DataField>txtMiddleNames</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPreName">
+          <DataField>txtPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtForm">
+          <DataField>txtForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtGender">
+          <DataField>txtGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEthnicGroup">
+          <DataField>txtEthnicGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAcademicHouse">
+          <DataField>txtAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBoardingHouse">
+          <DataField>txtBoardingHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearCode">
+          <DataField>txtYearCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtTutorInitials">
+          <DataField>txtTutorInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intSessionCount">
+          <DataField>intSessionCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NoGroup">
+          <Value>NoGroup</Value>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="iSAMSAddress">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT txtExternaliSAMSAddress AS txtiSAMSAddress
+FROM TbliSAMSManagerSettings</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtiSAMSAddress">
+          <DataField>txtiSAMSAddress</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SchoolLogo">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT TblReportsCustomImages.txtPath + TblReportsCustomImages.txtFileName AS txtSchoolLogoPath, txtName
+FROM TblReportsCustomImages
+WHERE TblReportsCustomImages.txtName LIKE '%School Logo%'
+ORDER BY TblReportsCustomImages.dtSubmittedTime DESC</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtSchoolLogoPath">
+          <DataField>txtSchoolLogoPath</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtName">
+          <DataField>txtName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Disclaimer">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Path">
+            <Value>=Globals!ReportFolder</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Report">
+            <Value>=Globals!ReportName</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT	TblSQLReportingServicesDisclaimer.txtDisclaimerBackgroundColour,
+		TblSQLReportingServicesDisclaimer.txtDisclaimerBorderColour,
+		TblSQLReportingServicesDisclaimer.txtDisclaimerDescription,
+		TblSQLReportingServicesDisclaimer.txtDisclaimerTextColour,
+		TblSQLReportingServicesDisclaimer.txtDisclaimerTitle
+FROM	TblSQLReportingServicesDisclaimerReport
+		INNER JOIN TblSQLReportingServicesDisclaimer ON TblSQLReportingServicesDisclaimerReport.SQLReportingServicesDisclaimerId = TblSQLReportingServicesDisclaimer.TblSQLReportingServicesDisclaimerID
+WHERE	TblSQLReportingServicesDisclaimerReport.bitEnabled = 1
+		AND TblSQLReportingServicesDisclaimer.bitEnabled = 1
+		AND TblSQLReportingServicesDisclaimerReport.txtReportPath = @Path + '/' + @Report</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtDisclaimerBackgroundColour">
+          <DataField>txtDisclaimerBackgroundColour</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDisclaimerBorderColour">
+          <DataField>txtDisclaimerBorderColour</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDisclaimerDescription">
+          <DataField>txtDisclaimerDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDisclaimerTextColour">
+          <DataField>txtDisclaimerTextColour</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDisclaimerTitle">
+          <DataField>txtDisclaimerTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="YearGroups">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtTime">
+            <Value>=Parameters!txtTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtRegistrationType">
+            <Value>=Parameters!txtRegistrationType.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intSystemStatus">
+            <Value>=Parameters!intSystemStatus.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>WITH YearGroups AS
+(
+SELECT DISTINCT PupilArchive.intNCYear
+
+FROM TblRegistrationSchoolRegistrationPupils
+CROSS APPLY dbo.uf_Registration_getPupilArchive(TblRegistrationSchoolRegistrationPupils.txtSchoolID, @EndDate) AS PupilArchive 
+INNER JOIN TblPupilManagementPupils ON TblRegistrationSchoolRegistrationPupils.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+INNER JOIN TblRegistrationSchoolRegistrationRegister ON TblRegistrationSchoolRegistrationPupils.intRegister = TblRegistrationSchoolRegistrationRegister.TblRegistrationSchoolRegistrationRegisterID
+INNER JOIN TblRegistrationSchoolRegistrationDateTime ON TblRegistrationSchoolRegistrationRegister.intRegistrationDateTime = TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID
+
+WHERE TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @StartDate AND DateAdd(day,1,@EndDate)
+AND LEFT(CONVERT(varchar(8), TblRegistrationSchoolRegistrationDateTime.txtDateTime, 108), 5) IN (@txtTime)
+AND CASE WHEN TblRegistrationSchoolRegistrationDateTime.txtAmPm IS NULL THEN 'Other' ELSE UPPER(TblRegistrationSchoolRegistrationDateTime.txtAmPm ) END IN (@txtRegistrationType)
+AND TblPupilManagementPupils.intSystemStatus IN(@intSystemStatus)
+)
+
+SELECT	CASE WHEN txtYearName IS NULL THEN -100 ELSE TblSchoolManagementYears.intNCYear END AS intNCYear, 
+CASE WHEN txtYearName IS NULL THEN 'No Year Group'  ELSE TblSchoolManagementYears.txtYearName END AS txtYearName
+FROM	YearGroups
+LEFT OUTER JOIN TblSchoolManagementYears ON YearGroups.intNCYear = TblSchoolManagementYears.intNCYear
+ORDER BY intNCYear
+</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Students">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtTime">
+            <Value>=Parameters!txtTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intNCYear">
+            <Value>=Parameters!intNCYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtRegistrationType">
+            <Value>=Parameters!txtRegistrationType.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intSystemStatus">
+            <Value>=Parameters!intSystemStatus.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+SELECT DISTINCT TblRegistrationSchoolRegistrationPupils.txtSchoolID,
+TblPupilManagementPupils.txtSurname + ', ' + TblPupilManagementPupils.txtForename  AS txtStudentName
+
+FROM TblRegistrationSchoolRegistrationPupils
+CROSS APPLY dbo.uf_Registration_getPupilArchive(TblRegistrationSchoolRegistrationPupils.txtSchoolID, @EndDate) AS PupilArchive 
+INNER JOIN TblPupilManagementPupils ON TblRegistrationSchoolRegistrationPupils.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+INNER JOIN TblRegistrationSchoolRegistrationRegister ON TblRegistrationSchoolRegistrationPupils.intRegister = TblRegistrationSchoolRegistrationRegister.TblRegistrationSchoolRegistrationRegisterID
+INNER JOIN TblRegistrationSchoolRegistrationDateTime ON TblRegistrationSchoolRegistrationRegister.intRegistrationDateTime = TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID
+LEFT OUTER JOIN TblSchoolManagementYears ON PupilArchive.intNCYear = TblSchoolManagementYears.intNCYear
+WHERE TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @StartDate AND DateAdd(day,1,@EndDate)
+AND LEFT(CONVERT(varchar(8), TblRegistrationSchoolRegistrationDateTime.txtDateTime, 108), 5) IN (@txtTime)
+AND CASE WHEN TblRegistrationSchoolRegistrationDateTime.txtAmPm IS NULL THEN 'Other' ELSE UPPER(TblRegistrationSchoolRegistrationDateTime.txtAmPm ) END IN (@txtRegistrationType)
+AND TblPupilManagementPupils.intSystemStatus IN(@intSystemStatus)
+AND (CASE WHEN TblSchoolManagementYears.txtYearName IS NULL THEN -100 ELSE TblSchoolManagementYears.intNCYear END) IN (@intNCYear)
+
+ORDER BY txtStudentName
+
+</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtStudentName">
+          <DataField>txtStudentName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="User">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@userCode">
+            <Value>=Parameters!userCode.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT 
+	TbliSAMSManagerUsers.txtUsername,
+	TbliSAMSManagerUsers.txtFirstname,
+	TbliSAMSManagerUsers.txtSurname,
+	TbliSAMSManagerUsers.txtEmailAddress
+FROM TbliSAMSManagerUsers
+WHERE TbliSAMSManagerUsers.txtUserCode = @userCode</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtUsername">
+          <DataField>txtUsername</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFirstname">
+          <DataField>txtFirstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEmailAddress">
+          <DataField>txtEmailAddress</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="RegistrationTypes">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT DISTINCT CASE WHEN TblRegistrationSchoolRegistrationDateTime.txtAmPm IS NULL THEN 'Other' ELSE UPPER(TblRegistrationSchoolRegistrationDateTime.txtAmPm) END AS txtType,
+CASE WHEN TblRegistrationSchoolRegistrationDateTime.txtAmPm IS NULL THEN 2 ELSE 1 END AS intTypeOrder
+FROM TblRegistrationSchoolRegistrationDateTime
+WHERE TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @StartDate AND @EndDate
+ORDER BY intTypeOrder, txtType</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtType">
+          <DataField>txtType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intTypeOrder">
+          <DataField>intTypeOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="RegistrationTimes">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtRegistrationType">
+            <Value>=Parameters!txtRegistrationType.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT DISTINCT LEFT(CONVERT(varchar(8), TblRegistrationSchoolRegistrationDateTime.txtDateTime, 108), 5) AS txtTime
+FROM TblRegistrationSchoolRegistrationDateTime
+WHERE TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @StartDate AND @EndDate
+AND CASE WHEN TblRegistrationSchoolRegistrationDateTime.txtAmPm IS NULL THEN 'Other' ELSE UPPER(TblRegistrationSchoolRegistrationDateTime.txtAmPm) END IN (@txtRegistrationType)
+ORDER BY txtTime</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtTime">
+          <DataField>txtTime</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="StartOfAcademicYear">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT	TOP 1 TblSchoolManagementTermDates.txtStartDate
+		 FROM	TblSchoolManagementTermDates
+		 WHERE	TblSchoolManagementTermDates.intSchoolYear = (
+		 SELECT Top(1) intSchoolYear FROM TblSchoolManagementTermDates WHERE txtStartDate &lt;= GETDATE() ORDER BY txtStartDate DESC
+		 )
+		 ORDER BY TblSchoolManagementTermDates.txtStartDate ASC</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="txtStartDate">
+          <DataField>txtStartDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix3">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>19cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>2.9cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle3">
+                          <ReportItems>
+                            <Tablix Name="Tablix10">
+                              <TablixBody>
+                                <TablixColumns>
+                                  <TablixColumn>
+                                    <Width>7.5cm</Width>
+                                  </TablixColumn>
+                                  <TablixColumn>
+                                    <Width>3.5cm</Width>
+                                  </TablixColumn>
+                                  <TablixColumn>
+                                    <Width>2cm</Width>
+                                  </TablixColumn>
+                                  <TablixColumn>
+                                    <Width>3.5cm</Width>
+                                  </TablixColumn>
+                                  <TablixColumn>
+                                    <Width>2.5cm</Width>
+                                  </TablixColumn>
+                                </TablixColumns>
+                                <TablixRows>
+                                  <TablixRow>
+                                    <Height>0.9cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Rectangle Name="Rectangle1">
+                                            <ReportItems>
+                                              <Textbox Name="Disclaimer2">
+                                                <CanGrow>true</CanGrow>
+                                                <KeepTogether>true</KeepTogether>
+                                                <Paragraphs>
+                                                  <Paragraph>
+                                                    <TextRuns>
+                                                      <TextRun>
+                                                        <Value>=First(Fields!txtDisclaimerTitle.Value, "Disclaimer")</Value>
+                                                        <Style>
+                                                          <FontSize>9pt</FontSize>
+                                                          <FontWeight>Bold</FontWeight>
+                                                          <Color>=First(Fields!txtDisclaimerTextColour.Value, "Disclaimer")</Color>
+                                                        </Style>
+                                                      </TextRun>
+                                                      <TextRun>
+                                                        <Value>:</Value>
+                                                        <Style>
+                                                          <FontSize>9pt</FontSize>
+                                                          <FontWeight>Bold</FontWeight>
+                                                          <Color>=First(Fields!txtDisclaimerTextColour.Value, "Disclaimer")</Color>
+                                                        </Style>
+                                                      </TextRun>
+                                                      <TextRun>
+                                                        <Value xml:space="preserve"> </Value>
+                                                        <Style>
+                                                          <FontSize>9pt</FontSize>
+                                                          <FontWeight>Normal</FontWeight>
+                                                          <Color>=First(Fields!txtDisclaimerTextColour.Value, "Disclaimer")</Color>
+                                                        </Style>
+                                                      </TextRun>
+                                                      <TextRun>
+                                                        <Value>=First(Fields!txtDisclaimerDescription.Value, "Disclaimer")</Value>
+                                                        <Style>
+                                                          <FontSize>9pt</FontSize>
+                                                          <FontWeight>Normal</FontWeight>
+                                                          <Color>=First(Fields!txtDisclaimerTextColour.Value, "Disclaimer")</Color>
+                                                        </Style>
+                                                      </TextRun>
+                                                    </TextRuns>
+                                                    <Style />
+                                                  </Paragraph>
+                                                </Paragraphs>
+                                                <Height>0.6cm</Height>
+                                                <Width>19cm</Width>
+                                                <Visibility>
+                                                  <Hidden>=IIF(CountRows("Disclaimer") = 0, True, False)</Hidden>
+                                                </Visibility>
+                                                <Style>
+                                                  <Border>
+                                                    <Color>=First(Fields!txtDisclaimerBorderColour.Value, "Disclaimer")</Color>
+                                                    <Style>Solid</Style>
+                                                    <Width>0.5pt</Width>
+                                                  </Border>
+                                                  <BackgroundColor>=First(Fields!txtDisclaimerBackgroundColour.Value, "Disclaimer")</BackgroundColor>
+                                                  <VerticalAlign>Middle</VerticalAlign>
+                                                  <PaddingLeft>4pt</PaddingLeft>
+                                                  <PaddingRight>4pt</PaddingRight>
+                                                  <PaddingTop>2pt</PaddingTop>
+                                                  <PaddingBottom>2pt</PaddingBottom>
+                                                </Style>
+                                              </Textbox>
+                                            </ReportItems>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Style>
+                                              <Border>
+                                                <Style>None</Style>
+                                              </Border>
+                                            </Style>
+                                          </Rectangle>
+                                          <ColSpan>5</ColSpan>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell />
+                                      <TablixCell />
+                                      <TablixCell />
+                                      <TablixCell />
+                                    </TablixCells>
+                                  </TablixRow>
+                                  <TablixRow>
+                                    <Height>0.5cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="AttendanceGroup2">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=IIF(CStr(Fields(Parameters!GroupBy.Value).Value) = "NoGroup", "N/A", IIF(Parameters!GroupBy.Value = "intNCYear", Fields!txtYearName.Value, Fields(Parameters!GroupBy.Value).Value))</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <TextDecoration>None</TextDecoration>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Left</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <ZIndex>6</ZIndex>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                          <ColSpan>5</ColSpan>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell />
+                                      <TablixCell />
+                                      <TablixCell />
+                                      <TablixCell />
+                                    </TablixCells>
+                                  </TablixRow>
+                                  <TablixRow>
+                                    <Height>0.5cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="textbox34">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>Student Name</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Left</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>textbox15</rd:DefaultName>
+                                            <ZIndex>24</ZIndex>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="textbox35">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>Form</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>textbox15</rd:DefaultName>
+                                            <ZIndex>24</ZIndex>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="textbox37">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>Year</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>textbox36</rd:DefaultName>
+                                            <ZIndex>22</ZIndex>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox58">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>House</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox56</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox60">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>Sessions</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Right</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox59</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                    </TablixCells>
+                                  </TablixRow>
+                                  <TablixRow>
+                                    <Height>0.5cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox2">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=UCASE(Fields!txtSurname.Value) &amp; ", " &amp; Fields!txtForename.Value &amp; IIF(Fields!txtPreName.Value = "" Or Fields!txtPreName.Value = " " Or Fields!txtForename.Value = Fields!txtPreName.Value, "", " (" &amp; Fields!txtPreName.Value &amp; ")")</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <TextDecoration>None</TextDecoration>
+                                                      <Color>#373948</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Left</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox1</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#c1bfc5</Color>
+                                                <Style>None</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BottomBorder>
+                                                <Style>Solid</Style>
+                                              </BottomBorder>
+                                              <LeftBorder>
+                                                <Style>Solid</Style>
+                                              </LeftBorder>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="txtForm2">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=Fields!txtForm.Value</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <TextDecoration>None</TextDecoration>
+                                                      <Color>#373948</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>txtForm</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#c1bfc5</Color>
+                                                <Style>None</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BottomBorder>
+                                                <Style>Solid</Style>
+                                              </BottomBorder>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="txtYearCode2">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=Fields!txtYearCode.Value</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <TextDecoration>None</TextDecoration>
+                                                      <Color>#373948</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>txtYearCode</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#c1bfc5</Color>
+                                                <Style>None</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BottomBorder>
+                                                <Style>Solid</Style>
+                                              </BottomBorder>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox61">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=IIF(Fields!txtBoardingHouse.Value = "", Fields!txtAcademicHouse.Value, Fields!txtBoardingHouse.Value)</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <TextDecoration>None</TextDecoration>
+                                                      <Color>#373948</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Center</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox57</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#c1bfc5</Color>
+                                                <Style>None</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BottomBorder>
+                                                <Style>Solid</Style>
+                                              </BottomBorder>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="intSessionCount2">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=Fields!intSessionCount.Value</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <TextDecoration>None</TextDecoration>
+                                                      <Color>#373948</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Right</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>intSessionCount</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#c1bfc5</Color>
+                                                <Style>None</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BottomBorder>
+                                                <Style>Solid</Style>
+                                              </BottomBorder>
+                                              <RightBorder>
+                                                <Style>Solid</Style>
+                                              </RightBorder>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                    </TablixCells>
+                                  </TablixRow>
+                                  <TablixRow>
+                                    <Height>0.5cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="textbox42">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>Students: </Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                  <TextRun>
+                                                    <Value>=CountDistinct(Fields!txtSchoolID.Value)</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Left</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>textbox15</rd:DefaultName>
+                                            <ZIndex>24</ZIndex>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                          <ColSpan>4</ColSpan>
+                                        </CellContents>
+                                      </TablixCell>
+                                      <TablixCell />
+                                      <TablixCell />
+                                      <TablixCell />
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Textbox Name="Textbox90">
+                                            <CanGrow>true</CanGrow>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Paragraphs>
+                                              <Paragraph>
+                                                <TextRuns>
+                                                  <TextRun>
+                                                    <Value>=Sum(Fields!intSessionCount.Value)</Value>
+                                                    <Style>
+                                                      <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
+                                                      <Color>White</Color>
+                                                    </Style>
+                                                  </TextRun>
+                                                </TextRuns>
+                                                <Style>
+                                                  <TextAlign>Right</TextAlign>
+                                                </Style>
+                                              </Paragraph>
+                                            </Paragraphs>
+                                            <rd:DefaultName>Textbox85</rd:DefaultName>
+                                            <Style>
+                                              <Border>
+                                                <Color>#373948</Color>
+                                                <Style>Solid</Style>
+                                                <Width>0.5pt</Width>
+                                              </Border>
+                                              <BackgroundColor>#373948</BackgroundColor>
+                                              <VerticalAlign>Middle</VerticalAlign>
+                                              <PaddingLeft>4pt</PaddingLeft>
+                                              <PaddingRight>4pt</PaddingRight>
+                                              <PaddingTop>2pt</PaddingTop>
+                                              <PaddingBottom>2pt</PaddingBottom>
+                                            </Style>
+                                          </Textbox>
+                                        </CellContents>
+                                      </TablixCell>
+                                    </TablixCells>
+                                  </TablixRow>
+                                </TablixRows>
+                              </TablixBody>
+                              <TablixColumnHierarchy>
+                                <TablixMembers>
+                                  <TablixMember />
+                                  <TablixMember />
+                                  <TablixMember />
+                                  <TablixMember />
+                                  <TablixMember />
+                                </TablixMembers>
+                              </TablixColumnHierarchy>
+                              <TablixRowHierarchy>
+                                <TablixMembers>
+                                  <TablixMember>
+                                    <Visibility>
+                                      <Hidden>=IIF(CountRows("Disclaimer") = 0, True, False)</Hidden>
+                                    </Visibility>
+                                    <KeepWithGroup>After</KeepWithGroup>
+                                    <RepeatOnNewPage>true</RepeatOnNewPage>
+                                  </TablixMember>
+                                  <TablixMember>
+                                    <Visibility>
+                                      <Hidden>=IIF(CStr(Fields(Parameters!GroupBy.Value).Value) = "NoGroup",True,False)</Hidden>
+                                    </Visibility>
+                                    <KeepWithGroup>After</KeepWithGroup>
+                                    <RepeatOnNewPage>true</RepeatOnNewPage>
+                                  </TablixMember>
+                                  <TablixMember>
+                                    <KeepWithGroup>After</KeepWithGroup>
+                                    <RepeatOnNewPage>true</RepeatOnNewPage>
+                                  </TablixMember>
+                                  <TablixMember>
+                                    <Group Name="Details">
+                                      <GroupExpressions>
+                                        <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                                      </GroupExpressions>
+                                    </Group>
+                                    <SortExpressions>
+                                      <SortExpression>
+                                        <Value>=Fields!txtSurname.Value</Value>
+                                      </SortExpression>
+                                      <SortExpression>
+                                        <Value>=Fields!txtForename.Value</Value>
+                                      </SortExpression>
+                                    </SortExpressions>
+                                  </TablixMember>
+                                  <TablixMember>
+                                    <KeepWithGroup>Before</KeepWithGroup>
+                                  </TablixMember>
+                                </TablixMembers>
+                              </TablixRowHierarchy>
+                              <Height>2.9cm</Height>
+                              <Width>19cm</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Tablix>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="GroupByStudents">
+                    <GroupExpressions>
+                      <GroupExpression>=IIF(CStr(Fields(Parameters!GroupBy.Value).Value) = "NoGroup", "N/A", Fields(Parameters!GroupBy.Value).Value)</GroupExpression>
+                    </GroupExpressions>
+                    <PageBreak>
+                      <BreakLocation>Between</BreakLocation>
+                    </PageBreak>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=IIF(Parameters!GroupBy.Value = "txtForm", Fields!intNCYear.Value, Fields(Parameters!GroupBy.Value).Value)</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields(Parameters!GroupBy.Value).Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>Attendance</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=SWITCH(
+Parameters!ValuRange.Value="LessThan" AND Fields!intSessionCount.Value &lt; Parameters!Sessions.Value,true,
+Parameters!ValuRange.Value="Exactly" AND Fields!intSessionCount.Value = Parameters!Sessions.Value,true,
+Parameters!ValuRange.Value="MoreThan" AND Fields!intSessionCount.Value &gt; Parameters!Sessions.Value,true,
+true,false)</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue DataType="Boolean">true</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
+            <Height>2.9cm</Height>
+            <Width>19cm</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>1.14173in</Height>
+        <Style />
+      </Body>
+      <Width>7.48031in</Width>
+      <Page>
+        <PageHeader>
+          <Height>1.8cm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Image Name="Image14">
+              <Source>External</Source>
+              <Value>=IIF(Right(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), 1) = "/", Left(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), Len(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) - 1), First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) &amp; First(Fields!txtSchoolLogoPath.Value, "SchoolLogo")</Value>
+              <Sizing>FitProportional</Sizing>
+              <Height>1.5cm</Height>
+              <Width>4.94cm</Width>
+              <Style>
+                <Border>
+                  <Color>#c1bfc5</Color>
+                  <Style>None</Style>
+                </Border>
+              </Style>
+            </Image>
+            <Textbox Name="Textbox4">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Late Registration </Value>
+                      <Style>
+                        <FontFamily>arial</FontFamily>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Format(CDate(Parameters!StartDate.value), "dd-MMM-yyyy") &amp; " - " &amp; Format(CDate(Parameters!EndDate.Value), "dd-MMM-yyyy")</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>= "Late Code: " &amp; Join(Parameters!txtLateCode.Value,", ")</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>; </Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Parameters!ValuRange.Label</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value xml:space="preserve"> </Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Parameters!Sessions.Value</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value> Sessions</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Left>4.94cm</Left>
+              <Height>1.5cm</Height>
+              <Width>14.06cm</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Color>#c1bfc5</Color>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>4pt</PaddingLeft>
+                <PaddingRight>4pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
+        <PageFooter>
+          <Height>0.7cm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="FooterPageNumber">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Page " &amp; Globals!PageNumber &amp; " of " &amp; Globals!TotalPages</Value>
+                      <Style>
+                        <FontFamily>arial</FontFamily>
+                        <FontSize>9pt</FontSize>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.1cm</Top>
+              <Left>7.75cm</Left>
+              <Height>0.5cm</Height>
+              <Width>3.5cm</Width>
+              <Style>
+                <Border>
+                  <Color>#c1bfc5</Color>
+                  <Style>None</Style>
+                  <Width>0.5pt</Width>
+                </Border>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>4pt</PaddingLeft>
+                <PaddingRight>4pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="FooterPage2Detail">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Reported by </Value>
+                      <Style>
+                        <FontFamily>arial</FontFamily>
+                        <FontSize>9pt</FontSize>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=First(Fields!txtUsername.Value, "User")</Value>
+                      <Style>
+                        <FontFamily>arial</FontFamily>
+                        <FontSize>9pt</FontSize>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value> on </Value>
+                      <Style>
+                        <FontFamily>arial</FontFamily>
+                        <FontSize>9pt</FontSize>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Globals!ExecutionTime</Value>
+                      <Style>
+                        <FontFamily>arial</FontFamily>
+                        <FontSize>9pt</FontSize>
+                        <Format>dd-MMM-yyyy</Format>
+                        <Color>#373948</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.1cm</Top>
+              <Height>0.5cm</Height>
+              <Width>7.75cm</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Color>#c1bfc5</Color>
+                  <Style>None</Style>
+                  <Width>0.5pt</Width>
+                </Border>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>4pt</PaddingLeft>
+                <PaddingRight>4pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="LogoGreen">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value />
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.3cm</Top>
+              <Left>17.875cm</Left>
+              <Height>0.1cm</Height>
+              <Width>1.125cm</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Color>#8d8993</Color>
+                  <Style>None</Style>
+                  <Width>0.5pt</Width>
+                </Border>
+                <BackgroundColor>#4ba73e</BackgroundColor>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="LogoOrange">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value />
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.3cm</Top>
+              <Left>16.75cm</Left>
+              <Height>0.1cm</Height>
+              <Width>1.125cm</Width>
+              <ZIndex>3</ZIndex>
+              <Style>
+                <Border>
+                  <Color>#8d8993</Color>
+                  <Style>None</Style>
+                  <Width>0.5pt</Width>
+                </Border>
+                <BackgroundColor>#f39600</BackgroundColor>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="LogoMagenta">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value />
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.3cm</Top>
+              <Left>15.625cm</Left>
+              <Height>0.1cm</Height>
+              <Width>1.125cm</Width>
+              <ZIndex>4</ZIndex>
+              <Style>
+                <Border>
+                  <Color>#8d8993</Color>
+                  <Style>None</Style>
+                  <Width>0.5pt</Width>
+                </Border>
+                <BackgroundColor>#95358b</BackgroundColor>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="LogoBlue">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value />
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.3cm</Top>
+              <Left>14.5cm</Left>
+              <Height>0.1cm</Height>
+              <Width>1.125cm</Width>
+              <ZIndex>5</ZIndex>
+              <Style>
+                <Border>
+                  <Color>#8d8993</Color>
+                  <Style>None</Style>
+                  <Width>0.5pt</Width>
+                </Border>
+                <BackgroundColor>#43a4dc</BackgroundColor>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <LeftMargin>1cm</LeftMargin>
+        <RightMargin>1cm</RightMargin>
+        <TopMargin>1cm</TopMargin>
+        <BottomMargin>1cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="StartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>StartOfAcademicYear</DataSetName>
+          <ValueField>txtStartDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Registration From:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Registration To:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtRegistrationType">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>AM</Value>
+          <Value>PM</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Registration Type:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>RegistrationTypes</DataSetName>
+          <ValueField>txtType</ValueField>
+          <LabelField>txtType</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtTime">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>RegistrationTimes</DataSetName>
+          <ValueField>txtTime</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Registration Time:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>RegistrationTimes</DataSetName>
+          <ValueField>txtTime</ValueField>
+          <LabelField>txtTime</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtLateCode">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>L</Value>
+          <Value>U</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Late Code:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>L</Value>
+            <Label>L - Late (Before Registers Closed)</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>U</Value>
+            <Label>U - Late (After Registers Closed)</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="userCode">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Test</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>user Code</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="intSystemStatus">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>1</Value>
+          <Value>-1</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>System Status:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>Current</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>-1</Value>
+            <Label>Leaver</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="intNCYear">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>YearGroups</DataSetName>
+          <ValueField>intNCYear</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Year Group:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>YearGroups</DataSetName>
+          <ValueField>intNCYear</ValueField>
+          <LabelField>txtYearName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Students</DataSetName>
+          <ValueField>txtSchoolID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Student:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Students</DataSetName>
+          <ValueField>txtSchoolID</ValueField>
+          <LabelField>txtStudentName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="ValuRange">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>MoreThan</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Valu Range:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>LessThan</Value>
+            <Label>Less than</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Exactly</Value>
+            <Label>Exactly</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>MoreThan</Value>
+            <Label>More than</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="Sessions">
+      <DataType>Integer</DataType>
+      <Prompt>Sessions:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="GroupBy">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>intNCYear</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Group Students By:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>txtGender</Value>
+            <Label>Gender</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEthnicGroup</Value>
+            <Label>Ethnic Category</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>intNCYear</Value>
+            <Label>Year Group</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtForm</Value>
+            <Label>Form</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtAcademicHouse</Value>
+            <Label>Academic House</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBoardingHouse</Value>
+            <Label>Boarding House</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBoardingStatus</Value>
+            <Label>Boarding Status</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>NoGroup</Value>
+            <Label>N/A</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>4</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>StartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>intNCYear</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>txtSchoolID</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>userCode</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>txtRegistrationType</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>txtTime</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>GroupBy</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>txtLateCode</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>intSystemStatus</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>ValuRange</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>Sessions</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>0a29b3b4-8b59-44c7-9109-c8d8f65b37a8</rd:ReportID>
+</Report>

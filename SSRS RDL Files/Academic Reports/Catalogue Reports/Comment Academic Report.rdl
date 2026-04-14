@@ -1,0 +1,876 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><Description>Subject Report - Style A</Description><Author>iSAMS Ltd 2020</Author><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>94c49ad6-8b11-43f1-9f04-b794a3d8691f</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="AcademicReports"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intReportCycle"><Value>=Parameters!intReportCycle.Value</Value></QueryParameter><QueryParameter Name="@intNCYear"><Value>=Parameters!intNCYear.Value</Value></QueryParameter><QueryParameter Name="@txtForm"><Value>=Parameters!txtForm.Value</Value></QueryParameter><QueryParameter Name="@txtSchoolID"><Value>=Parameters!txtSchoolID.Value</Value></QueryParameter><QueryParameter Name="@txtHouse"><Value>=Parameters!txtHouse.Value</Value></QueryParameter><QueryParameter Name="@txtSubject"><Value>=Parameters!txtSubject.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @txtCycle NVARCHAR(30) = 'Single';
+/* Options = Single - Multi - CurrentPrevious - RollingPrevious - TranscriptMulti - TranscriptRollingPrevious */
+
+DECLARE @txtShowBlanks NVARCHAR(17) = 'True';
+/* Options = True - False */
+
+DECLARE @intNumberofYears INT = 4;
+/* Options = 1 - 2 - 3 - 4 */
+
+DECLARE @CycleID AS NVARCHAR(MAX);
+DECLARE @PupilID NVARCHAR(MAX);
+
+DECLARE @intCurrentYear AS INT;
+DECLARE @dtPrintDate AS DATETIME;
+DECLARE @intPreviousCycle AS INT;
+
+SET @intCurrentYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+SET @dtPrintDate = (SELECT TblReportsManagementCycle.txtPrintReports FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+SET @intPreviousCycle = (SELECT TblReportsManagementCycle.intPreviousCycle FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+
+SET @PupilID = STUFF(
+	(SELECT	DISTINCT
+			',' + TblReportsStorePupilArchive.txtSchoolID
+	 FROM	TblReportsStorePupilArchive
+	 INNER JOIN TblReportsStore ON TblReportsStorePupilArchive.intReportCycle = TblReportsStore.intReportCycle
+			AND TblReportsStorePupilArchive.txtSchoolID = TblReportsStore.txtSchoolID
+	 WHERE	(TblReportsStorePupilArchive.intReportCycle = @intReportCycle)
+			AND (TblReportsStore.intProgress = 1)
+			AND (TblReportsStorePupilArchive.intNCYear IN (SELECT ID FROM dbo.SplitCSV(@intNCYear) AS SplitCSV_1) OR @intNCYear IS NULL)
+			AND (TblReportsStorePupilArchive.txtForm IN (SELECT ID FROM dbo.SplitCSV(@txtForm) AS SplitCSV_1) OR @txtForm IS NULL)
+			AND (TblReportsStorePupilArchive.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR @txtSchoolID IS NULL)
+			AND (TblReportsStorePupilArchive.txtBoardingHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL
+				OR TblReportsStorePupilArchive.txtAcademicHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL)
+	 FOR XML PATH('')), 1, 1, ''
+	);
+
+IF @txtCycle = 'Multi'
+	SET @CycleID = STUFF(
+		(SELECT	DISTINCT ',' + CAST(TblReportsManagementCycle.TblReportsManagementCycleID AS NVARCHAR(MAX))
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.intReportYear = @intCurrentYear
+				AND TblReportsManagementCycle.txtPrintReports &lt;= @dtPrintDate
+		 FOR XML PATH('')),1,1,''
+		);
+IF @txtCycle = 'CurrentPrevious'
+	SET @CycleID = STUFF(
+		(SELECT DISTINCT ',' + CAST(TblReportsManagementCycle.TblReportsManagementCycleID AS NVARCHAR(MAX))
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID IN (@intReportCycle, @intPreviousCycle)
+		 FOR XML PATH('')),1,1,''
+		);
+IF @txtCycle = 'RollingPrevious'
+	WITH RollingCycles AS
+		(SELECT	TblReportsManagementCycle.TblReportsManagementCycleID,
+				TblReportsManagementCycle.intPreviousCycle,
+				TblReportsManagementCycle.txtPrintReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			UNION ALL
+		 SELECT	PreviousReportsManagementCycles.TblReportsManagementCycleID,
+				PreviousReportsManagementCycles.intPreviousCycle,
+				PreviousReportsManagementCycles.txtPrintReports
+		 FROM	TblReportsManagementCycle AS PreviousReportsManagementCycles
+		 INNER JOIN RollingCycles ON RollingCycles.intPreviousCycle = PreviousReportsManagementCycles.TblReportsManagementCycleID
+		 WHERE	RollingCycles.intPreviousCycle &gt; 0
+		)
+
+	SELECT @CycleID = STUFF(
+		(SELECT	DISTINCT ',' + CAST(RollingCycles.TblReportsManagementCycleID AS NVARCHAR(MAX))
+		 FROM	RollingCycles
+		 FOR XML PATH('')),1,1,''
+		);
+IF @txtCycle = 'TranscriptMulti'
+	SET @CycleID = STUFF(
+		(SELECT	DISTINCT ',' + CAST(TblReportsManagementCycle.TblReportsManagementCycleID AS NVARCHAR(MAX))
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.intReportYear &gt;= (@intCurrentYear - @intNumberofYears)
+				AND TblReportsManagementCycle.txtPrintReports &lt;= @dtPrintDate
+		 FOR XML PATH('')),1,1,''
+		);
+IF @txtCycle = 'TranscriptRollingPrevious'
+	WITH RollingCycles AS
+		(SELECT	TblReportsManagementCycle.TblReportsManagementCycleID,
+                TblReportsManagementCycle.intPreviousCycle,
+				TblReportsManagementCycle.txtPrintReports,
+				TblReportsManagementCycle.intReportYear,
+				@intCurrentYear AS 'intSelectedCycleYear'
+         FROM	TblReportsManagementCycle
+         WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+				AND TblReportsManagementCycle.intReportYear &gt;= (@intCurrentYear - @intNumberofYears)
+			UNION ALL
+         SELECT	PreviousReportsManagementCycles.TblReportsManagementCycleID,
+				PreviousReportsManagementCycles.intPreviousCycle,
+				PreviousReportsManagementCycles.txtPrintReports,
+				PreviousReportsManagementCycles.intReportYear,
+				@intCurrentYear AS 'intSelectedCycleYear'
+         FROM	TblReportsManagementCycle AS PreviousReportsManagementCycles
+		 INNER JOIN RollingCycles ON RollingCycles.intPreviousCycle = PreviousReportsManagementCycles.TblReportsManagementCycleID
+		 WHERE	RollingCycles.intPreviousCycle &gt; 0
+				AND PreviousReportsManagementCycles.intReportYear &gt;= (@intCurrentYear - @intNumberofYears)
+		)
+
+	SELECT @CycleID = STUFF(
+		(SELECT	DISTINCT ',' + CAST(RollingCycles.TblReportsManagementCycleID AS NVARCHAR(MAX))
+		 FROM	RollingCycles
+		 FOR XML PATH('')),1,1,''
+		);
+
+BEGIN
+    IF @txtCycle = 'Single'
+		WITH Cycles AS
+			(SELECT	DISTINCT
+					TblReportsManagementCycle.TblReportsManagementCycleID,
+					DENSE_RANK() OVER(ORDER BY TblReportsManagementCycle.txtPrintReports DESC) AS 'intCycleRank'
+			 FROM    TblReportsManagementCycle
+			 WHERE    TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			)
+
+		SELECT	AcademicReports.*,
+				Cycles.intCycleRank,
+                DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID
+				ORDER BY Cycles.intCycleRank,
+				CASE
+					WHEN AcademicReports.intReportTypeID = 15 
+					THEN 2
+					ELSE AcademicReports.intReportTypeID
+				END,
+				AcademicReports.intSubjectOrder,
+				AcademicReports.txtCurrentSubjectReportName,
+				AcademicReports.txtSubjectArchivedName,
+				AcademicReports.txtActivityGroupReportName,
+				AcademicReports.txtActivityGroupName,
+				AcademicReports.txtSubmitBySurname,
+				AcademicReports.txtSubmitByFirstname ASC) AS 'intReportRank',
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID,
+											AcademicReports.intSubjectID,
+											AcademicReports.txtSubID,
+											AcademicReports.txtSubmitBy
+				ORDER BY AcademicReports.intCommentID) AS 'intChartFilter',
+				CASE
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intreportCycleAcademicYear = (@intCurrentYear)
+					THEN 4
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 1)
+					THEN 3
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 2)
+					THEN 2
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 3)
+					THEN 1
+				ELSE
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID ORDER BY AcademicReports.intReportCycleAcademicYear DESC)
+				END AS 'intYearRank',
+				@intCurrentYear AS 'intSelectedCycleYear'
+		FROM    uf_Reports_AcademicReports(@intReportCycle, @PupilID) AS AcademicReports
+		INNER JOIN Cycles ON AcademicReports.intReportCycleID = Cycles.TblReportsManagementCycleID
+		WHERE	(AcademicReports.intReportProgress = 1)
+				AND (AcademicReports.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+				AND (AcademicReports.txtID IN (SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL);
+	IF @txtCycle = 'Multi'
+		WITH Cycles AS
+			(SELECT	DISTINCT
+					TblReportsManagementCycle.TblReportsManagementCycleID,
+					DENSE_RANK() OVER(ORDER BY TblReportsManagementCycle.txtPrintReports DESC) AS 'intCycleRank'
+			 FROM	TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.intReportYear = @intCurrentYear
+					AND TblReportsManagementCycle.txtPrintReports &lt;= @dtPrintDate
+			)
+
+		SELECT	AcademicReports.*,
+				Cycles.intCycleRank,
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID
+				ORDER BY Cycles.intCycleRank,
+				CASE
+					WHEN AcademicReports.intReportTypeID = 15
+					THEN 2
+					ELSE AcademicReports.intReportTypeID
+				END,
+				AcademicReports.intSubjectOrder,
+				AcademicReports.txtCurrentSubjectReportName,
+				AcademicReports.txtSubjectArchivedName,
+				AcademicReports.txtActivityGroupReportName,
+				AcademicReports.txtActivityGroupName,
+				AcademicReports.txtSubmitBySurname,
+				AcademicReports.txtSubmitByFirstname ASC) AS 'intReportRank',
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID,
+											AcademicReports.intSubjectID,
+											AcademicReports.txtSubID,
+											AcademicReports.txtSubmitBy
+				ORDER BY AcademicReports.intCommentID) AS 'intChartFilter',
+				CASE
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intreportCycleAcademicYear = (@intCurrentYear)
+					THEN 4
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 1)
+					THEN 3
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 2)
+					THEN 2
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 3)
+					THEN 1
+					ELSE DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID ORDER BY AcademicReports.intReportCycleAcademicYear DESC)
+				END AS 'intYearRank',
+				@intCurrentYear AS 'intSelectedCycleYear'
+		FROM	uf_Reports_AcademicReports(@CycleID, @PupilID) AS AcademicReports
+        INNER JOIN Cycles ON AcademicReports.intReportCycleID = Cycles.TblReportsManagementCycleID
+        WHERE	(AcademicReports.intReportProgress = 1)
+				AND (AcademicReports.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+				AND (AcademicReports.txtID IN (SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL);
+    IF @txtCycle = 'CurrentPrevious'
+		WITH Cycles AS
+			(SELECT	DISTINCT
+					TblReportsManagementCycle.TblReportsManagementCycleID,
+					DENSE_RANK() OVER(ORDER BY TblReportsManagementCycle.txtPrintReports DESC) AS 'intCycleRank'
+			 FROM	TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID IN (@intReportCycle, @intPreviousCycle)
+			)
+
+		SELECT	AcademicReports.*,
+				Cycles.intCycleRank, 
+                DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID
+                ORDER BY Cycles.intCycleRank,
+				CASE
+                    WHEN AcademicReports.intReportTypeID = 15
+                    THEN 2
+                    ELSE AcademicReports.intReportTypeID
+                END,
+                AcademicReports.intSubjectOrder,
+                AcademicReports.txtCurrentSubjectReportName,
+                AcademicReports.txtSubjectArchivedName,
+                AcademicReports.txtActivityGroupReportName,
+                AcademicReports.txtActivityGroupName,
+                AcademicReports.txtSubmitBySurname,
+                AcademicReports.txtSubmitByFirstname ASC) AS 'intReportRank',
+                DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID,
+                                                AcademicReports.intSubjectID,
+                                                AcademicReports.txtSubID,
+                                                AcademicReports.txtSubmitBy
+                ORDER BY AcademicReports.intCommentID) AS 'intChartFilter',
+                CASE
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intreportCycleAcademicYear = (@intCurrentYear)
+                    THEN 4
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 1)
+                    THEN 3
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 2)
+                    THEN 2
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 3)
+                    THEN 1
+                    ELSE DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID ORDER BY AcademicReports.intReportCycleAcademicYear DESC)
+                END AS 'intYearRank',
+                @intCurrentYear AS 'intSelectedCycleYear'
+		FROM	uf_Reports_AcademicReports(@CycleID, @PupilID) AS AcademicReports
+        INNER JOIN Cycles ON AcademicReports.intReportCycleID = Cycles.TblReportsManagementCycleID
+        WHERE	(AcademicReports.intReportProgress = 1)
+				AND (AcademicReports.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+				AND (AcademicReports.txtID IN (SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL);
+	 IF @txtCycle = 'RollingPrevious'
+		WITH RollingCycles AS
+			(SELECT	TblReportsManagementCycle.TblReportsManagementCycleID,
+					TblReportsManagementCycle.intPreviousCycle,
+					TblReportsManagementCycle.txtPrintReports
+			 FROM	TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+				UNION ALL
+			 SELECT	PreviousReportsManagementCycles.TblReportsManagementCycleID,
+					PreviousReportsManagementCycles.intPreviousCycle,
+					PreviousReportsManagementCycles.txtPrintReports
+			 FROM	TblReportsManagementCycle AS PreviousReportsManagementCycles
+			 INNER JOIN RollingCycles ON RollingCycles.intPreviousCycle = PreviousReportsManagementCycles.TblReportsManagementCycleID
+			 WHERE	RollingCycles.intPreviousCycle &gt; 0
+			)
+			,Cycles AS
+			(SELECT	RollingCycles.*,
+					DENSE_RANK() OVER(ORDER BY RollingCycles.txtPrintReports DESC) AS 'intCycleRank'
+			 FROM	RollingCycles
+			)
+
+		SELECT	AcademicReports.*,
+				Cycles.intCycleRank, 
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID
+				ORDER BY Cycles.intCycleRank,
+				CASE
+					WHEN AcademicReports.intReportTypeID = 15
+					THEN 2
+					ELSE AcademicReports.intReportTypeID
+				END,
+				AcademicReports.intSubjectOrder,
+				AcademicReports.txtCurrentSubjectReportName,
+				AcademicReports.txtSubjectArchivedName,
+				AcademicReports.txtActivityGroupReportName,
+				AcademicReports.txtActivityGroupName,
+				AcademicReports.txtSubmitBySurname,
+				AcademicReports.txtSubmitByFirstname ASC) AS 'intReportRank',
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID,
+												AcademicReports.intSubjectID,
+												AcademicReports.txtSubID,
+												AcademicReports.txtSubmitBy
+				ORDER BY AcademicReports.intCommentID) AS 'intChartFilter',
+				CASE
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intreportCycleAcademicYear = (@intCurrentYear)
+					THEN 4
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 1)
+					THEN 3
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 2)
+					THEN 2
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 3)
+					THEN 1
+					ELSE DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID ORDER BY AcademicReports.intReportCycleAcademicYear DESC)
+				END AS 'intYearRank',
+				@intCurrentYear AS 'intSelectedCycleYear'
+		FROM	uf_Reports_AcademicReports(@CycleID, @PupilID) AS AcademicReports
+		INNER JOIN Cycles ON AcademicReports.intReportCycleID = Cycles.TblReportsManagementCycleID
+		WHERE	(AcademicReports.intReportProgress = 1)
+				AND (AcademicReports.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+				AND (AcademicReports.txtID IN (SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL);
+	IF @txtCycle = 'TranscriptMulti'
+		WITH Cycles AS
+			(SELECT	DISTINCT
+					TblReportsManagementCycle.TblReportsManagementCycleID,
+					DENSE_RANK() OVER(ORDER BY TblReportsManagementCycle.txtPrintReports DESC) AS 'intCycleRank'
+			 FROM	TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.intReportYear &gt;= (@intCurrentYear - @intNumberofYears)
+					AND TblReportsManagementCycle.txtPrintReports &lt;= @dtPrintDate
+			)
+
+		SELECT	AcademicReports.*,
+				Cycles.intCycleRank, 
+                DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID, AcademicReports.intReportCycleAcademicYear
+                ORDER BY AcademicReports.intReportCycleAcademicYear,
+				CASE
+					WHEN AcademicReports.intReportTypeID = 15
+					THEN 2
+					ELSE AcademicReports.intReportTypeID
+				END,
+				AcademicReports.intSubjectOrder,
+				AcademicReports.txtCurrentSubjectReportName,
+				AcademicReports.txtSubjectArchivedName,
+				AcademicReports.txtActivityGroupReportName,
+				AcademicReports.txtActivityGroupName,
+				AcademicReports.txtSubmitBySurname,
+				AcademicReports.txtSubmitByFirstname ASC) AS 'intReportRank',
+				DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID,
+												AcademicReports.intSubjectID,
+												AcademicReports.txtSubID,
+												AcademicReports.txtSubmitBy
+				ORDER BY AcademicReports.intCommentID) AS 'intChartFilter',
+				CASE
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intreportCycleAcademicYear = (@intCurrentYear)
+					THEN 4
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 1)
+					THEN 3
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 2)
+					THEN 2
+					WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 3)
+					THEN 1
+					ELSE DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID ORDER BY AcademicReports.intReportCycleAcademicYear ASC)
+				END AS 'intYearRank',
+				@intCurrentYear AS 'intSelectedCycleYear'
+		FROM    uf_Reports_AcademicReports(@CycleID, @PupilID) AS AcademicReports
+		INNER JOIN Cycles ON AcademicReports.intReportCycleID = Cycles.TblReportsManagementCycleID
+		WHERE	(AcademicReports.intReportProgress = 1)
+				AND (AcademicReports.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+				AND (AcademicReports.txtID IN (SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL);
+	IF @txtCycle = 'TranscriptRollingPrevious'	
+		WITH RollingCycles AS
+			(SELECT	TblReportsManagementCycle.TblReportsManagementCycleID,
+					TblReportsManagementCycle.intPreviousCycle,
+					TblReportsManagementCycle.txtPrintReports,
+					TblReportsManagementCycle.intReportYear,
+					@intCurrentYear AS 'intSelectedCycleYear'
+			 FROM	TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+					AND TblReportsManagementCycle.intReportYear &gt;= (@intCurrentYear - @intNumberofYears)
+				UNION ALL
+			 SELECT	PreviousReportsManagementCycles.TblReportsManagementCycleID,
+					PreviousReportsManagementCycles.intPreviousCycle,
+					PreviousReportsManagementCycles.txtPrintReports,
+					PreviousReportsManagementCycles.intReportYear,
+					@intCurrentYear AS 'intSelectedCycleYear'
+			 FROM	TblReportsManagementCycle AS PreviousReportsManagementCycles
+			 INNER JOIN RollingCycles ON RollingCycles.intPreviousCycle = PreviousReportsManagementCycles.TblReportsManagementCycleID
+			 WHERE	RollingCycles.intPreviousCycle &gt; 0
+					AND PreviousReportsManagementCycles.intReportYear &gt; (@intCurrentYear - @intNumberofYears)
+			)
+			,Cycles AS
+			(SELECT	RollingCycles.*,
+					DENSE_RANK() OVER(ORDER BY RollingCycles.txtPrintReports DESC) AS 'intCycleRank'
+			 FROM	RollingCycles
+			)
+
+		SELECT	AcademicReports.*,
+				Cycles.intCycleRank, 
+                DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID, AcademicReports.intReportCycleAcademicYear
+                ORDER BY AcademicReports.intReportCycleAcademicYear,
+				CASE
+                    WHEN AcademicReports.intReportTypeID = 15
+                    THEN 2
+                    ELSE AcademicReports.intReportTypeID
+                END,
+				AcademicReports.intSubjectOrder,
+				AcademicReports.txtCurrentSubjectReportName,
+				AcademicReports.txtSubjectArchivedName,
+				AcademicReports.txtActivityGroupReportName,
+				AcademicReports.txtActivityGroupName,
+				AcademicReports.txtSubmitBySurname,
+				AcademicReports.txtSubmitByFirstname ASC) AS 'intReportRank',
+                DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID,
+                                                AcademicReports.intSubjectID,
+                                                AcademicReports.txtSubID,
+                                                AcademicReports.txtSubmitBy
+                ORDER BY AcademicReports.intCommentID) AS 'intChartFilter',
+                CASE
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intreportCycleAcademicYear = (@intCurrentYear)
+                    THEN 4
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 1)
+                    THEN 3
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 2)
+                    THEN 2
+                    WHEN @txtShowBlanks = 'True' AND AcademicReports.intReportCycleAcademicYear = (@intCurrentYear - 3)
+                    THEN 1
+                    ELSE DENSE_RANK() OVER(PARTITION BY AcademicReports.txtSchoolID ORDER BY AcademicReports.intReportCycleAcademicYear DESC)
+                END AS 'intYearRank',
+                @intCurrentYear AS 'intSelectedCycleYear'
+		FROM	uf_Reports_AcademicReports(@CycleID, @PupilID) AS AcademicReports
+        INNER JOIN Cycles ON AcademicReports.intReportCycleID = Cycles.TblReportsManagementCycleID
+        WHERE	(AcademicReports.intReportProgress = 1)
+				AND (AcademicReports.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+				AND (AcademicReports.txtID IN (SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL);
+END;</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="TblReportsStoreID"><DataField>TblReportsStoreID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intReportTypeID"><DataField>intReportTypeID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtReportTypeName"><DataField>txtReportTypeName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intTemplateID"><DataField>intTemplateID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtTemplateName"><DataField>txtTemplateName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtID"><DataField>txtID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubjectArchivedName"><DataField>txtSubjectArchivedName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intID"><DataField>intID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intSubjectID"><DataField>intSubjectID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intReportProgress"><DataField>intReportProgress</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="dtSubmittedOn"><DataField>dtSubmittedOn</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="txtSubID"><DataField>txtSubID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtArchivedSetCode"><DataField>txtArchivedSetCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTitle"><DataField>txtTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForename"><DataField>txtForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPreName"><DataField>txtPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtMiddleNames"><DataField>txtMiddleNames</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtInitials"><DataField>txtInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSurname"><DataField>txtSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGender"><DataField>txtGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtNationality"><DataField>txtNationality</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dtDOB"><DataField>dtDOB</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="dtEnrolmentDate"><DataField>dtEnrolmentDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="txtForm"><DataField>txtForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intNCYear"><DataField>intNCYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearCode"><DataField>txtYearCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtAcademicHouse"><DataField>txtAcademicHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtBoardingHouse"><DataField>txtBoardingHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTutor"><DataField>txtTutor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitBy"><DataField>txtSubmitBy</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByInitials"><DataField>txtSubmitByInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByTitle"><DataField>txtSubmitByTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByPreName"><DataField>txtSubmitByPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByFirstname"><DataField>txtSubmitByFirstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByMiddleNames"><DataField>txtSubmitByMiddleNames</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitBySurname"><DataField>txtSubmitBySurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByNameInitials"><DataField>txtSubmitByNameInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubmitByGender"><DataField>txtSubmitByGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutor"><DataField>txtFormTutor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorInitials"><DataField>txtFormTutorInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorTitle"><DataField>txtFormTutorTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorPreName"><DataField>txtFormTutorPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorFirstname"><DataField>txtFormTutorFirstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorMiddleNames"><DataField>txtFormTutorMiddleNames</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorSurname"><DataField>txtFormTutorSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorNameInitials"><DataField>txtFormTutorNameInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtFormTutorGender"><DataField>txtFormTutorGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutor"><DataField>txtPastoralTutor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorInitials"><DataField>txtPastoralTutorInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorTitle"><DataField>txtPastoralTutorTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorPreName"><DataField>txtPastoralTutorPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorFirstname"><DataField>txtPastoralTutorFirstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorMiddleNames"><DataField>txtPastoralTutorMiddleNames</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorSurname"><DataField>txtPastoralTutorSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorNameInitials"><DataField>txtPastoralTutorNameInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorGender"><DataField>txtPastoralTutorGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutor"><DataField>txtYearTutor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorInitials"><DataField>txtYearTutorInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorTitle"><DataField>txtYearTutorTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorPreName"><DataField>txtYearTutorPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorFirstname"><DataField>txtYearTutorFirstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorMiddleNames"><DataField>txtYearTutorMiddleNames</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorSurname"><DataField>txtYearTutorSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorNameInitials"><DataField>txtYearTutorNameInitials</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearTutorGender"><DataField>txtYearTutorGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtCurrentSubjectName"><DataField>txtCurrentSubjectName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtCurrentSubjectReportName"><DataField>txtCurrentSubjectReportName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intSubjectOrder"><DataField>intSubjectOrder</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtActivityGroupName"><DataField>txtActivityGroupName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtActivityGroupReportName"><DataField>txtActivityGroupReportName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtActivityCategoryName"><DataField>txtActivityCategoryName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intReportCycleID"><DataField>intReportCycleID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtReportCycleName"><DataField>txtReportCycleName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intReportCycleType"><DataField>intReportCycleType</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intPreviousReportCycle"><DataField>intPreviousReportCycle</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtReportCycleShortName"><DataField>txtReportCycleShortName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intReportCycleTerm"><DataField>intReportCycleTerm</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intReportCycleAcademicYear"><DataField>intReportCycleAcademicYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="dtReportCycleStartDate"><DataField>dtReportCycleStartDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="dtReportCycleFinishDate"><DataField>dtReportCycleFinishDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="dtReportCyclePrintDate"><DataField>dtReportCyclePrintDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="txtReportTermName"><DataField>txtReportTermName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dtReportTermStartDate"><DataField>dtReportTermStartDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="dtReportTermFinishDate"><DataField>dtReportTermFinishDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="intGradeID"><DataField>intGradeID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtGradingDescriptor"><DataField>txtGradingDescriptor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGradingName"><DataField>txtGradingName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGradingOptions"><DataField>txtGradingOptions</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtShortGradingName"><DataField>txtShortGradingName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGrade"><DataField>txtGrade</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intGradeTransposeValue"><DataField>intGradeTransposeValue</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intResultID"><DataField>intResultID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtResultName"><DataField>txtResultName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtShortResultName"><DataField>txtShortResultName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtResultDescriptor"><DataField>txtResultDescriptor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtResult"><DataField>txtResult</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intCommentID"><DataField>intCommentID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtCommentName"><DataField>txtCommentName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtComment"><DataField>txtComment</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intCommentPrivate"><DataField>intCommentPrivate</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intPositionID"><DataField>intPositionID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtPositionName"><DataField>txtPositionName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtShortPositionName"><DataField>txtShortPositionName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPosition"><DataField>txtPosition</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPositionDescriptor"><DataField>txtPositionDescriptor</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intCycleRank"><DataField>intCycleRank</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="intReportRank"><DataField>intReportRank</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="intChartFilter"><DataField>intChartFilter</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="intYearRank"><DataField>intYearRank</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="intGradebookMarkID"><DataField>intGradebookMarkID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intSelectedCycleYear"><DataField>intSelectedCycleYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtGradebookMarkName"><DataField>txtGradebookMarkName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGradebookMark"><DataField>txtGradebookMark</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtUpperGradingName"><Value>=TRIM(UCASE(Fields!txtGradingName.Value))</Value></Field><Field Name="txtUpperResultName"><Value>=TRIM(UCASE(Fields!txtResultName.Value))</Value></Field><Field Name="txtUpperPositionName"><Value>=TRIM(UCASE(Fields!txtPositionName.Value))</Value></Field><Field Name="txtUpperCommentName"><Value>=TRIM(UCASE(Fields!txtCommentName.Value))</Value></Field></Fields></DataSet><DataSet Name="Attendance"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intReportCycle"><Value>=Parameters!intReportCycle.Value</Value></QueryParameter><QueryParameter Name="@intNCYear"><Value>=Parameters!intNCYear.Value</Value></QueryParameter><QueryParameter Name="@txtForm"><Value>=Parameters!txtForm.Value</Value></QueryParameter><QueryParameter Name="@txtSchoolID"><Value>=Parameters!txtSchoolID.Value</Value></QueryParameter><QueryParameter Name="@txtHouse"><Value>=Parameters!txtHouse.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @dtStartDate DATETIME;
+DECLARE @txtStartDate NVARCHAR(17) = 'None'
+/* Options = None - CycleStartDate - TermStartDate - AcademicStartDate */
+
+DECLARE @dtEndDate DATETIME;
+DECLARE @txtEndDate NVARCHAR(15) = 'None'
+/* Options = None - CycleEndDate - CyclePrintDate - TermEndDate - AcademicEndDate */
+
+DECLARE @PupilID AS NVARCHAR(MAX);
+
+SET @PupilID = 	STUFF(
+	(SELECT DISTINCT ',' + TblReportsStorePupilArchive.txtSchoolID
+	 FROM	TblReportsStorePupilArchive 
+	 INNER JOIN TblReportsStore ON TblReportsStorePupilArchive.intReportCycle = TblReportsStore.intReportCycle AND TblReportsStorePupilArchive.txtSchoolID = TblReportsStore.txtSchoolID
+	 WHERE	(TblReportsStorePupilArchive.intReportCycle = @intReportCycle) 
+			AND (TblReportsStore.intProgress = 1)
+			AND (TblReportsStorePupilArchive.intNCYear IN (SELECT ID FROM dbo.SplitCSV(@intNCYear) AS SplitCSV_1) OR @intNCYear IS NULL) 
+			AND (TblReportsStorePupilArchive.txtForm IN (SELECT ID FROM dbo.SplitCSV(@txtForm) AS SplitCSV_1) OR @txtForm IS NULL) 
+			AND (TblReportsStorePupilArchive.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR @txtSchoolID IS NULL) 
+			AND (TblReportsStorePupilArchive.txtBoardingHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL 
+				OR TblReportsStorePupilArchive.txtAcademicHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL)
+	 FOR XML PATH('')), 1, 1, ''
+	);
+
+SET @dtStartDate =
+	CASE WHEN @txtStartDate = 'CycleStartDate' THEN --CycleStartDate
+		(SELECT	TblReportsManagementCycle.txtStartReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtStartDate = 'TermStartDate' THEN --TermStartDate
+		(SELECT	TblSchoolManagementTermDates.txtStartDate
+		 FROM	TblReportsManagementCycle
+		 INNER JOIN TblSchoolManagementTermDates ON TblReportsManagementCycle.intReportTerm = TblSchoolManagementTermDates.intTerm AND TblReportsManagementCycle.intReportYear = TblSchoolManagementTermDates.intSchoolYear 
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		) 
+	WHEN @txtStartDate= 'AcademicStartDate' THEN --AcademicStartDate
+		(SELECT	TOP 1 TblSchoolManagementTermDates.txtStartDate
+		 FROM	TblSchoolManagementTermDates
+		 WHERE	TblSchoolManagementTermDates.intSchoolYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+		 ORDER BY TblSchoolManagementTermDates.txtStartDate ASC
+		)
+	ELSE 
+		'2000-01-01 00:00:00'
+	END;
+
+SET @dtEndDate = 
+	CASE WHEN @txtEndDate = 'CycleEndDate' THEN --CycleEndDate
+		(SELECT	TblReportsManagementCycle.txtFinishReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtEndDate = 'CyclePrintDate' THEN --CyclePrintDate
+		(SELECT	TblReportsManagementCycle.txtPrintReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtEndDate = 'TermEndDate' THEN --AcademicTermEndDate
+		(SELECT	TblSchoolManagementTermDates.txtFinishDate
+		 FROM	TblReportsManagementCycle
+		 INNER JOIN TblSchoolManagementTermDates ON TblReportsManagementCycle.intReportTerm = TblSchoolManagementTermDates.intTerm AND TblReportsManagementCycle.intReportYear = TblSchoolManagementTermDates.intSchoolYear 
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtEndDate = 'AcademicEndDate' THEN --AcademicEndDate
+		(SELECT	TOP 1 TblSchoolManagementTermDates.txtFinishDate
+		 FROM	TblSchoolManagementTermDates
+		 WHERE	TblSchoolManagementTermDates.intSchoolYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+		 ORDER BY TblSchoolManagementTermDates.txtFinishDate DESC
+		)
+	ELSE
+		'2000-01-01 00:00:00' 
+	END;
+
+SELECT	COUNT(DISTINCT Attendance.intRegistrationDateTimeID) AS 'intRegistrationCount', 
+		COUNT(DISTINCT CASE Attendance.txtRegistrationStatisticalStatus WHEN 'Present' THEN Attendance.intRegistrationDateTimeID ELSE NULL END) AS 'intPresentCount',
+		COUNT(DISTINCT CASE WHEN Attendance.txtRegistrationStatisticalStatus = 'Present' AND Attendance.intIsLate = 1 THEN Attendance.intRegistrationDateTimeID ELSE NULL END) AS 'intLateCount',
+		COUNT(DISTINCT CASE Attendance.txtRegistrationStatisticalStatus WHEN 'Absent' THEN Attendance.intRegistrationDateTimeID ELSE NULL END) AS 'intAbsentCount',
+		COUNT(DISTINCT CASE WHEN Attendance.txtRegistrationStatisticalStatus = 'Absent' AND Attendance.intIsAuthorisedAbsence = 1 THEN Attendance.intRegistrationDateTimeID ELSE NULL END) AS 'intAuthorisedAbsentCount',
+		COUNT(DISTINCT CASE WHEN Attendance.txtRegistrationStatisticalStatus = 'Absent' AND Attendance.intIsAuthorisedAbsence = 0 THEN Attendance.intRegistrationDateTimeID ELSE NULL END) AS 'intUnAuthorisedAbsentCount',
+		COUNT(DISTINCT CASE Attendance.txtRegistrationStatisticalStatus WHEN 'Not Registered' THEN Attendance.intRegistrationDateTimeID ELSE NULL END) AS 'intNotRegisteredCount',
+		Attendance.txtSchoolID AS 'txtSchoolID'
+FROM	dbo.uf_Registration_AttendanceBetweenDates(@dtStartDate, DATEADD(DAY, 1, @dtEndDate), @PupilID) AS Attendance
+WHERE	(Attendance.intIsIncludedInStatistics = 1)
+		AND (Attendance.txtRegistrationAMPM IN ('am', 'pm')) --All registration times included if this line is commented out
+GROUP BY Attendance.txtSchoolID</CommandText></Query><Fields><Field Name="intRegistrationCount"><DataField>intRegistrationCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intPresentCount"><DataField>intPresentCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intLateCount"><DataField>intLateCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intAbsentCount"><DataField>intAbsentCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intAuthorisedAbsentCount"><DataField>intAuthorisedAbsentCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intUnAuthorisedAbsentCount"><DataField>intUnAuthorisedAbsentCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intNotRegisteredCount"><DataField>intNotRegisteredCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="RewardsByType"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intReportCycle"><Value>=Parameters!intReportCycle.Value</Value></QueryParameter><QueryParameter Name="@intNCYear"><Value>=Parameters!intNCYear.Value</Value></QueryParameter><QueryParameter Name="@txtForm"><Value>=Parameters!txtForm.Value</Value></QueryParameter><QueryParameter Name="@txtSchoolID"><Value>=Parameters!txtSchoolID.Value</Value></QueryParameter><QueryParameter Name="@txtHouse"><Value>=Parameters!txtHouse.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @dtStartDate DATETIME;
+DECLARE @txtStartDate NVARCHAR(17) = 'None';
+/* Options = None - CycleStartDate - TermStartDate - AcademicStartDate */
+
+DECLARE @dtEndDate DATETIME;
+DECLARE @txtEndDate NVARCHAR(15) = 'None';
+/* Options = None - CycleEndDate - CyclePrintDate - TermEndDate - AcademicEndDate */
+
+DECLARE @txtType NVARCHAR(MAX)= '24';
+/*Enter the types you wish to return - format example: '24,25,26'*/
+
+DECLARE @PupilID AS NVARCHAR(MAX);
+SET @PupilID = STUFF(
+	(SELECT	DISTINCT 
+			',' + TblReportsStorePupilArchive.txtSchoolID
+     FROM	TblReportsStorePupilArchive
+	 INNER JOIN TblReportsStore ON TblReportsStorePupilArchive.intReportCycle = TblReportsStore.intReportCycle
+			AND TblReportsStorePupilArchive.txtSchoolID = TblReportsStore.txtSchoolID
+	 WHERE	(TblReportsStorePupilArchive.intReportCycle = @intReportCycle)
+			AND (TblReportsStore.intProgress = 1)
+			AND (TblReportsStorePupilArchive.intNCYear IN (SELECT ID FROM dbo.SplitCSV(@intNCYear) AS SplitCSV_1) OR @intNCYear IS NULL)
+			AND (TblReportsStorePupilArchive.txtForm IN (SELECT ID FROM dbo.SplitCSV(@txtForm) AS SplitCSV_1) OR @txtForm IS NULL)
+			AND (TblReportsStorePupilArchive.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR @txtSchoolID IS NULL)
+			AND (TblReportsStorePupilArchive.txtBoardingHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL
+				OR TblReportsStorePupilArchive.txtAcademicHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL) 
+	 FOR XML PATH('')), 1, 1, ''
+	);
+
+SET @dtStartDate = 
+	CASE				    
+		WHEN @txtStartDate = 'CycleStartDate' THEN --CycleStartDate
+			(SELECT	TblReportsManagementCycle.txtStartReports
+			 FROM	TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			)
+		WHEN @txtStartDate = 'TermStartDate'THEN --TermStartDate
+			(SELECT	TblSchoolManagementTermDates.txtStartDate
+			 FROM	TblReportsManagementCycle
+			 INNER JOIN TblSchoolManagementTermDates ON TblReportsManagementCycle.intReportTerm = TblSchoolManagementTermDates.intTerm
+					AND TblReportsManagementCycle.intReportYear = TblSchoolManagementTermDates.intSchoolYear
+			 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			)
+		WHEN @txtStartDate = 'AcademicStartDate' THEN --AcademicStartDate
+			(SELECT	TOP 1 TblSchoolManagementTermDates.txtStartDate
+			 FROM	TblSchoolManagementTermDates
+			 WHERE	TblSchoolManagementTermDates.intSchoolYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+			 ORDER BY TblSchoolManagementTermDates.txtStartDate ASC
+			)
+		ELSE '2000-01-01 00:00:00'
+	END;
+
+SET @dtEndDate = 
+	CASE
+		WHEN @txtEndDate = 'CycleEndDate' THEN --CycleEndDate
+			(SELECT TblReportsManagementCycle.txtFinishReports
+			 FROM   TblReportsManagementCycle
+			 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			)
+		WHEN @txtEndDate = 'CyclePrintDate' THEN --CyclePrintDate
+			(SELECT TblReportsManagementCycle.txtPrintReports
+			 FROM   TblReportsManagementCycle
+			 WHERE  TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			)
+		WHEN @txtEndDate = 'TermEndDate' THEN --AcademicTermEndDate
+			(SELECT TblSchoolManagementTermDates.txtFinishDate
+			 FROM   TblReportsManagementCycle
+			 INNER JOIN TblSchoolManagementTermDates ON TblReportsManagementCycle.intReportTerm = TblSchoolManagementTermDates.intTerm
+					AND TblReportsManagementCycle.intReportYear = TblSchoolManagementTermDates.intSchoolYear
+			 WHERE  TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+			)
+		WHEN @txtEndDate = 'AcademicEndDate' THEN --AcademicEndDate
+			(SELECT	TOP 1 TblSchoolManagementTermDates.txtFinishDate
+			 FROM	TblSchoolManagementTermDates
+			 WHERE	TblSchoolManagementTermDates.intSchoolYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+			 ORDER BY TblSchoolManagementTermDates.txtFinishDate DESC
+			)
+		ELSE '2000-01-01 00:00:00'
+	END;
+
+SELECT	SUM(TblRewardsManagerRewardTypesCategories.intValue) AS  'intRewardSum',
+		COUNT(DISTINCT TblRewardsManagerRewards.TblRewardsManagerRewardsID) AS 'intRewardCount',
+		TblRewardsManagerRewards.intType AS 'intRewardType',
+		TblRewardsManagerRewardTypes.txtName AS 'txtRewardTypeName',
+		TblRewardsManagerRewards.txtSchoolID
+FROM	TblRewardsManagerRewards
+INNER JOIN TblRewardsManagerRewardTypesCategories ON TblRewardsManagerRewards.intCategory = TblRewardsManagerRewardTypesCategories.TblRewardsManagerRewardTypesCategoriesID
+INNER JOIN TblRewardsManagerRewardTypes ON TblRewardsManagerRewards.intType = TblRewardsManagerRewardTypes.TblRewardsManagerRewardTypesID
+WHERE	TblRewardsManagerRewards.intAuthorised = 1
+		AND TblRewardsManagerRewards.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID))
+		AND TblRewardsManagerRewards.txtDate BETWEEN @dtStartDate AND DATEADD(DAY, 1, @dtEndDate)
+		AND TblRewardsManagerRewards.intType IN (SELECT ID FROM dbo.SplitCSV(@txtType) AS SplitCSV_1)
+GROUP BY TblRewardsManagerRewards.txtSchoolID,
+	    TblRewardsManagerRewards.intType,
+	    TblRewardsManagerRewardTypes.txtName;</CommandText></Query><Fields><Field Name="intRewardSum"><DataField>intRewardSum</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intRewardCount"><DataField>intRewardCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intRewardType"><DataField>intRewardType</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtRewardTypeName"><DataField>txtRewardTypeName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="Detentions"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intReportCycle"><Value>=Parameters!intReportCycle.Value</Value></QueryParameter><QueryParameter Name="@intNCYear"><Value>=Parameters!intNCYear.Value</Value></QueryParameter><QueryParameter Name="@txtForm"><Value>=Parameters!txtForm.Value</Value></QueryParameter><QueryParameter Name="@txtSchoolID"><Value>=Parameters!txtSchoolID.Value</Value></QueryParameter><QueryParameter Name="@txtHouse"><Value>=Parameters!txtHouse.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @dtStartDate DATETIME;
+DECLARE @txtStartDate NVARCHAR(17) = 'None'
+/* Options = None - CycleStartDate - TermStartDate - AcademicStartDate */
+
+DECLARE @dtEndDate DATETIME;
+DECLARE @txtEndDate NVARCHAR(15) = 'None'
+/* Options = None - CycleEndDate - CyclePrintDate - TermEndDate - AcademicEndDate */
+
+DECLARE @PupilID AS NVARCHAR(MAX);
+
+SET @PupilID = 	STUFF(
+	(SELECT DISTINCT ',' + TblReportsStorePupilArchive.txtSchoolID
+	 FROM	TblReportsStorePupilArchive 
+	 INNER JOIN TblReportsStore ON TblReportsStorePupilArchive.intReportCycle = TblReportsStore.intReportCycle AND TblReportsStorePupilArchive.txtSchoolID = TblReportsStore.txtSchoolID
+	 WHERE	(TblReportsStorePupilArchive.intReportCycle = @intReportCycle) 
+			AND (TblReportsStore.intProgress = 1)
+			AND (TblReportsStorePupilArchive.intNCYear IN (SELECT ID FROM dbo.SplitCSV(@intNCYear) AS SplitCSV_1) OR @intNCYear IS NULL) 
+			AND (TblReportsStorePupilArchive.txtForm IN (SELECT ID FROM dbo.SplitCSV(@txtForm) AS SplitCSV_1) OR @txtForm IS NULL) 
+			AND (TblReportsStorePupilArchive.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR @txtSchoolID IS NULL) 
+			AND (TblReportsStorePupilArchive.txtBoardingHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL 
+				OR TblReportsStorePupilArchive.txtAcademicHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL)
+	 FOR XML PATH('')), 1, 1, ''
+	);
+
+SET @dtStartDate =
+	CASE WHEN @txtStartDate = 'CycleStartDate' THEN --CycleStartDate
+		(SELECT	TblReportsManagementCycle.txtStartReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtStartDate = 'TermStartDate' THEN --TermStartDate
+		(SELECT	TblSchoolManagementTermDates.txtStartDate
+		 FROM	TblReportsManagementCycle
+		 INNER JOIN TblSchoolManagementTermDates ON TblReportsManagementCycle.intReportTerm = TblSchoolManagementTermDates.intTerm AND TblReportsManagementCycle.intReportYear = TblSchoolManagementTermDates.intSchoolYear 
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		) 
+	WHEN @txtStartDate= 'AcademicStartDate' THEN --AcademicStartDate
+		(SELECT	TOP 1 TblSchoolManagementTermDates.txtStartDate
+		 FROM	TblSchoolManagementTermDates
+		 WHERE	TblSchoolManagementTermDates.intSchoolYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+		 ORDER BY TblSchoolManagementTermDates.txtStartDate ASC
+		)
+	ELSE 
+		'2000-01-01 00:00:00'
+	END;
+
+SET @dtEndDate = 
+	CASE WHEN @txtEndDate = 'CycleEndDate' THEN --CycleEndDate
+		(SELECT	TblReportsManagementCycle.txtFinishReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtEndDate = 'CyclePrintDate' THEN --CyclePrintDate
+		(SELECT	TblReportsManagementCycle.txtPrintReports
+		 FROM	TblReportsManagementCycle
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtEndDate = 'TermEndDate' THEN --AcademicTermEndDate
+		(SELECT	TblSchoolManagementTermDates.txtFinishDate
+		 FROM	TblReportsManagementCycle
+		 INNER JOIN TblSchoolManagementTermDates ON TblReportsManagementCycle.intReportTerm = TblSchoolManagementTermDates.intTerm AND TblReportsManagementCycle.intReportYear = TblSchoolManagementTermDates.intSchoolYear 
+		 WHERE	TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle
+		)
+	WHEN @txtEndDate = 'AcademicEndDate' THEN --AcademicEndDate
+		(SELECT	TOP 1 TblSchoolManagementTermDates.txtFinishDate
+		 FROM	TblSchoolManagementTermDates
+		 WHERE	TblSchoolManagementTermDates.intSchoolYear = (SELECT TblReportsManagementCycle.intReportYear FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+		 ORDER BY TblSchoolManagementTermDates.txtFinishDate DESC
+		)
+	ELSE
+		'2000-01-01 00:00:00' 
+	END;
+
+SELECT	COUNT(DISTINCT TblDisciplineManagerDetentionsPupils.TblDisciplineManagerDetentionsPupilsID) AS 'intDetentionCount', 
+		TblDisciplineManagerDetentionsPupils.txtSchoolID
+FROM	TblDisciplineManagerDetentionsPupils
+WHERE	(TblDisciplineManagerDetentionsPupils.intAuthorised = 1)
+		AND (TblDisciplineManagerDetentionsPupils.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+		AND (TblDisciplineManagerDetentionsPupils.dDetentionDate BETWEEN @dtStartDate AND DATEADD(DAY, 1, @dtEndDate))
+GROUP BY TblDisciplineManagerDetentionsPupils.txtSchoolID</CommandText></Query><Fields><Field Name="intDetentionCount"><DataField>intDetentionCount</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="iSAMSAddress"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	TbliSAMSManagerSettings.txtExternaliSAMSAddress AS 'txtiSAMSAddress' 
+FROM	TbliSAMSManagerSettings</CommandText></Query><Fields><Field Name="txtiSAMSAddress"><DataField>txtiSAMSAddress</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="StaffSignatures"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	TblStaff.User_code, 
+		(SELECT txtExternaliSAMSAddress FROM TbliSAMSManagerSettings) + TblStaffManagementDocuments.txtFileDirectory + '/' + TblStaffManagementDocuments.txtFileName AS 'txtStaffSignaturePath',
+		DENSE_RANK() OVER(PARTITION BY TblStaff.User_code ORDER BY TblStaffManagementDocuments.txtSubmitDateTime DESC) AS 'intPictureRank',
+		TblStaffManagementDocumentsCategories.txtName AS 'txtCategoryName', 
+		TblStaff.Firstname, 
+		TblStaff.Surname, 
+		TblStaff.Title
+FROM	TblStaffManagementDocuments
+INNER JOIN TblStaffManagementDocumentsCategoriesLinks ON TblStaffManagementDocuments.TblStaffManagementDocumentsID = TblStaffManagementDocumentsCategoriesLinks.intDocument
+INNER JOIN TblStaffManagementDocumentsCategories ON TblStaffManagementDocumentsCategories.TblStaffManagementDocumentsCategoriesID = TblStaffManagementDocumentsCategoriesLinks.intCategory
+INNER JOIN TblStaff ON TblStaffManagementDocuments.intStaff = TblStaff.TblStaffID
+WHERE	(TblStaffManagementDocuments.txtFileType IN ('image/png', 'image/jpeg'))
+		AND (LTRIM(RTRIM(TblStaffManagementDocumentsCategories.txtName)) LIKE '%Signature%')</CommandText></Query><Fields><Field Name="User_Code"><DataField>User_code</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtStaffSignaturePath"><DataField>txtStaffSignaturePath</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intPictureRank"><DataField>intPictureRank</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="txtCategoryName"><DataField>txtCategoryName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Firstname"><DataField>Firstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Surname"><DataField>Surname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Title"><DataField>Title</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="PupilPictures"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intReportCycle"><Value>=Parameters!intReportCycle.Value</Value></QueryParameter><QueryParameter Name="@intNCYear"><Value>=Parameters!intNCYear.Value</Value></QueryParameter><QueryParameter Name="@txtForm"><Value>=Parameters!txtForm.Value</Value></QueryParameter><QueryParameter Name="@txtSchoolID"><Value>=Parameters!txtSchoolID.Value</Value></QueryParameter><QueryParameter Name="@txtHouse"><Value>=Parameters!txtHouse.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @PupilID AS NVARCHAR(MAX);
+
+SET @PupilID = 	STUFF(
+	(SELECT	DISTINCT ',' + TblReportsStorePupilArchive.txtSchoolID
+	 FROM	TblReportsStorePupilArchive
+	 INNER JOIN TblReportsStore ON TblReportsStorePupilArchive.intReportCycle = TblReportsStore.intReportCycle AND TblReportsStorePupilArchive.txtSchoolID = TblReportsStore.txtSchoolID
+	 WHERE (TblReportsStorePupilArchive.intReportCycle = @intReportCycle) 
+			AND (TblReportsStore.intProgress = 1)
+			AND (TblReportsStorePupilArchive.intNCYear IN (SELECT ID FROM dbo.SplitCSV(@intNCYear) AS SplitCSV_1) OR @intNCYear IS NULL) 
+			AND (TblReportsStorePupilArchive.txtForm IN (SELECT ID FROM dbo.SplitCSV(@txtForm) AS SplitCSV_1) OR @txtForm IS NULL) 
+			AND (TblReportsStorePupilArchive.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR @txtSchoolID IS NULL) 
+			AND (TblReportsStorePupilArchive.txtBoardingHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL 
+				OR TblReportsStorePupilArchive.txtAcademicHouse IN (SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL)		
+	FOR XML PATH('')), 1, 1, ''
+	);
+
+WITH PupilPictures AS
+	(SELECT	TblPupilManagementPictures.txtPath AS 'txtPupilPicturePath', 
+			TblPupilManagementPictures.txtSchoolID, 
+			DENSE_RANK() OVER (PARTITION BY TblPupilManagementPictures.txtSchoolID ORDER BY TblPupilManagementPictures.txtSubmitDateTime DESC) AS 'intPictureRank'
+	 FROM	TblPupilManagementPictures
+	 WHERE	TblPupilManagementPictures.txtSubmitDateTime &lt;= (SELECT TblReportsManagementCycle.txtPrintReports FROM TblReportsManagementCycle WHERE TblReportsManagementCycle.TblReportsManagementCycleID = @intReportCycle)
+			AND (TblPupilManagementPictures.txtSchoolID IN (SELECT ID FROM dbo.SplitCSV(@PupilID)))
+	)
+
+SELECT	PupilPictures.txtSchoolID, 
+		PupilPictures.txtPupilPicturePath
+FROM	PupilPictures
+WHERE	PupilPictures.intPictureRank = 1</CommandText></Query><Fields><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPupilPicturePath"><DataField>txtPupilPicturePath</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="HeadPrincipalTeacher"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	TOP (1) TblStaff.User_Code,
+		TblStaff.Title,
+		TblStaff.Firstname,
+		TblStaff.Surname,
+		TblStaff.Fullname,
+		TblStaff.LabelSalutation,
+		TblStaff.LetterSalutation,
+		TblStaff.Title + ' ' + LEFT(TblStaff.Firstname, 1) + '. ' + TblStaff.Surname AS 'txtHeadTeacherReportName',
+		TblStaffManagementSchoolRolesObjects.txtSchoolRolesName
+FROM	TblStaffManagementSchoolRoles
+INNER JOIN TblStaffManagementSchoolRolesObjects ON TblStaffManagementSchoolRoles.intSchoolRole = TblStaffManagementSchoolRolesObjects.TblStaffManagementSchoolRolesObjectsID
+INNER JOIN TblStaff ON TblStaff.TblstaffID = TblStaffManagementSchoolRoles.intStaff  
+WHERE	TblStaff.SystemStatus = 1 
+		AND TblStaffManagementSchoolRolesObjects.txtSchoolRolesName IN ('Headteacher', 'Head', 'Headmaster', 'Headmistress', 'Head Teacher', 'Head Master' , 'Head Mistress', 'Principal')
+ORDER BY TblStaff.EnrolmentDate DESC</CommandText></Query><Fields><Field Name="User_Code"><DataField>User_Code</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Title"><DataField>Title</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Firstname"><DataField>Firstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Surname"><DataField>Surname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Fullname"><DataField>Fullname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="LabelSalutation"><DataField>LabelSalutation</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="LetterSalutation"><DataField>LetterSalutation</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtHeadTeacherReportName"><DataField>txtHeadTeacherReportName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSchoolRolesName"><DataField>txtSchoolRolesName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="School"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	TblSchoolManagementSchoolSetup.txtSchoolName 
+FROM	TblSchoolManagementSchoolSetup</CommandText></Query><Fields><Field Name="txtSchoolName"><DataField>txtSchoolName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="SchoolLogo"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	TblReportsCustomImages.txtPath + TblReportsCustomImages.txtFileName AS 'txtSchoolLogoPath', 
+		TblReportsCustomImages.txtName
+FROM	TblReportsCustomImages
+WHERE	TblReportsCustomImages.txtName LIKE '%School Logo%'
+ORDER BY TblReportsCustomImages.dtSubmittedTime DESC</CommandText></Query><Fields><Field Name="txtSchoolLogoPath"><DataField>txtSchoolLogoPath</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="GeneralComments"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intReportCycle"><Value>=Parameters!intReportCycle.Value</Value></QueryParameter></QueryParameters><CommandText>SELECT	intReportCycleID,
+		TblReportsStoreID,
+		txtGeneralCommentName,
+		txtGeneralCommentDescription,
+		txtGeneralComment
+FROM	VwReportsManagementGeneralComments
+WHERE	VwReportsManagementGeneralComments.intReportCycleID = @intReportCycle</CommandText></Query><Fields><Field Name="intReportCycleID"><DataField>intReportCycleID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="TblReportsStoreID"><DataField>TblReportsStoreID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtGeneralCommentName"><DataField>txtGeneralCommentName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGeneralCommentDescription"><DataField>txtGeneralCommentDescription</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtGeneralComment"><DataField>txtGeneralComment</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="MainPupilGroup"><TablixBody><TablixColumns><TablixColumn><Width>21cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>36.5225cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="PupilContainer"><ReportItems><Rectangle Name="Page1"><ReportItems><Image Name="PupilPicturePage1"><Source>External</Source><Value>=IIF(RIGHT(FIRST(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), 1) = "/",
+LEFT(FIRST(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), LEN(FIRST(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) - 1),
+FIRST(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) &amp; LOOKUP(Fields!txtSchoolID.Value, Fields!txtSchoolID.Value, Fields!txtPupilPicturePath.Value, "PupilPictures")</Value><Sizing>FitProportional</Sizing><Top>8.24cm</Top><Left>8cm</Left><Height>6.4cm</Height><Width>5cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Image><Tablix Name="Page1PupilDetailsContainer"><TablixBody><TablixColumns><TablixColumn><Width>19cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>5.77cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Page1PupilDetails"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Variables!ReportTitle.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>18pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>12pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtReportTermName.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>18pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>18pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!dtReportCyclePrintDate.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>18pt</FontSize><Format>yyyy</Format><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>12pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtForename.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>20pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>20pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtSurname.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>20pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>12pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>Age: </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=INT(IIF(DATEPART(DateInterval.Day, Fields!dtReportCyclePrintDate.Value) &lt; DATEPART(DateInterval.Day, Fields!dtDOB.Value),
+(DATEDIFF(DateInterval.Month, Fields!dtDOB.Value, DATEADD(DateInterval.MONTH, -1, Fields!dtReportCyclePrintDate.Value)) / 12),
+DATEDIFF(DateInterval.Month, Fields!dtDOB.Value, Fields!dtReportCyclePrintDate.Value) / 12
+)) &amp; " years " &amp;
+IIF(DATEPART(DateInterval.Day, Fields!dtReportCyclePrintDate.Value) &lt; DATEPART(DateInterval.Day, Fields!dtDOB.Value),
+(DATEDIFF(DateInterval.Month, Fields!dtDOB.Value, DATEADD(DateInterval.MONTH, -1, Fields!dtReportCyclePrintDate.Value)) MOD 12),
+DATEDIFF(DateInterval.Month, Fields!dtDOB.Value, Fields!dtReportCyclePrintDate.Value) MOD 12
+) &amp; 
+IIF(IIF(DATEPART(DateInterval.Day, Fields!dtReportCyclePrintDate.Value) &lt; DATEPART(DateInterval.Day, Fields!dtDOB.Value),
+(DATEDIFF(DateInterval.Month, Fields!dtDOB.Value, DATEADD(DateInterval.MONTH, -1, Fields!dtReportCyclePrintDate.Value)) MOD 12),
+DATEDIFF(DateInterval.Month, Fields!dtDOB.Value, Fields!dtReportCyclePrintDate.Value) MOD 12
+) &lt;&gt; 1, " months", " month")</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>Year: </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtYearName.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>Form: </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtForm.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.07938cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="FooterPage1"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtForename.Value &amp;  " " &amp; Fields!txtSurname.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>1pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>White</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><Filters><Filter><FilterExpression>=Fields!intReportCycleID.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=CINT(Parameters!intReportCycle.Value)</FilterValue></FilterValues></Filter></Filters><Top>15.51042cm</Top><Left>1cm</Left><Height>5.84938cm</Height><Width>19cm</Width><ZIndex>1</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix><Image Name="SchoolLogoPage1"><Source>External</Source><Value>=IIF(Right(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), 1) = "/",
+Left(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), Len(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) - 1),
+First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) &amp; First(Fields!txtSchoolLogoPath.Value, "SchoolLogo")</Value><Sizing>FitProportional</Sizing><Top>1.5cm</Top><Left>8.9cm</Left><Height>3.2cm</Height><Width>3.2cm</Width><ZIndex>2</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Image><Textbox Name="SchoolName"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=iif(Variables!SchoolName.Value = "", First(Fields!txtSchoolName.Value, "School"), Variables!SchoolName.Value)</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>20pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Top>5.8cm</Top><Left>1cm</Left><Height>1.1cm</Height><Width>19cm</Width><ZIndex>3</ZIndex><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></ReportItems><PageBreak><BreakLocation>End</BreakLocation></PageBreak><KeepTogether>true</KeepTogether><Height>23.4cm</Height><Width>21cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle><Rectangle Name="Page2"><ReportItems><Tablix Name="Page2AttentionDetentionsMerits"><TablixBody><TablixColumns><TablixColumn><Width>6.33333cm</Width></TablixColumn><TablixColumn><Width>6.33333cm</Width></TablixColumn><TablixColumn><Width>6.33333cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Attendance"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Attendance:</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><FontWeight>Bold</FontWeight><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=IIF(CINT(LOOKUP(Fields!txtSchoolID.Value, Fields!txtSchoolID.Value, Fields!intRegistrationCount.Value, "Attendance")) = 0, 0, LOOKUP(Fields!txtSchoolID.Value, Fields!txtSchoolID.Value, Fields!intPresentCount.Value, "Attendance") / Lookup(Fields!txtSchoolID.Value, Fields!txtSchoolID.Value, Fields!intRegistrationCount.Value, "Attendance"))</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Format>0%</Format><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Detentions"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Detentions:</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><FontWeight>Bold</FontWeight><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=CINT(LOOKUP(Fields!txtSchoolID.Value, Fields!txtSchoolID.Value, Fields!intDetentionCount.Value, "Detentions"))</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Merits"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Merits:</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><FontWeight>Bold</FontWeight><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=CINT(LOOKUP(Fields!txtSchoolID.Value &amp; "_24", Fields!txtSchoolID.Value &amp; "_" &amp; Fields!intRewardType.Value, Fields!intRewardCount.Value, "RewardsByType"))</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember><Visibility><Hidden>=IIF(Variables!ShowAttendance.Value = "True", False, True)</Hidden></Visibility></TablixMember><TablixMember><Visibility><Hidden>=IIF(Variables!ShowDetentions.Value = "True", False, True)</Hidden></Visibility></TablixMember><TablixMember><Visibility><Hidden>=IIF(Variables!ShowMerits.Value = "True", False, True)</Hidden></Visibility></TablixMember></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixRowHierarchy><DataSetName>Main</DataSetName><Filters><Filter><FilterExpression>=Fields!intReportCycleID.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=CINT(Parameters!intReportCycle.Value)</FilterValue></FilterValues></Filter></Filters><Top>2.7cm</Top><Left>1cm</Left><Height>0.6cm</Height><Width>18.99999cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix><Tablix Name="Page2HeaderContainer"><TablixBody><TablixColumns><TablixColumn><Width>19cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>2.5cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Page2Header"><ReportItems><Image Name="SchoolLogoPage2"><Source>External</Source><Value>=IIF(Right(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), 1) = "/",
+Left(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), Len(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) - 1),
+First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")) &amp; First(Fields!txtSchoolLogoPath.Value, "SchoolLogo")</Value><Sizing>FitProportional</Sizing><Height>2.5cm</Height><Width>3cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Image><Textbox Name="Page2HeaderReportDetail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=iif(Variables!SchoolName.Value = "", First(Fields!txtSchoolName.Value, "School"), Variables!SchoolName.Value)</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>16pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=Variables!ReportTitle.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value> - </Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtReportTermName.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!dtReportCyclePrintDate.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>14pt</FontSize><Format>yyyy</Format><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value /><Style><FontStyle>Normal</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>9pt</FontSize><Format>yyyy</Format><TextDecoration>None</TextDecoration><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtForename.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>16pt</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>16pt</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtSurname.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>16pt</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Height>2.5cm</Height><Width>19cm</Width><ZIndex>1</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixRowHierarchy><Filters><Filter><FilterExpression>=Fields!intReportCycleID.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=CINT(Parameters!intReportCycle.Value)</FilterValue></FilterValues></Filter></Filters><Left>1cm</Left><Height>2.5cm</Height><Width>19cm</Width><ZIndex>1</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix><Rectangle Name="Page2To3Comment"><ReportItems><Tablix Name="Page2To3CommentGroup"><TablixBody><TablixColumns><TablixColumn><Width>13.35cm</Width></TablixColumn><TablixColumn><Width>5.65cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>3.1cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Page2To3CommentContainer"><ReportItems><Tablix Name="Page2To3CommentTable"><TablixBody><TablixColumns><TablixColumn><Width>13.35cm</Width></TablixColumn><TablixColumn><Width>2.15cm</Width></TablixColumn><TablixColumn><Width>3.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="CommentHeader"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(Fields!intReportTypeID.Value = 1, IIF(TRIM(Fields!txtCurrentSubjectReportName.Value) = "", Fields!txtSubjectArchivedName.Value, Fields!txtCurrentSubjectReportName.Value), Fields!txtReportTypeName.Value)</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><BottomBorder><Style>None</Style></BottomBorder><BackgroundColor>=switch(
+
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentHeaderColour.Value = "", IIF( Variables!NonSubjectHeaderColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectHeaderColour.Value, Variables!NonSubjectAlternateHeaderColour.Value)), Variables!FormTutorCommentHeaderColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentHeaderColour.Value = "", IIF( Variables!NonSubjectHeaderColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectHeaderColour.Value, Variables!NonSubjectAlternateHeaderColour.Value)), Variables!PastoralTutorCommentHeaderColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentHeaderColour.Value = "", IIF( Variables!NonSubjectHeaderColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectHeaderColour.Value, Variables!NonSubjectAlternateHeaderColour.Value)), Variables!YearTutorCommentHeaderColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentHeaderColour.Value = "", IIF( Variables!NonSubjectHeaderColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectHeaderColour.Value, Variables!NonSubjectAlternateHeaderColour.Value)), Variables!HouseMasterCommentHeaderColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentHeaderColour.Value = "", IIF( Variables!NonSubjectHeaderColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectHeaderColour.Value, Variables!NonSubjectAlternateHeaderColour.Value)), Variables!HeadteacherCommentHeaderColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentHeaderColour.Value = "", IIF( Variables!NonSubjectHeaderColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectHeaderColour.Value, Variables!NonSubjectAlternateHeaderColour.Value)), Variables!StudentCommentHeaderColour.Value),
+
+True, "Transparant")</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>3</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Tablix Name="CommentGroupTable"><TablixBody><TablixColumns><TablixColumn><Width>19cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="CommentDetail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtComment.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BottomBorder><Style>None</Style></BottomBorder><LeftBorder><Style>=Variables!BorderStyle.Value</Style></LeftBorder><RightBorder><Style>=Variables!BorderStyle.Value</Style></RightBorder><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="intCommentID"><GroupExpressions><GroupExpression>=Fields!intCommentID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intCommentID.Value</Value></SortExpression></SortExpressions><Visibility><Hidden>=IIF(TRIM(Fields!txtComment.Value) = "" OR Fields!intCommentPrivate.Value = 1, True, False)</Hidden></Visibility></TablixMember></TablixMembers></TablixRowHierarchy><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><BackgroundColor>=switch(
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!FormTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!PastoralTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!YearTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HouseMasterCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HeadteacherCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!StudentCommentRowColour.Value),
+
+True, "Transparant")</BackgroundColor></Style></Tablix><ColSpan>3</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /></TablixCells></TablixRow><TablixRow><Height>1cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="SignatureCommentDetail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BottomBorder><Style>None</Style></BottomBorder><RightBorder><Style>None</Style></RightBorder><BackgroundColor>=switch(
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!FormTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!PastoralTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!YearTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HouseMasterCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HeadteacherCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!StudentCommentRowColour.Value),
+
+True, "Transparant")</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>2</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell><CellContents><Rectangle Name="SignatureContainer"><ReportItems><Image Name="SignatureComment"><Source>External</Source><Value>=LOOKUP(Fields!txtSubmitBy.Value, Fields!User_Code.Value, Fields!txtStaffSignaturePath.Value, "StaffSignatures")</Value><Sizing>FitProportional</Sizing><Height>1cm</Height><Width>3.5cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Image></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BottomBorder><Style>None</Style></BottomBorder><LeftBorder><Style>None</Style></LeftBorder><BackgroundColor>=switch(
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!FormTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!PastoralTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!YearTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HouseMasterCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HeadteacherCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!StudentCommentRowColour.Value),
+
+True, "Transparant")</BackgroundColor></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="TeacherCommentDetail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSubmitByTitle.Value</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=LEFT(Fields!txtSubmitByFirstname.Value, 1)</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>. </Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtSubmitBySurname.Value</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BackgroundColor>=switch(
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!FormTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!PastoralTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!YearTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HouseMasterCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HeadteacherCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!StudentCommentRowColour.Value),
+
+True, "Transparant")</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>3</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /></TablixCells></TablixRow><TablixRow><Height>0.3cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="FooterPage3"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtForename.Value &amp;  " " &amp; Fields!txtSurname.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>1pt</FontSize><Color>White</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>=Variables!BorderStyle.Value</Style></TopBorder><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>3</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember><Visibility><Hidden>=IIF(Variables!ShowOtherReportSignature.Value = "True" AND trim(LOOKUP(Fields!txtSubmitBy.Value, Fields!User_Code.Value, Fields!txtStaffSignaturePath.Value, "StaffSignatures")) &lt;&gt;"", False, True)</Hidden></Visibility></TablixMember><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><KeepTogether>true</KeepTogether><DataSetName>Reports</DataSetName><Height>3.1cm</Height><Width>19cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle><ColSpan>2</ColSpan></CellContents></TablixCell><TablixCell /></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="TblReportsStoreID_OtherReports"><GroupExpressions><GroupExpression>=Fields!TblReportsStoreID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intReportTypeID.Value</Value></SortExpression></SortExpressions><TablixMembers><TablixMember><KeepTogether>true</KeepTogether></TablixMember></TablixMembers><Visibility><Hidden>=IIF(TRIM(Fields!txtComment.Value) = "", True, False)</Hidden></Visibility><KeepTogether>true</KeepTogether></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>Reports</DataSetName><Filters><Filter><FilterExpression>=Fields!intReportCycleID.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=CINT(Parameters!intReportCycle.Value)</FilterValue></FilterValues></Filter><Filter><FilterExpression>=Fields!intReportTypeID.Value</FilterExpression><Operator>NotEqual</Operator><FilterValues><FilterValue>=1</FilterValue></FilterValues></Filter><Filter><FilterExpression>=Fields!intReportTypeID.Value</FilterExpression><Operator>NotEqual</Operator><FilterValues><FilterValue>=15</FilterValue></FilterValues></Filter></Filters><Height>3.1cm</Height><Width>19cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix><Tablix Name="HeadTeacherContainer"><TablixBody><TablixColumns><TablixColumn><Width>19cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>2.5cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="HeadTeacher"><ReportItems><Textbox Name="HeadTeacherNameJob"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(TRIM(FIRST(Fields!LetterSalutation.Value, "HeadPrincipalTeacher")) = "", FIRST(Fields!txtHeadTeacherReportName.Value, "HeadPrincipalTeacher"), FIRST(Fields!LetterSalutation.Value, "HeadPrincipalTeacher"))</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><FontWeight>Normal</FontWeight><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>=FIRST(Fields!txtSchoolRolesName.Value, "HeadPrincipalTeacher")</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><FontWeight>Normal</FontWeight><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Top>1.5cm</Top><Left>13.15cm</Left><Height>1cm</Height><Width>5.85cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Image Name="SignatureHeadTeacher"><Source>External</Source><Value>=LOOKUP(FIRST(Fields!User_Code.Value, "HeadPrincipalTeacher"), Fields!User_Code.Value, Fields!txtStaffSignaturePath.Value, "StaffSignatures")</Value><Sizing>FitProportional</Sizing><Left>13.15cm</Left><Height>1.5cm</Height><Width>5.85cm</Width><ZIndex>1</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Image></ReportItems><KeepTogether>true</KeepTogether><ZIndex>3</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Visibility><Hidden>=IIF(TRIM(First(Fields!LetterSalutation.Value, "HeadPrincipalTeacher") &amp; First(Fields!txtHeadTeacherReportName.Value, "HeadPrincipalTeacher")) = "" OR Variables!ShowHeadSignature.Value = False, True, False)</Hidden></Visibility></TablixMember></TablixMembers></TablixRowHierarchy><Filters><Filter><FilterExpression>=Fields!intReportCycleID.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=CINT(Parameters!intReportCycle.Value)</FilterValue></FilterValues></Filter></Filters><Top>3.3225cm</Top><Height>2.5cm</Height><Width>19cm</Width><ZIndex>1</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix></ReportItems><Top>7.3cm</Top><Left>1cm</Left><Height>5.8225cm</Height><Width>19cm</Width><ZIndex>2</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle><Rectangle Name="Page2SubjectContainer"><ReportItems><Tablix Name="Page2SubjectTable"><TablixBody><TablixColumns><TablixColumn><Width>19cm</Width></TablixColumn><TablixColumn><Width>0.07938cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>3.7cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="SubjectContainer"><ReportItems><Tablix Name="SubjectDetailTable"><TablixBody><TablixColumns><TablixColumn><Width>15.5cm</Width></TablixColumn><TablixColumn><Width>3.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=switch(
+Fields!intReportTypeID.Value=1,
+		IIF(TRIM(Fields!txtCurrentSubjectReportName.Value) = "", Fields!txtSubjectArchivedName.Value, Fields!txtCurrentSubjectReportName.Value),
+Fields!intReportTypeID.Value=15,
+	IIF(TRIM(Fields!txtActivityGroupReportName.Value) = "", Fields!txtActivityGroupName.Value, Fields!txtActivityGroupReportName.Value))</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>=Variables!BorderStyle.Value</Style></TopBorder><LeftBorder><Style>=Variables!BorderStyle.Value</Style></LeftBorder><RightBorder><Style>=Variables!BorderStyle.Value</Style></RightBorder><BackgroundColor>=IIF(min(Fields!intReportRank.Value) MOD 2 = 1, Variables!SubjectHeaderColour.Value, Variables!SubjectAlternateHeaderColour.Value)</BackgroundColor><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>2</ColSpan></CellContents></TablixCell><TablixCell /></TablixCells></TablixRow><TablixRow><Height>1.2cm</Height><TablixCells><TablixCell><CellContents><Tablix Name="SubjectCommentRow"><TablixBody><TablixColumns><TablixColumn><Width>19cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="SubjectGeneralCommentDetail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Lookup(Fields!TblReportsStoreID.Value, Fields!TblReportsStoreID.Value, Fields!txtGeneralComment.Value, "GeneralComments")</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="SubjectCommentDetail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=iif(Fields!intCommentID.Value = first(Fields!intCommentID.Value,"SubjectsID_txtSubmitBy"), "", Fields!txtCommentName.Value + ": ")</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><FontWeight>Bold</FontWeight><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtComment.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Visibility><Hidden>=IIF(TRIM(Lookup(Fields!TblReportsStoreID.Value, Fields!TblReportsStoreID.Value, Fields!txtGeneralComment.Value, "GeneralComments")) = "", True, False)</Hidden></Visibility><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="intCommentID_SubjectComment"><GroupExpressions><GroupExpression>=Fields!intCommentID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intCommentID.Value</Value></SortExpression></SortExpressions><Visibility><Hidden>=IIF(TRIM(Fields!txtComment.Value) = "" OR Fields!intCommentPrivate.Value = 1, True, False)</Hidden></Visibility></TablixMember></TablixMembers></TablixRowHierarchy><ZIndex>2</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><LeftBorder><Style>=Variables!BorderStyle.Value</Style></LeftBorder><RightBorder><Style>=Variables!BorderStyle.Value</Style></RightBorder><BackgroundColor>=IIF(min(Fields!intReportRank.Value) MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value)</BackgroundColor></Style></Tablix><ColSpan>2</ColSpan></CellContents></TablixCell><TablixCell /></TablixCells></TablixRow><TablixRow><Height>1cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="SignatureCommentDetail2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BottomBorder><Style>None</Style></BottomBorder><RightBorder><Style>None</Style></RightBorder><BackgroundColor>=switch(
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!FormTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!PastoralTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!YearTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HouseMasterCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HeadteacherCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!StudentCommentRowColour.Value),
+
+True, "Transparant")</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="SignatureContainer2"><ReportItems><Image Name="SignatureComment2"><Source>External</Source><Value>=Lookup(Fields!txtSubmitBy.Value, Fields!User_Code.Value, Fields!txtStaffSignaturePath.Value, "StaffSignatures")</Value><Sizing>FitProportional</Sizing><Height>1cm</Height><Width>3.5cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Image></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BottomBorder><Style>None</Style></BottomBorder><LeftBorder><Style>None</Style></LeftBorder><BackgroundColor>=switch(
+Fields!intReportTypeID.Value = 1 or Fields!intReportTypeID.Value = 15, IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),
+
+Fields!intReportTypeID.Value = 6, iif(Variables!FormTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!FormTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 7, iif(Variables!PastoralTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!PastoralTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 8, iif(Variables!YearTutorCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!YearTutorCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 9, iif(Variables!HouseMasterCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HouseMasterCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 10, iif(Variables!HeadteacherCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!HeadteacherCommentRowColour.Value),
+
+Fields!intReportTypeID.Value = 11, iif(Variables!StudentCommentRowColour.Value = "", IIF( Variables!NonSubjectRowColour.Value = "", IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value),IIF(Fields!intReportRank.Value MOD 2 = 1, Variables!NonSubjectRowColour.Value, Variables!NonSubjectAlternateRowColour.Value)), Variables!StudentCommentRowColour.Value),
+
+True, "Transparant")</BackgroundColor></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="SubjectDetailTeacher"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSubmitByTitle.Value</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=LEFT(Fields!txtSubmitByFirstname.Value, 1)</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>. </Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun><TextRun><Value>=Fields!txtSubmitBySurname.Value</Value><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>=Variables!BorderStyle.Value</Style><Width>=Variables!BorderSize.Value</Width></Border><TopBorder><Style>None</Style></TopBorder><BackgroundColor>=IIF(min(Fields!intReportRank.Value) MOD 2 = 1, Variables!SubjectRowColour.Value, Variables!SubjectAlternateRowColour.Value)</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>2</ColSpan></CellContents></TablixCell><TablixCell /></TablixCells></TablixRow><TablixRow><Height>0.3cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="SubjectFormatBlankRow"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontStyle>Italic</FontStyle><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>=Variables!FontSize.Value</FontSize><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>2</ColSpan></CellContents></TablixCell><TablixCell /></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember><Visibility><Hidden>=IIF(TRIM(Lookup(Fields!TblReportsStoreID.Value, Fields!TblReportsStoreID.Value, Fields!txtGeneralComment.Value, "GeneralComments") &amp; MAX(IIF(TRIM(Fields!txtComment.Value) &lt;&gt; "", Fields!txtComment.Value, Nothing))) = "", True, False)</Hidden></Visibility></TablixMember><TablixMember><Visibility><Hidden>=IIF(Variables!ShowSubjectReportSignature.Value = "True" AND trim(LOOKUP(Fields!txtSubmitBy.Value, Fields!User_Code.Value, Fields!txtStaffSignaturePath.Value, "StaffSignatures")) &lt;&gt;"", False, True)</Hidden></Visibility></TablixMember><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><Height>3.7cm</Height><Width>19cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="FooterPage2"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtForename.Value  &amp; " " &amp;  Fields!txtSurname.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><FontSize>1pt</FontSize><Color>White</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="SubjectsID_txtSubmitBy"><GroupExpressions><GroupExpression>=Fields!intReportRank.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intReportRank.Value</Value></SortExpression></SortExpressions><KeepTogether>true</KeepTogether></TablixMember></TablixMembers></TablixRowHierarchy><Filters><Filter><FilterExpression>=Fields!intReportCycleID.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>=CINT(Parameters!intReportCycle.Value)</FilterValue></FilterValues></Filter><Filter><FilterExpression>=Fields!intReportTypeID.Value</FilterExpression><Operator>In</Operator><FilterValues><FilterValue DataType="Integer">1</FilterValue><FilterValue DataType="Integer">15</FilterValue></FilterValues></Filter></Filters><Height>3.7cm</Height><Width>19.07938cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Top>3.6cm</Top><Left>1cm</Left><Height>3.7cm</Height><Width>19.07938cm</Width><ZIndex>3</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle></ReportItems><KeepTogether>true</KeepTogether><Top>23.4cm</Top><Height>13.1225cm</Height><Width>21cm</Width><ZIndex>1</ZIndex><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="txtSchoolID"><GroupExpressions><GroupExpression>=Fields!txtSchoolID.Value</GroupExpression></GroupExpressions><PageBreak><BreakLocation>Between</BreakLocation><ResetPageNumber>true</ResetPageNumber></PageBreak></Group><SortExpressions><SortExpression><Value>=Fields(Parameters!txtOrder.Value).value</Value></SortExpression><SortExpression><Value>=Fields!txtSurname.Value</Value></SortExpression><SortExpression><Value>=Fields!txtForename.Value</Value></SortExpression><SortExpression><Value>=Fields!intNCYear.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>AcademicReports</DataSetName><Height>36.5225cm</Height><Width>21cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border></Style></Tablix></ReportItems><Height>14.37894in</Height><Style /></Body><Width>8.26772in</Width><Page><PageFooter><Height>1cm</Height><PrintOnFirstPage>true</PrintOnFirstPage><PrintOnLastPage>true</PrintOnLastPage><ReportItems><Textbox Name="FooterPage2Detail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=ReportItems!FooterPage2.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Top>0.19993cm</Top><Left>1cm</Left><Height>0.6cm</Height><Width>14.68188cm</Width><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Textbox Name="FooterPage3Detail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=ReportItems!FooterPage3.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Top>0.19993cm</Top><Left>1cm</Left><Height>0.6cm</Height><Width>14.68188cm</Width><ZIndex>1</ZIndex><Visibility><Hidden>=iif(ReportItems!FooterPage2.Value is nothing, false, true)</Hidden></Visibility><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Textbox Name="FooterPage1Detail"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=ReportItems!FooterPage1.Value</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Top>0.19993cm</Top><Left>1.03063cm</Left><Height>0.6cm</Height><Width>14.68188cm</Width><ZIndex>2</ZIndex><Visibility><Hidden>=IIF(Variables!ShowPageFooterOnCoverPage.Value = "True",False,True)</Hidden></Visibility><Style><Border><Color>=Variables!BorderColour.Value</Color><Style>None</Style><Width>=Variables!BorderSize.Value</Width></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Textbox Name="PageNumber"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>="Page " &amp; Globals!PageNumber &amp; " of " &amp; Globals!TotalPages</Value><Style><FontFamily>=Variables!FontFamily.Value</FontFamily><Color>=Variables!FontColour.Value</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>PageNumber</rd:DefaultName><Top>0.2cm</Top><Left>16.10584cm</Left><Height>0.6cm</Height><Width>3.89416cm</Width><ZIndex>3</ZIndex><Visibility><Hidden>=iif(Variables!ShowPageNumber.Value="False"
+or (Variables!ShowPageFooterOnCoverPage.Value = "False" and ReportItems!FooterPage1.Value &lt;&gt; "")
+, True, False)</Hidden></Visibility><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></ReportItems><Style><Border><Style>None</Style></Border></Style></PageFooter><PageHeight>29.7cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>0cm</LeftMargin><RightMargin>0cm</RightMargin><TopMargin>1cm</TopMargin><BottomMargin>0.25cm</BottomMargin><ColumnSpacing>0.13cm</ColumnSpacing><Style><Border><Color>DimGray</Color><Style>None</Style></Border></Style></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="intReportCycle"><DataType>String</DataType><Prompt>int Report Cycle</Prompt></ReportParameter><ReportParameter Name="intNCYear"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>int NCYear</Prompt></ReportParameter><ReportParameter Name="txtForm"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>txt Form</Prompt></ReportParameter><ReportParameter Name="txtSubject"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>txt Subject</Prompt></ReportParameter><ReportParameter Name="txtSchoolID"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>txt School ID</Prompt></ReportParameter><ReportParameter Name="txtHouse"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>txt House</Prompt></ReportParameter><ReportParameter Name="txtOrder"><DataType>String</DataType><Prompt>txtOrder</Prompt></ReportParameter></ReportParameters><Variables><Variable Name="ReportTitle"><Value>End of Term Report</Value></Variable><Variable Name="SchoolName"><Value /></Variable><Variable Name="ShowAttendance"><Value>True</Value></Variable><Variable Name="ShowMerits"><Value>True</Value></Variable><Variable Name="ShowDetentions"><Value>True</Value></Variable><Variable Name="ShowSubjectReportSignature"><Value>False</Value></Variable><Variable Name="ShowOtherReportSignature"><Value>False</Value></Variable><Variable Name="ShowHeadSignature"><Value>True</Value></Variable><Variable Name="ShowPageNumber"><Value>False</Value></Variable><Variable Name="ShowPageFooterOnCoverPage"><Value>False</Value></Variable><Variable Name="FontFamily"><Value>Calibri</Value></Variable><Variable Name="FontColour"><Value>Black</Value></Variable><Variable Name="FontSize"><Value>14pt</Value></Variable><Variable Name="BorderStyle"><Value>None</Value></Variable><Variable Name="BorderColour"><Value>#1C1D23</Value></Variable><Variable Name="BorderSize"><Value>0.5pt</Value></Variable><Variable Name="SubjectHeaderColour"><Value>#7EB8E5</Value></Variable><Variable Name="SubjectAlternateHeaderColour"><Value>#ADCEEE</Value></Variable><Variable Name="NonSubjectHeaderColour"><Value /></Variable><Variable Name="NonSubjectAlternateHeaderColour"><Value /></Variable><Variable Name="FormTutorCommentHeaderColour"><Value /></Variable><Variable Name="PastoralTutorCommentHeaderColour"><Value /></Variable><Variable Name="YearTutorCommentHeaderColour"><Value /></Variable><Variable Name="HouseMasterCommentHeaderColour"><Value /></Variable><Variable Name="HeadteacherCommentHeaderColour"><Value /></Variable><Variable Name="StudentCommentHeaderColour"><Value /></Variable><Variable Name="SubjectRowColour"><Value /></Variable><Variable Name="SubjectAlternateRowColour"><Value /></Variable><Variable Name="NonSubjectRowColour"><Value /></Variable><Variable Name="NonSubjectAlternateRowColour"><Value /></Variable><Variable Name="FormTutorCommentRowColour"><Value /></Variable><Variable Name="PastoralTutorCommentRowColour"><Value /></Variable><Variable Name="YearTutorCommentRowColour"><Value /></Variable><Variable Name="HouseMasterCommentRowColour"><Value /></Variable><Variable Name="HeadteacherCommentRowColour"><Value /></Variable><Variable Name="StudentCommentRowColour"><Value /></Variable></Variables><ConsumeContainerWhitespace>true</ConsumeContainerWhitespace><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>eb11d69b-287f-4c25-be77-4d168bfea8c9</rd:ReportID></Report>

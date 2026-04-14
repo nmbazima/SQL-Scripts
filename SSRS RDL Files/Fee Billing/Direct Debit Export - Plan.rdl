@@ -1,0 +1,793 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <DataSourceReference>iSAMS</DataSourceReference>
+      <rd:DataSourceID>a2844730-527b-4288-890d-8d60b38033ba</rd:DataSourceID>
+      <rd:SecurityType>None</rd:SecurityType>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="BillPayerDetails">
+      <Fields>
+        <Field Name="txtForename">
+          <DataField>txtForename</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAdmissionsStatus">
+          <DataField>txtAdmissionsStatus</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtLetterSalutation">
+          <DataField>txtLetterSalutation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intAddressID">
+          <DataField>intAddressID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtAccountCode">
+          <DataField>txtAccountCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBankAccountName">
+          <DataField>txtBankAccountName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBankSortCode">
+          <DataField>txtBankSortCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBankAccountNo">
+          <DataField>txtBankAccountNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCode">
+          <DataField>txtCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPaymentPlanName">
+          <DataField>txtPaymentPlanName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPaymentPlanLinkType">
+          <DataField>txtPaymentPlanLinkType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TblFeeBillingDirectDebitPaymentPlanLinkID">
+          <DataField>TblFeeBillingDirectDebitPaymentPlanLinkID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  TblPupilManagementPupils.txtForename, TblPupilManagementPupils.txtSurname, TblPupilManagementPupils.txtSchoolID, TblPupilManagementPupils.txtAdmissionsStatus,
+	   TblSchoolManagementYears.txtYearName, TblPupilManagementAddresses.txtLetterSalutation, TblPupilManagementAddressLink.intAddressID, TblFeeBillingAccountCode.txtAccountCode,
+	   TblFeeBillingBillPayerAccountDetail.txtBankAccountName, TblFeeBillingBillPayerAccountDetail.txtBankSortCode, TblFeeBillingBillPayerAccountDetail.txtBankAccountNo, (CASE 
+	   WHEN TblFeeBillingDirectDebitPaymentPlan.txtCode IS NULL THEN 'No Plan' ELSE TblFeeBillingDirectDebitPaymentPlan.txtCode END) AS 'txtCode',
+	   TblFeeBillingDirectDebitPaymentPlan.txtName AS 'txtPaymentPlanName', TblFeeBillingDirectDebitPaymentPlanLinkType.txtName AS 'txtPaymentPlanLinkType',
+	   TblFeeBillingDirectDebitPaymentPlanLink.TblFeeBillingDirectDebitPaymentPlanLinkID
+FROM	   TblPupilManagementPupils
+LEFT OUTER JOIN TblSchoolManagementYears ON TblSchoolManagementYears.intNCYear = TblPupilManagementPupils.intNCYear
+INNER JOIN TblPupilManagementAddressLink ON TblPupilManagementAddressLink.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+INNER JOIN TblPupilManagementAddresses ON TblPupilManagementAddresses.TblPupilManagementAddressesID = TblPupilManagementAddressLink.intAddressID
+	AND (TblPupilManagementAddresses.intBillingMailMerge = 1 OR TblPupilManagementAddresses.intMailMergeAll = 1)
+LEFT OUTER JOIN TblFeeBillingBillPayerAccountDetail ON TblFeeBillingBillPayerAccountDetail.intAddressID = TblPupilManagementAddresses.TblPupilManagementAddressesID
+LEFT OUTER JOIN TblFeeBillingAccountCode ON TblFeeBillingAccountCode.intAddressID = TblFeeBillingBillPayerAccountDetail.intAddressID
+LEFT OUTER JOIN TblFeeBillingDirectDebitPaymentPlanLink ON TblFeeBillingDirectDebitPaymentPlanLink.intAccountDetailID = TblFeeBillingBillPayerAccountDetail.TblFeeBillingBillPayerAccountDetailID
+LEFT OUTER JOIN TblFeeBillingDirectDebitPaymentPlan ON TblFeeBillingDirectDebitPaymentPlan.TblFeeBillingDirectDebitPaymentPlanID = TblFeeBillingDirectDebitPaymentPlanLink.intPlanID
+LEFT OUTER JOIN TblFeeBillingDirectDebitPaymentPlanLinkType ON TblFeeBillingDirectDebitPaymentPlanLinkType.TblFeeBillingDirectDebitPaymentPlanLinkTypeID = TblFeeBillingDirectDebitPaymentPlan.intPlanType
+WHERE  (TblFeeBillingDirectDebitPaymentPlanLink.bArchived = 0 OR TblFeeBillingDirectDebitPaymentPlanLink.bArchived IS NULL)
+	   AND (TblFeeBillingBillPayerAccountDetail.bArchived = 0 OR TblFeeBillingBillPayerAccountDetail.bArchived IS NULL)
+	   AND (TblFeeBillingDirectDebitPaymentPlan.bActive = 1 OR TblFeeBillingDirectDebitPaymentPlan.bActive IS NULL)
+	   AND (TblPupilManagementPupils.txtSchoolID IN (SELECT ID FROM SplitCSV(@txtSchoolID)))</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Body>
+    <ReportItems>
+      <Tablix Name="Tablix1">
+        <TablixCorner>
+          <TablixCornerRows>
+            <TablixCornerRow>
+              <TablixCornerCell>
+                <CellContents>
+                  <Textbox Name="Textbox4">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Bill Payer</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox4</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixCornerCell>
+              <TablixCornerCell>
+                <CellContents>
+                  <Textbox Name="Textbox11">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Account Code</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox11</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixCornerCell>
+              <TablixCornerCell>
+                <CellContents>
+                  <Textbox Name="Textbox9">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Bank Account Name</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox9</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixCornerCell>
+              <TablixCornerCell>
+                <CellContents>
+                  <Textbox Name="Textbox5">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Bank Sort Code</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox5</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixCornerCell>
+              <TablixCornerCell>
+                <CellContents>
+                  <Textbox Name="Textbox7">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Bank Account No.</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox7</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixCornerCell>
+            </TablixCornerRow>
+          </TablixCornerRows>
+        </TablixCorner>
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn>
+              <Width>3.00271cm</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>3.55833cm</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>2.76458cm</Width>
+            </TablixColumn>
+            <TablixColumn>
+              <Width>3.34667cm</Width>
+            </TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>0.6cm</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox3">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=IIF(Fields!txtCode.Value = "", "No", "Yes")</Value>
+                              <Style />
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Center</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox3</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                          <Width>0.5pt</Width>
+                        </Border>
+                        <PaddingLeft>4pt</PaddingLeft>
+                        <PaddingRight>4pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox14">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!txtForename.Value + " " + Fields!txtSurname.Value</Value>
+                              <Style />
+                            </TextRun>
+                          </TextRuns>
+                          <Style />
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox14</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                          <Width>0.5pt</Width>
+                        </Border>
+                        <PaddingLeft>4pt</PaddingLeft>
+                        <PaddingRight>4pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="Textbox16">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!txtYearName.Value</Value>
+                              <Style />
+                            </TextRun>
+                          </TextRuns>
+                          <Style />
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                          <Width>0.5pt</Width>
+                        </Border>
+                        <PaddingLeft>4pt</PaddingLeft>
+                        <PaddingRight>4pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="txtAdmissionsStatus">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>=Fields!txtAdmissionsStatus.Value</Value>
+                              <Style />
+                            </TextRun>
+                          </TextRuns>
+                          <Style />
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>txtAdmissionsStatus</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Style>Solid</Style>
+                          <Width>0.5pt</Width>
+                        </Border>
+                        <PaddingLeft>4pt</PaddingLeft>
+                        <PaddingRight>4pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember>
+              <Group Name="txtCode">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!txtCode.Value</GroupExpression>
+                </GroupExpressions>
+              </Group>
+              <TablixHeader>
+                <Size>0.6cm</Size>
+                <CellContents>
+                  <Textbox Name="Textbox2">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>=IIF(Fields!txtCode.Value = "", "No Payment Plan", Fields!txtCode.Value)</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style>
+                          <TextAlign>Center</TextAlign>
+                        </Style>
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox2</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixHeader>
+            </TablixMember>
+            <TablixMember>
+              <TablixHeader>
+                <Size>0.6cm</Size>
+                <CellContents>
+                  <Textbox Name="Textbox13">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Assigned Pupil</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox13</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixHeader>
+            </TablixMember>
+            <TablixMember>
+              <TablixHeader>
+                <Size>0.6cm</Size>
+                <CellContents>
+                  <Textbox Name="Textbox15">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Year Group</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox15</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixHeader>
+            </TablixMember>
+            <TablixMember>
+              <TablixHeader>
+                <Size>0.6cm</Size>
+                <CellContents>
+                  <Textbox Name="Textbox17">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>Admission Status</Value>
+                            <Style>
+                              <FontWeight>Bold</FontWeight>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>Textbox17</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixHeader>
+            </TablixMember>
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember>
+              <Group Name="txtSchoolID_intAddressID">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                  <GroupExpression>=Fields!intAddressID.Value</GroupExpression>
+                </GroupExpressions>
+              </Group>
+              <SortExpressions>
+                <SortExpression>
+                  <Value>=Fields!txtSurname.Value</Value>
+                </SortExpression>
+                <SortExpression>
+                  <Value>=Fields!txtForename.Value</Value>
+                </SortExpression>
+              </SortExpressions>
+              <TablixHeader>
+                <Size>3.50542cm</Size>
+                <CellContents>
+                  <Textbox Name="txtLetterSalutation">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>=Fields!txtLetterSalutation.Value</Value>
+                            <Style />
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <rd:DefaultName>txtLetterSalutation</rd:DefaultName>
+                    <Style>
+                      <Border>
+                        <Style>Solid</Style>
+                        <Width>0.5pt</Width>
+                      </Border>
+                      <PaddingLeft>4pt</PaddingLeft>
+                      <PaddingRight>4pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                </CellContents>
+              </TablixHeader>
+              <TablixMembers>
+                <TablixMember>
+                  <TablixHeader>
+                    <Size>2.79104cm</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox12">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=IIF(Fields!txtAccountCode.Value = "", "No Account Code", Fields!txtAccountCode.Value)</Value>
+                                <Style />
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox12</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.5pt</Width>
+                          </Border>
+                          <PaddingLeft>4pt</PaddingLeft>
+                          <PaddingRight>4pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>3.87583cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox10">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=IIF(Fields!txtBankAccountName.Value = "", "No Bank Account Name", Fields!txtBankAccountName.Value)</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox10</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Style>Solid</Style>
+                                <Width>0.5pt</Width>
+                              </Border>
+                              <PaddingLeft>4pt</PaddingLeft>
+                              <PaddingRight>4pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>3.135cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox6">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>=IIF(Fields!txtBankSortCode.Value = "", "No Bank Sort Code", Fields!txtBankSortCode.Value)</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style />
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox6</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Style>Solid</Style>
+                                    <Width>0.5pt</Width>
+                                  </Border>
+                                  <PaddingLeft>4pt</PaddingLeft>
+                                  <PaddingRight>4pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                          <TablixMembers>
+                            <TablixMember>
+                              <TablixHeader>
+                                <Size>3.82292cm</Size>
+                                <CellContents>
+                                  <Textbox Name="Textbox8">
+                                    <CanGrow>true</CanGrow>
+                                    <KeepTogether>true</KeepTogether>
+                                    <Paragraphs>
+                                      <Paragraph>
+                                        <TextRuns>
+                                          <TextRun>
+                                            <Value>=IIF(Fields!txtBankAccountNo.Value = "", "No Bank Account No.", Fields!txtBankAccountNo.Value)</Value>
+                                            <Style />
+                                          </TextRun>
+                                        </TextRuns>
+                                        <Style />
+                                      </Paragraph>
+                                    </Paragraphs>
+                                    <rd:DefaultName>Textbox8</rd:DefaultName>
+                                    <Style>
+                                      <Border>
+                                        <Style>Solid</Style>
+                                        <Width>0.5pt</Width>
+                                      </Border>
+                                      <PaddingLeft>4pt</PaddingLeft>
+                                      <PaddingRight>4pt</PaddingRight>
+                                      <PaddingTop>2pt</PaddingTop>
+                                      <PaddingBottom>2pt</PaddingBottom>
+                                    </Style>
+                                  </Textbox>
+                                </CellContents>
+                              </TablixHeader>
+                            </TablixMember>
+                          </TablixMembers>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixMember>
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <DataSetName>BillPayerDetails</DataSetName>
+        <Height>1.2cm</Height>
+        <Width>29.8025cm</Width>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Tablix>
+    </ReportItems>
+    <Height>0.47244in</Height>
+    <Style />
+  </Body>
+  <ReportParameters>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <Prompt>txt School ID</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <Width>11.73327in</Width>
+  <Page>
+    <PageHeight>29.7cm</PageHeight>
+    <PageWidth>21cm</PageWidth>
+    <LeftMargin>2cm</LeftMargin>
+    <RightMargin>2cm</RightMargin>
+    <TopMargin>2cm</TopMargin>
+    <BottomMargin>2cm</BottomMargin>
+    <ColumnSpacing>0.13cm</ColumnSpacing>
+    <Style />
+  </Page>
+  <rd:ReportID>cc11f474-133b-4a53-9648-bf1932b9d18e</rd:ReportID>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+</Report>

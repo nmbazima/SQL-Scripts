@@ -1,0 +1,2546 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <DataSourceReference>Demo</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>4b99e299-e9b2-4ba5-81c8-07b2bb0c0dbc</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="AcademicReports">
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@intReportCycle">
+            <Value>=Parameters!intReportCycle.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intNCYear">
+            <Value>=Parameters!intNCYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtForm">
+            <Value>=Parameters!txtForm.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtSubject">
+            <Value>=Parameters!txtSubject.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtHouse">
+            <Value>=Parameters!txtHouse.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT * FROM 
+VwReportsManagementAcademicReports AS AcademicReports
+WHERE (AcademicReports.intReportCycleID = @intReportCycle) 
+AND (AcademicReports.intReportProgress = 1) 
+AND (AcademicReports.intNCYear IN 
+	(SELECT ID FROM dbo.SplitCSV(@intNCYear) AS SplitCSV_1) OR @intNCYear IS NULL) 
+AND (AcademicReports.txtForm IN 
+	(SELECT ID FROM dbo.SplitCSV(@txtForm) AS SplitCSV_1) OR @txtForm IS NULL) 
+AND (AcademicReports.txtID IN 
+	(SELECT ID FROM dbo.SplitCSV(@txtSubject) AS SplitCSV_1) OR @txtSubject IS NULL) 
+AND (AcademicReports.txtSchoolID IN 
+	(SELECT ID FROM dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR @txtSchoolID IS NULL) 
+AND (AcademicReports.txtBoardingHouse IN
+	(SELECT	ID	FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL 
+	OR
+	AcademicReports.txtAcademicHouse IN
+	(SELECT ID FROM dbo.SplitCSV(@txtHouse) AS SplitCSV_1) OR @txtHouse IS NULL)
+</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="TblReportsStoreID">
+          <DataField>TblReportsStoreID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intReportTypeID">
+          <DataField>intReportTypeID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtReportTypeName">
+          <DataField>txtReportTypeName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intTemplateID">
+          <DataField>intTemplateID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtTemplateName">
+          <DataField>txtTemplateName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtID">
+          <DataField>txtID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubjectArchivedName">
+          <DataField>txtSubjectArchivedName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intID">
+          <DataField>intID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intSubjectID">
+          <DataField>intSubjectID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intReportProgress">
+          <DataField>intReportProgress</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="dtSubmittedOn">
+          <DataField>dtSubmittedOn</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtSubID">
+          <DataField>txtSubID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtArchivedSetCode">
+          <DataField>txtArchivedSetCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtTitle">
+          <DataField>txtTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtForename">
+          <DataField>txtForename</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPreName">
+          <DataField>txtPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtMiddleNames">
+          <DataField>txtMiddleNames</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtInitials">
+          <DataField>txtInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtGender">
+          <DataField>txtGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtNationality">
+          <DataField>txtNationality</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dtDOB">
+          <DataField>dtDOB</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="dtEnrolmentDate">
+          <DataField>dtEnrolmentDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtForm">
+          <DataField>txtForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearCode">
+          <DataField>txtYearCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAcademicHouse">
+          <DataField>txtAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBoardingHouse">
+          <DataField>txtBoardingHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtTutor">
+          <DataField>txtTutor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitBy">
+          <DataField>txtSubmitBy</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByInitials">
+          <DataField>txtSubmitByInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByTitle">
+          <DataField>txtSubmitByTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByPreName">
+          <DataField>txtSubmitByPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByFirstname">
+          <DataField>txtSubmitByFirstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByMiddleNames">
+          <DataField>txtSubmitByMiddleNames</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitBySurname">
+          <DataField>txtSubmitBySurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByNameInitials">
+          <DataField>txtSubmitByNameInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitByGender">
+          <DataField>txtSubmitByGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutor">
+          <DataField>txtFormTutor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorInitials">
+          <DataField>txtFormTutorInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorTitle">
+          <DataField>txtFormTutorTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorPreName">
+          <DataField>txtFormTutorPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorFirstname">
+          <DataField>txtFormTutorFirstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorMiddleNames">
+          <DataField>txtFormTutorMiddleNames</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorSurname">
+          <DataField>txtFormTutorSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorNameInitials">
+          <DataField>txtFormTutorNameInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFormTutorGender">
+          <DataField>txtFormTutorGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutor">
+          <DataField>txtPastoralTutor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorInitials">
+          <DataField>txtPastoralTutorInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorTitle">
+          <DataField>txtPastoralTutorTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorPreName">
+          <DataField>txtPastoralTutorPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorFirstname">
+          <DataField>txtPastoralTutorFirstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorMiddleNames">
+          <DataField>txtPastoralTutorMiddleNames</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorSurname">
+          <DataField>txtPastoralTutorSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorNameInitials">
+          <DataField>txtPastoralTutorNameInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPastoralTutorGender">
+          <DataField>txtPastoralTutorGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutor">
+          <DataField>txtYearTutor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorInitials">
+          <DataField>txtYearTutorInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorTitle">
+          <DataField>txtYearTutorTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorPreName">
+          <DataField>txtYearTutorPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorFirstname">
+          <DataField>txtYearTutorFirstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorMiddleNames">
+          <DataField>txtYearTutorMiddleNames</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorSurname">
+          <DataField>txtYearTutorSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorNameInitials">
+          <DataField>txtYearTutorNameInitials</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearTutorGender">
+          <DataField>txtYearTutorGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCurrentSubjectName">
+          <DataField>txtCurrentSubjectName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCurrentSubjectReportName">
+          <DataField>txtCurrentSubjectReportName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intSubjectOrder">
+          <DataField>intSubjectOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtActivityGroupName">
+          <DataField>txtActivityGroupName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtActivityGroupReportName">
+          <DataField>txtActivityGroupReportName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtActivityCategoryName">
+          <DataField>txtActivityCategoryName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intReportCycleID">
+          <DataField>intReportCycleID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtReportCycleName">
+          <DataField>txtReportCycleName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intReportCycleType">
+          <DataField>intReportCycleType</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intPreviousReportCycle">
+          <DataField>intPreviousReportCycle</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtReportCycleShortName">
+          <DataField>txtReportCycleShortName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intReportCycleTerm">
+          <DataField>intReportCycleTerm</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intReportCycleAcademicYear">
+          <DataField>intReportCycleAcademicYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="dtReportCycleStartDate">
+          <DataField>dtReportCycleStartDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="dtReportCycleFinishDate">
+          <DataField>dtReportCycleFinishDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="dtReportCyclePrintDate">
+          <DataField>dtReportCyclePrintDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtReportTermName">
+          <DataField>txtReportTermName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dtReportTermStartDate">
+          <DataField>dtReportTermStartDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="dtReportTermFinishDate">
+          <DataField>dtReportTermFinishDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtSubjectGeneralComment">
+          <DataField>txtSubjectGeneralComment</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intGradeID">
+          <DataField>intGradeID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtGradingName">
+          <DataField>txtGradingName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtGradingOptions">
+          <DataField>txtGradingOptions</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtShortGradingName">
+          <DataField>txtShortGradingName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtGrade">
+          <DataField>txtGrade</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intGradeTransposeValue">
+          <DataField>intGradeTransposeValue</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intResultID">
+          <DataField>intResultID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtResultName">
+          <DataField>txtResultName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtShortResultName">
+          <DataField>txtShortResultName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtResult">
+          <DataField>txtResult</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intCommentID">
+          <DataField>intCommentID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtCommentName">
+          <DataField>txtCommentName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtComment">
+          <DataField>txtComment</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intPositionID">
+          <DataField>intPositionID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtPositionName">
+          <DataField>txtPositionName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtShortPositionName">
+          <DataField>txtShortPositionName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPosition">
+          <DataField>txtPosition</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix3">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>21cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>18.78469cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle8">
+                          <ReportItems>
+                            <Textbox Name="Textbox5">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Achievement (A)</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>12pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>A* Performing </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>considerably above</Value>
+                                      <Style>
+                                        <FontStyle>Italic</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value> the level expected for the age group</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>A   Performing </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>above</Value>
+                                      <Style>
+                                        <FontStyle>Italic</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value> the level expected for the age group</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>B   Performing </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>at</Value>
+                                      <Style>
+                                        <FontStyle>Italic</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value> the level expected for the age group</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>C   Performing </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>slightly below</Value>
+                                      <Style>
+                                        <FontStyle>Italic</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value> the level expected for the age group</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>D   Performing </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>below</Value>
+                                      <Style>
+                                        <FontStyle>Italic</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value> the level expected for the age group</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>E   Performing </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>considerably below</Value>
+                                      <Style>
+                                        <FontStyle>Italic</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value> the level expected for the age group</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox5</rd:DefaultName>
+                              <Top>5cm</Top>
+                              <Left>1cm</Left>
+                              <Height>3.2cm</Height>
+                              <Width>13.5cm</Width>
+                              <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </Border>
+                                <TopBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </TopBorder>
+                                <BottomBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </BottomBorder>
+                                <LeftBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </LeftBorder>
+                                <RightBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </RightBorder>
+                                <BackgroundColor>#6666ff</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>10pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox4">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Effort (E)</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>12pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>6 Consistently outstanding effort</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>5 Very good effort</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>4 Good effort</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>3 Satisfactory effort</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>2 Unsatisfactory effort</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>1 Cause for concern</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox4</rd:DefaultName>
+                              <Top>5cm</Top>
+                              <Left>14.5cm</Left>
+                              <Height>3.2cm</Height>
+                              <Width>5.5cm</Width>
+                              <ZIndex>1</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </Border>
+                                <TopBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </TopBorder>
+                                <BottomBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </BottomBorder>
+                                <LeftBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </LeftBorder>
+                                <RightBorder>
+                                  <Color>Black</Color>
+                                  <Style>Solid</Style>
+                                  <Width>0.5pt</Width>
+                                </RightBorder>
+                                <BackgroundColor>#bdd6ee</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>10pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox9">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Explanation of achievement and effort grades</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>·</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Symbol</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value xml:space="preserve">      </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Times New Roman</FontFamily>
+                                        <FontSize>7pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>Years 1-5 are following the Cambridge Curriculum for grading work, assessments and reports.</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0.47625cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <HangingIndent>-18pt</HangingIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>·</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Symbol</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value xml:space="preserve">      </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Times New Roman</FontFamily>
+                                        <FontSize>7pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>Your child has been given two numbers, the descriptors for which are in the table below.</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0.47625cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <HangingIndent>-18pt</HangingIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>·</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Symbol</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value xml:space="preserve">      </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Times New Roman</FontFamily>
+                                        <FontSize>7pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>“Star of the Week” is given for excellent work, effort or behaviour.</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0.47625cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <HangingIndent>-18pt</HangingIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>·</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Symbol</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value xml:space="preserve">      </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontFamily>Times New Roman</FontFamily>
+                                        <FontSize>7pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>Detentions are given for unfinished or unsatisfactory work or for poor behaviour.</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0.47625cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <HangingIndent>-18pt</HangingIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox9</rd:DefaultName>
+                              <Top>2.5cm</Top>
+                              <Left>1cm</Left>
+                              <Height>2.2cm</Height>
+                              <Width>19cm</Width>
+                              <ZIndex>2</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox6">
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Student: </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>18pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>=Fields!txtForename.Value + " " + Fields!txtSurname.Value</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>18pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox1</rd:DefaultName>
+                              <Top>1.22646cm</Top>
+                              <Left>1cm</Left>
+                              <Height>1cm</Height>
+                              <Width>13.5cm</Width>
+                              <ZIndex>3</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>4pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox7">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Year group:</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>18pt</FontSize>
+                                        <FontWeight>Normal</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value xml:space="preserve"> </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>18pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>=Fields!intNCYear.Value</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>18pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox2</rd:DefaultName>
+                              <Top>1.22646cm</Top>
+                              <Left>14.5cm</Left>
+                              <Height>1cm</Height>
+                              <Width>5.5cm</Width>
+                              <ZIndex>4</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                            <Tablix Name="Tablix21">
+                              <TablixBody>
+                                <TablixColumns>
+                                  <TablixColumn>
+                                    <Width>19cm</Width>
+                                  </TablixColumn>
+                                </TablixColumns>
+                                <TablixRows>
+                                  <TablixRow>
+                                    <Height>3.6cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Rectangle Name="Rectangle1">
+                                            <ReportItems>
+                                              <Tablix Name="Tablix1">
+                                                <TablixBody>
+                                                  <TablixColumns>
+                                                    <TablixColumn>
+                                                      <Width>9.5cm</Width>
+                                                    </TablixColumn>
+                                                    <TablixColumn>
+                                                      <Width>9.5cm</Width>
+                                                    </TablixColumn>
+                                                  </TablixColumns>
+                                                  <TablixRows>
+                                                    <TablixRow>
+                                                      <Height>0.6cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox14">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value>Subject:</Value>
+                                                                      <Style>
+                                                                        <FontStyle>Normal</FontStyle>
+                                                                        <FontWeight>Normal</FontWeight>
+                                                                        <TextDecoration>None</TextDecoration>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                    <TextRun>
+                                                                      <Value xml:space="preserve"> </Value>
+                                                                      <Style>
+                                                                        <FontStyle>Normal</FontStyle>
+                                                                        <FontWeight>Bold</FontWeight>
+                                                                        <TextDecoration>None</TextDecoration>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                    <TextRun>
+                                                                      <Value>=Fields!txtCurrentSubjectReportName.Value</Value>
+                                                                      <Style>
+                                                                        <FontWeight>Bold</FontWeight>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style>
+                                                                    <TextAlign>Left</TextAlign>
+                                                                  </Style>
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox11</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <RightBorder>
+                                                                  <Style>None</Style>
+                                                                </RightBorder>
+                                                                <VerticalAlign>Top</VerticalAlign>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>2pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox20">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value>Teacher: </Value>
+                                                                      <Style>
+                                                                        <FontStyle>Normal</FontStyle>
+                                                                        <FontWeight>Normal</FontWeight>
+                                                                        <TextDecoration>None</TextDecoration>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                    <TextRun>
+                                                                      <Value>=Fields!txtSubmitByTitle.Value + ". " + Microsoft.VisualBasic.Strings.Left(Fields!txtSubmitByFirstname.Value, 1) + " " + Fields!txtSubmitBySurname.Value</Value>
+                                                                      <Style>
+                                                                        <FontWeight>Bold</FontWeight>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style>
+                                                                    <TextAlign>Center</TextAlign>
+                                                                  </Style>
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox18</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <LeftBorder>
+                                                                  <Style>None</Style>
+                                                                </LeftBorder>
+                                                                <PaddingLeft>2pt</PaddingLeft>
+                                                                <PaddingRight>2pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                    <TablixRow>
+                                                      <Height>0.6cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Tablix Name="Tablix7">
+                                                              <TablixBody>
+                                                                <TablixColumns>
+                                                                  <TablixColumn>
+                                                                    <Width>9.5cm</Width>
+                                                                  </TablixColumn>
+                                                                </TablixColumns>
+                                                                <TablixRows>
+                                                                  <TablixRow>
+                                                                    <Height>0.6cm</Height>
+                                                                    <TablixCells>
+                                                                      <TablixCell>
+                                                                        <CellContents>
+                                                                          <Textbox Name="Textbox42">
+                                                                            <KeepTogether>true</KeepTogether>
+                                                                            <Paragraphs>
+                                                                              <Paragraph>
+                                                                                <TextRuns>
+                                                                                  <TextRun>
+                                                                                    <Value>Achievement:  </Value>
+                                                                                    <Style>
+                                                                                      <FontStyle>Normal</FontStyle>
+                                                                                      <FontWeight>Bold</FontWeight>
+                                                                                      <TextDecoration>None</TextDecoration>
+                                                                                      <Color>White</Color>
+                                                                                    </Style>
+                                                                                  </TextRun>
+                                                                                  <TextRun>
+                                                                                    <Value>=Fields!txtGrade.Value</Value>
+                                                                                    <Style>
+                                                                                      <FontWeight>Bold</FontWeight>
+                                                                                      <Color>White</Color>
+                                                                                    </Style>
+                                                                                  </TextRun>
+                                                                                </TextRuns>
+                                                                                <LeftIndent>0cm</LeftIndent>
+                                                                                <HangingIndent>0cm</HangingIndent>
+                                                                                <Style>
+                                                                                  <TextAlign>Left</TextAlign>
+                                                                                </Style>
+                                                                              </Paragraph>
+                                                                            </Paragraphs>
+                                                                            <rd:DefaultName>Textbox34</rd:DefaultName>
+                                                                            <Style>
+                                                                              <Border>
+                                                                                <Style>None</Style>
+                                                                              </Border>
+                                                                              <LeftBorder>
+                                                                                <Color>Black</Color>
+                                                                                <Width>0.5pt</Width>
+                                                                              </LeftBorder>
+                                                                              <BackgroundColor>#6666ff</BackgroundColor>
+                                                                              <PaddingLeft>4pt</PaddingLeft>
+                                                                              <PaddingRight>2pt</PaddingRight>
+                                                                              <PaddingTop>2pt</PaddingTop>
+                                                                              <PaddingBottom>2pt</PaddingBottom>
+                                                                            </Style>
+                                                                          </Textbox>
+                                                                        </CellContents>
+                                                                      </TablixCell>
+                                                                    </TablixCells>
+                                                                  </TablixRow>
+                                                                </TablixRows>
+                                                              </TablixBody>
+                                                              <TablixColumnHierarchy>
+                                                                <TablixMembers>
+                                                                  <TablixMember />
+                                                                </TablixMembers>
+                                                              </TablixColumnHierarchy>
+                                                              <TablixRowHierarchy>
+                                                                <TablixMembers>
+                                                                  <TablixMember />
+                                                                </TablixMembers>
+                                                              </TablixRowHierarchy>
+                                                              <Filters>
+                                                                <Filter>
+                                                                  <FilterExpression>=Fields!txtGradingName.Value</FilterExpression>
+                                                                  <Operator>Like</Operator>
+                                                                  <FilterValues>
+                                                                    <FilterValue>*Achievement*</FilterValue>
+                                                                  </FilterValues>
+                                                                </Filter>
+                                                              </Filters>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <BackgroundColor>#2e75b6</BackgroundColor>
+                                                              </Style>
+                                                            </Tablix>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Tablix Name="Tablix8">
+                                                              <TablixBody>
+                                                                <TablixColumns>
+                                                                  <TablixColumn>
+                                                                    <Width>9.5cm</Width>
+                                                                  </TablixColumn>
+                                                                </TablixColumns>
+                                                                <TablixRows>
+                                                                  <TablixRow>
+                                                                    <Height>0.6cm</Height>
+                                                                    <TablixCells>
+                                                                      <TablixCell>
+                                                                        <CellContents>
+                                                                          <Textbox Name="Textbox43">
+                                                                            <KeepTogether>true</KeepTogether>
+                                                                            <Paragraphs>
+                                                                              <Paragraph>
+                                                                                <TextRuns>
+                                                                                  <TextRun>
+                                                                                    <Value>Effort:  </Value>
+                                                                                    <Style>
+                                                                                      <FontStyle>Normal</FontStyle>
+                                                                                      <FontWeight>Bold</FontWeight>
+                                                                                      <TextDecoration>None</TextDecoration>
+                                                                                      <Color>#595959</Color>
+                                                                                    </Style>
+                                                                                  </TextRun>
+                                                                                  <TextRun>
+                                                                                    <Value>=Fields!txtGrade.Value</Value>
+                                                                                    <Style>
+                                                                                      <FontWeight>Bold</FontWeight>
+                                                                                      <Color>#595959</Color>
+                                                                                    </Style>
+                                                                                  </TextRun>
+                                                                                </TextRuns>
+                                                                                <LeftIndent>0cm</LeftIndent>
+                                                                                <HangingIndent>0cm</HangingIndent>
+                                                                                <Style>
+                                                                                  <TextAlign>Left</TextAlign>
+                                                                                </Style>
+                                                                              </Paragraph>
+                                                                            </Paragraphs>
+                                                                            <rd:DefaultName>Textbox34</rd:DefaultName>
+                                                                            <Style>
+                                                                              <Border>
+                                                                                <Style>None</Style>
+                                                                                <Width>0.5pt</Width>
+                                                                              </Border>
+                                                                              <BackgroundColor>#bdd6ee</BackgroundColor>
+                                                                              <PaddingLeft>4pt</PaddingLeft>
+                                                                              <PaddingRight>2pt</PaddingRight>
+                                                                              <PaddingTop>2pt</PaddingTop>
+                                                                              <PaddingBottom>2pt</PaddingBottom>
+                                                                            </Style>
+                                                                          </Textbox>
+                                                                        </CellContents>
+                                                                      </TablixCell>
+                                                                    </TablixCells>
+                                                                  </TablixRow>
+                                                                </TablixRows>
+                                                              </TablixBody>
+                                                              <TablixColumnHierarchy>
+                                                                <TablixMembers>
+                                                                  <TablixMember />
+                                                                </TablixMembers>
+                                                              </TablixColumnHierarchy>
+                                                              <TablixRowHierarchy>
+                                                                <TablixMembers>
+                                                                  <TablixMember />
+                                                                </TablixMembers>
+                                                              </TablixRowHierarchy>
+                                                              <Filters>
+                                                                <Filter>
+                                                                  <FilterExpression>=Fields!txtGradingName.Value</FilterExpression>
+                                                                  <Operator>Like</Operator>
+                                                                  <FilterValues>
+                                                                    <FilterValue>*Effort*</FilterValue>
+                                                                  </FilterValues>
+                                                                </Filter>
+                                                              </Filters>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <BackgroundColor>#b4c6e7</BackgroundColor>
+                                                              </Style>
+                                                            </Tablix>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                    <TablixRow>
+                                                      <Height>2cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="txtComment3">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value>=Fields!txtComment.Value</Value>
+                                                                      <Style>
+                                                                        <FontSize>9pt</FontSize>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style />
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>txtComment1</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>4pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                            <ColSpan>2</ColSpan>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell />
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                    <TablixRow>
+                                                      <Height>0.4cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox64">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value />
+                                                                      <Style>
+                                                                        <FontSize>9pt</FontSize>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style />
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox64</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>None</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>4pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox65">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value />
+                                                                      <Style>
+                                                                        <FontSize>9pt</FontSize>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style />
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox65</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>None</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>4pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                  </TablixRows>
+                                                </TablixBody>
+                                                <TablixColumnHierarchy>
+                                                  <TablixMembers>
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                  </TablixMembers>
+                                                </TablixColumnHierarchy>
+                                                <TablixRowHierarchy>
+                                                  <TablixMembers>
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                  </TablixMembers>
+                                                </TablixRowHierarchy>
+                                                <KeepTogether>true</KeepTogether>
+                                                <DataSetName>AcademicReports</DataSetName>
+                                                <Height>3.6cm</Height>
+                                                <Width>19cm</Width>
+                                                <Style>
+                                                  <Border>
+                                                    <Color>#b8c2d2</Color>
+                                                    <Style>None</Style>
+                                                  </Border>
+                                                </Style>
+                                              </Tablix>
+                                            </ReportItems>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Style>
+                                              <Border>
+                                                <Style>None</Style>
+                                              </Border>
+                                            </Style>
+                                          </Rectangle>
+                                        </CellContents>
+                                      </TablixCell>
+                                    </TablixCells>
+                                  </TablixRow>
+                                </TablixRows>
+                              </TablixBody>
+                              <TablixColumnHierarchy>
+                                <TablixMembers>
+                                  <TablixMember />
+                                </TablixMembers>
+                              </TablixColumnHierarchy>
+                              <TablixRowHierarchy>
+                                <TablixMembers>
+                                  <TablixMember>
+                                    <Group Name="TblReportsStoreID_Subjects">
+                                      <GroupExpressions>
+                                        <GroupExpression>=Fields!TblReportsStoreID.Value</GroupExpression>
+                                      </GroupExpressions>
+                                    </Group>
+                                    <SortExpressions>
+                                      <SortExpression>
+                                        <Value>=Fields!intSubjectOrder.Value</Value>
+                                      </SortExpression>
+                                      <SortExpression>
+                                        <Value>=Fields!txtCurrentSubjectReportName.Value</Value>
+                                      </SortExpression>
+                                    </SortExpressions>
+                                  </TablixMember>
+                                </TablixMembers>
+                              </TablixRowHierarchy>
+                              <Filters>
+                                <Filter>
+                                  <FilterExpression>=Fields!intReportTypeID.Value</FilterExpression>
+                                  <Operator>Equal</Operator>
+                                  <FilterValues>
+                                    <FilterValue DataType="Integer">1</FilterValue>
+                                  </FilterValues>
+                                </Filter>
+                              </Filters>
+                              <Top>8.6712cm</Top>
+                              <Left>1cm</Left>
+                              <Height>3.6cm</Height>
+                              <Width>19cm</Width>
+                              <ZIndex>5</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Tablix>
+                            <Textbox Name="Textbox15">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>END OF TERM REPORT: </Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>16pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                    <TextRun>
+                                      <Value>=Ucase(MonthName(Month(Fields!dtReportCyclePrintDate.Value))) &amp; " " &amp; Year(Fields!dtReportCyclePrintDate.Value)</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>16pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#595959</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox15</rd:DefaultName>
+                              <Top>0.02646cm</Top>
+                              <Left>1cm</Left>
+                              <Height>1cm</Height>
+                              <Width>19cm</Width>
+                              <ZIndex>6</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                            <Tablix Name="Tablix22">
+                              <TablixBody>
+                                <TablixColumns>
+                                  <TablixColumn>
+                                    <Width>19cm</Width>
+                                  </TablixColumn>
+                                </TablixColumns>
+                                <TablixRows>
+                                  <TablixRow>
+                                    <Height>3cm</Height>
+                                    <TablixCells>
+                                      <TablixCell>
+                                        <CellContents>
+                                          <Rectangle Name="Rectangle2">
+                                            <ReportItems>
+                                              <Tablix Name="Tablix2">
+                                                <TablixBody>
+                                                  <TablixColumns>
+                                                    <TablixColumn>
+                                                      <Width>9.5cm</Width>
+                                                    </TablixColumn>
+                                                    <TablixColumn>
+                                                      <Width>9.5cm</Width>
+                                                    </TablixColumn>
+                                                  </TablixColumns>
+                                                  <TablixRows>
+                                                    <TablixRow>
+                                                      <Height>0.6cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox16">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value>=IIF(Fields!intReportTypeID.Value=6,"Class Teacher's Comment","Head of Primary Comment")</Value>
+                                                                      <Style>
+                                                                        <FontWeight>Bold</FontWeight>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style>
+                                                                    <TextAlign>Left</TextAlign>
+                                                                  </Style>
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox11</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <RightBorder>
+                                                                  <Style>None</Style>
+                                                                </RightBorder>
+                                                                <VerticalAlign>Top</VerticalAlign>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>2pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox21">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value>=Fields!txtSubmitByTitle.Value + ". " + Left(Fields!txtSubmitByFirstname.Value, 1) + " " + Fields!txtSubmitBySurname.Value</Value>
+                                                                      <Style>
+                                                                        <FontWeight>Bold</FontWeight>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style>
+                                                                    <TextAlign>Center</TextAlign>
+                                                                  </Style>
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox18</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <LeftBorder>
+                                                                  <Style>None</Style>
+                                                                </LeftBorder>
+                                                                <PaddingLeft>2pt</PaddingLeft>
+                                                                <PaddingRight>2pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                    <TablixRow>
+                                                      <Height>2cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="txtComment4">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value>=Fields!txtComment.Value</Value>
+                                                                      <Style>
+                                                                        <FontSize>9pt</FontSize>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style />
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>txtComment1</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>Solid</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>4pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                            <ColSpan>2</ColSpan>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell />
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                    <TablixRow>
+                                                      <Height>0.4cm</Height>
+                                                      <TablixCells>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox66">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value />
+                                                                      <Style>
+                                                                        <FontSize>9pt</FontSize>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style />
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox64</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>None</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>4pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                        <TablixCell>
+                                                          <CellContents>
+                                                            <Textbox Name="Textbox67">
+                                                              <CanGrow>true</CanGrow>
+                                                              <KeepTogether>true</KeepTogether>
+                                                              <Paragraphs>
+                                                                <Paragraph>
+                                                                  <TextRuns>
+                                                                    <TextRun>
+                                                                      <Value />
+                                                                      <Style>
+                                                                        <FontSize>9pt</FontSize>
+                                                                        <Color>#595959</Color>
+                                                                      </Style>
+                                                                    </TextRun>
+                                                                  </TextRuns>
+                                                                  <Style />
+                                                                </Paragraph>
+                                                              </Paragraphs>
+                                                              <rd:DefaultName>Textbox65</rd:DefaultName>
+                                                              <Style>
+                                                                <Border>
+                                                                  <Style>None</Style>
+                                                                  <Width>0.5pt</Width>
+                                                                </Border>
+                                                                <PaddingLeft>4pt</PaddingLeft>
+                                                                <PaddingRight>4pt</PaddingRight>
+                                                                <PaddingTop>2pt</PaddingTop>
+                                                                <PaddingBottom>2pt</PaddingBottom>
+                                                              </Style>
+                                                            </Textbox>
+                                                          </CellContents>
+                                                        </TablixCell>
+                                                      </TablixCells>
+                                                    </TablixRow>
+                                                  </TablixRows>
+                                                </TablixBody>
+                                                <TablixColumnHierarchy>
+                                                  <TablixMembers>
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                  </TablixMembers>
+                                                </TablixColumnHierarchy>
+                                                <TablixRowHierarchy>
+                                                  <TablixMembers>
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                    <TablixMember />
+                                                  </TablixMembers>
+                                                </TablixRowHierarchy>
+                                                <KeepTogether>true</KeepTogether>
+                                                <DataSetName>AcademicReports</DataSetName>
+                                                <Height>3cm</Height>
+                                                <Width>19cm</Width>
+                                                <Style>
+                                                  <Border>
+                                                    <Color>#b8c2d2</Color>
+                                                    <Style>None</Style>
+                                                  </Border>
+                                                </Style>
+                                              </Tablix>
+                                            </ReportItems>
+                                            <KeepTogether>true</KeepTogether>
+                                            <Style>
+                                              <Border>
+                                                <Style>None</Style>
+                                              </Border>
+                                            </Style>
+                                          </Rectangle>
+                                        </CellContents>
+                                      </TablixCell>
+                                    </TablixCells>
+                                  </TablixRow>
+                                </TablixRows>
+                              </TablixBody>
+                              <TablixColumnHierarchy>
+                                <TablixMembers>
+                                  <TablixMember />
+                                </TablixMembers>
+                              </TablixColumnHierarchy>
+                              <TablixRowHierarchy>
+                                <TablixMembers>
+                                  <TablixMember>
+                                    <Group Name="TblReportsStoreID_NotSubjects">
+                                      <GroupExpressions>
+                                        <GroupExpression>=Fields!TblReportsStoreID.Value</GroupExpression>
+                                      </GroupExpressions>
+                                    </Group>
+                                    <SortExpressions>
+                                      <SortExpression>
+                                        <Value>=Fields!intReportTypeID.Value</Value>
+                                      </SortExpression>
+                                    </SortExpressions>
+                                  </TablixMember>
+                                </TablixMembers>
+                              </TablixRowHierarchy>
+                              <Filters>
+                                <Filter>
+                                  <FilterExpression>=Fields!intReportTypeID.Value</FilterExpression>
+                                  <Operator>In</Operator>
+                                  <FilterValues>
+                                    <FilterValue DataType="Integer">6</FilterValue>
+                                    <FilterValue DataType="Integer">10</FilterValue>
+                                  </FilterValues>
+                                </Filter>
+                              </Filters>
+                              <Top>12.3cm</Top>
+                              <Left>1cm</Left>
+                              <Height>3cm</Height>
+                              <Width>19cm</Width>
+                              <ZIndex>7</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Tablix>
+                            <Textbox Name="Textbox60">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Mr. Glyn Lewis</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#000000</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>B. Ed. (Hons)</Value>
+                                      <Style>
+                                        <FontStyle>Normal</FontStyle>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <TextDecoration>None</TextDecoration>
+                                        <Color>#000000</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <LeftIndent>0cm</LeftIndent>
+                                  <RightIndent>0cm</RightIndent>
+                                  <Style>
+                                    <TextAlign>Left</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox60</rd:DefaultName>
+                              <Top>17.7349cm</Top>
+                              <Left>1cm</Left>
+                              <Height>1.04979cm</Height>
+                              <Width>4.2cm</Width>
+                              <ZIndex>8</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="txtSchoolID">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                    </GroupExpressions>
+                    <PageBreak>
+                      <BreakLocation>Between</BreakLocation>
+                      <ResetPageNumber>true</ResetPageNumber>
+                    </PageBreak>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields(Parameters!txtOrder.Value).Value</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!txtSurname.Value</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!txtForename.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <KeepTogether>true</KeepTogether>
+            <DataSetName>AcademicReports</DataSetName>
+            <Height>18.78469cm</Height>
+            <Width>21cm</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>7.39555in</Height>
+        <Style />
+      </Body>
+      <Width>8.26772in</Width>
+      <Page>
+        <PageHeader>
+          <Height>3.5cm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Image Name="Image2">
+              <Source>Embedded</Source>
+              <Value>Sentinel_Kabitaka_Horiz_CORE</Value>
+              <Sizing>FitProportional</Sizing>
+              <Left>12.79388cm</Left>
+              <Height>3.5cm</Height>
+              <Width>8cm</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+              </Style>
+            </Image>
+            <Textbox Name="Textbox1">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>ENGAGE</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>ENLIGHTEN</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <LeftIndent>0cm</LeftIndent>
+                  <RightIndent>0cm</RightIndent>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>EMPOWER</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Top>0.6cm</Top>
+              <Left>1cm</Left>
+              <Height>2.5cm</Height>
+              <Width>2cm</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox2">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Educore Services</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>PO Box 110506</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <LeftIndent>0cm</LeftIndent>
+                  <RightIndent>0cm</RightIndent>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Solwezi, Zambia</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <LeftIndent>0cm</LeftIndent>
+                  <RightIndent>0cm</RightIndent>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Telephone: +260 968 03 76 79</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <LeftIndent>0cm</LeftIndent>
+                  <RightIndent>0cm</RightIndent>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>adminkabitaka@educoreservices.com</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <LeftIndent>0cm</LeftIndent>
+                  <RightIndent>0cm</RightIndent>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>www.kabitakaschool.com</Value>
+                      <Style>
+                        <FontStyle>Normal</FontStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#595959</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox2</rd:DefaultName>
+              <Top>0.6cm</Top>
+              <Left>4cm</Left>
+              <Height>2.5cm</Height>
+              <Width>6cm</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <LeftMargin>0cm</LeftMargin>
+        <RightMargin>0cm</RightMargin>
+        <TopMargin>0cm</TopMargin>
+        <BottomMargin>0cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="intReportCycle">
+      <DataType>String</DataType>
+      <Prompt>int Report Cycle</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="intNCYear">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>int NCYear</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtForm">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>txt Form</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtSubject">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>txt Subject</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>txt School ID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtHouse">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>txt House</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtOrder">
+      <DataType>String</DataType>
+      <Prompt>txtOrder</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <EmbeddedImages>
+    <EmbeddedImage Name="midsizedfooterlogofinal">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="Sentinel_Kabitaka_Horiz_CORE">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>d555c228-b766-4fc3-823a-43e95b00f7e9</rd:ReportID>
+</Report>

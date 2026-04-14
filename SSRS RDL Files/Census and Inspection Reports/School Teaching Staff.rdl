@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><Body><ReportItems><Tablix Name="matrix1"><TablixCorner><TablixCornerRows><TablixCornerRow><TablixCornerCell><CellContents><Textbox Name="txtName_1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtName_1</rd:DefaultName><ZIndex>4</ZIndex><Style><Border><Style>Solid</Style><Width>0.25pt</Width></Border></Style></Textbox><RowSpan>2</RowSpan></CellContents></TablixCornerCell></TablixCornerRow><TablixCornerRow><TablixCornerCell /></TablixCornerRow></TablixCornerRows></TablixCorner><TablixBody><TablixColumns><TablixColumn><Width>0.75cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.25cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Value"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!Value.Value</Value><Style><FontFamily>Times New Roman</FontFamily><FontSize>5pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Value</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.25pt</Width></Border><VerticalAlign>Middle</VerticalAlign></Style></Textbox></CellContents><DataElementOutput>Output</DataElementOutput></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember><Group Name="matrix1_ColumnGroup_Rank"><GroupExpressions><GroupExpression>=Fields!Order.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!Order.Value</Value></SortExpression><SortExpression><Value>=Fields!Rank.Value</Value></SortExpression></SortExpressions><TablixHeader><Size>0.25cm</Size><CellContents><Textbox Name="Order"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=iif(Fields!Order.Value = 1, "G", iif(Fields!Order.Value = 2, "Subject(s)", iif(Fields!Order.Value = 3, "Department(s)",iif(Fields!Order.Value = 4, "Responsibilities", iif(Fields!Order.Value = 5, "NQ", iif(Fields!Order.Value = 6, "Division", iif(Fields!Order.Value = 6, "Free", iif(Fields!Order.Value = 8, "FTE",""))))))))</Value><Style><FontFamily>Times New Roman</FontFamily><FontSize>5pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Order</rd:DefaultName><ZIndex>3</ZIndex><Style><Border><Style>Solid</Style><Width>0.25pt</Width></Border></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><Group Name="matrix1_ColumnGroup_Order"><GroupExpressions><GroupExpression>=Fields!Rank.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!Order.Value</Value></SortExpression><SortExpression><Value>=Fields!Rank.Value</Value></SortExpression></SortExpressions><TablixHeader><Size>0.25cm</Size><CellContents><Textbox Name="Rank"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=iif(Fields!Rank.Value &lt;&gt; 999, Fields!Rank.Value, "")</Value><Style><FontFamily>Times New Roman</FontFamily><FontSize>5pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Rank</rd:DefaultName><ZIndex>2</ZIndex><Style><Border><Style>Solid</Style><Width>0.25pt</Width></Border></Style></Textbox></CellContents></TablixHeader><DataElementOutput>Output</DataElementOutput><KeepTogether>true</KeepTogether></TablixMember></TablixMembers><DataElementOutput>Output</DataElementOutput></TablixMember></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="matrix1_RowGroup2"><GroupExpressions><GroupExpression>=Fields!User_Code.Value</GroupExpression></GroupExpressions></Group><TablixHeader><Size>2.5cm</Size><CellContents><Textbox Name="txtName"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!txtName.Value)</Value><Style><FontFamily>Times New Roman</FontFamily><FontSize>5pt</FontSize></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtName</rd:DefaultName><ZIndex>1</ZIndex><Style><Border><Style>Solid</Style><Width>0.25pt</Width></Border></Style></Textbox></CellContents></TablixHeader><DataElementOutput>Output</DataElementOutput><KeepTogether>true</KeepTogether></TablixMember></TablixMembers></TablixRowHierarchy><RepeatColumnHeaders>true</RepeatColumnHeaders><RepeatRowHeaders>true</RepeatRowHeaders><DataSetName>Main</DataSetName><Height>0.75cm</Height><Width>3.25cm</Width><Style /></Tablix></ReportItems><Height>0.75cm</Height><Style /></Body><Width>3.25cm</Width><Page><PageHeight>21cm</PageHeight><PageWidth>29.7cm</PageWidth><InteractiveHeight>29.7cm</InteractiveHeight><InteractiveWidth>21cm</InteractiveWidth><LeftMargin>0.5cm</LeftMargin><RightMargin>0.5cm</RightMargin><TopMargin>0.5cm</TopMargin><BottomMargin>0.5cm</BottomMargin><ColumnSpacing>1cm</ColumnSpacing><Style /></Page><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>Demo</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>487d03b7-70f4-43c8-8eb5-c0a1f5c26ca0</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="Main"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@Division"><Value>=Parameters!Division.Value</Value></QueryParameter></QueryParameters><CommandText>SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, TblTeachingManagerSubjects.txtSubjectCode AS [Value], 
+                         TblStaff.User_Code, DENSE_RANK() OVER (PARTITION BY TblStaff.User_Code
+ORDER BY TblTeachingManagerSubjects.txtSubjectCode) AS [Rank], 2 AS [Order]
+FROM            TblStaffManagementDivisions RIGHT OUTER JOIN
+                         TblStaff INNER JOIN
+                         TblTeachingManagerSubjects INNER JOIN
+                         TblTeachingManagerSubjectsTeachers ON TblTeachingManagerSubjects.TblTeachingManagerSubjectsID = TblTeachingManagerSubjectsTeachers.intSubject ON 
+                         TblStaff.User_Code = TblTeachingManagerSubjectsTeachers.txtTeacher ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID
+WHERE                    tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+UNION
+SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, CASE WHEN TblStaff.Sex &lt;&gt; 'M' AND 
+                         TblStaff.Sex &lt;&gt; 'F' THEN '' ELSE TblStaff.Sex END AS Gender, TblStaff.User_Code, 999 AS g, 1 AS [Order]
+FROM            TblStaffManagementDivisions RIGHT OUTER JOIN
+                         TblStaff INNER JOIN
+                         TblTeachingManagerSubjects INNER JOIN
+                         TblTeachingManagerSubjectsTeachers ON TblTeachingManagerSubjects.TblTeachingManagerSubjectsID = TblTeachingManagerSubjectsTeachers.intSubject ON 
+                         TblStaff.User_Code = TblTeachingManagerSubjectsTeachers.txtTeacher ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID
+WHERE                    tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+UNION
+SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, TblTeachingManagerSubjectDepartments.txtDepartmentName AS [Value], 
+                         TblStaff.User_Code, DENSE_RANK() OVER (PARTITION BY TblStaff.User_Code
+ORDER BY TblTeachingManagerSubjectDepartments.txtDepartmentName) AS [Rank], 3 AS [Order]
+FROM            TblStaffManagementDivisions RIGHT OUTER JOIN
+                         TblStaff INNER JOIN
+                         TblTeachingManagerSubjects INNER JOIN
+                         TblTeachingManagerSubjectsTeachers ON TblTeachingManagerSubjects.TblTeachingManagerSubjectsID = TblTeachingManagerSubjectsTeachers.intSubject ON 
+                         TblStaff.User_Code = TblTeachingManagerSubjectsTeachers.txtTeacher ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID INNER JOIN 
+					TblTeachingManagerSubjectDepartmentsSubjectLinks on TblTeachingManagerSubjects.TblTeachingManagerSubjectsID = TblTeachingManagerSubjectDepartmentsSubjectLinks.intSubject INNER JOIN
+					TblTeachingManagerSubjectDepartments on TblTeachingManagerSubjectDepartmentsSubjectLinks.intDepartment = TblTeachingManagerSubjectDepartmentsID
+
+WHERE                    tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+UNION
+SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, TblStaffManagementSchoolRolesObjects.txtSchoolRolesName, 
+                         TblStaff.User_Code, DENSE_RANK() OVER (PARTITION BY TblStaff.User_Code
+ORDER BY TblStaffManagementSchoolRolesObjects.txtSchoolRolesName) AS [Rank], 4 AS [Order]
+FROM            TblStaffManagementDivisions RIGHT OUTER JOIN
+                         TblStaff LEFT OUTER JOIN
+                         TblStaffManagementSchoolRolesObjects INNER JOIN
+                         TblStaffManagementSchoolRoles ON 
+                         TblStaffManagementSchoolRolesObjects.TblStaffManagementSchoolRolesObjectsID = TblStaffManagementSchoolRoles.intSchoolRole ON 
+                         TblStaff.TblStaffID = TblStaffManagementSchoolRoles.intStaff ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID
+WHERE        tblstaff.teachingstaff = 1 AND tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+UNION
+SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, '', TblStaff.User_Code, 999 AS [Rank], 5 AS [Order]
+FROM            TblStaffManagementDivisions RIGHT OUTER JOIN
+                         TblStaff ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID
+WHERE                    tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+UNION
+SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, IsNull(TblSchoolManagementSchoolDivisions.txtName, 'All'), 
+                         TblStaff.User_Code, DENSE_RANK() OVER (PARTITION BY TblStaff.User_Code
+ORDER BY TblSchoolManagementSchoolDivisions.txtName) AS [Rank], 6 AS [Order]
+FROM            TblStaffManagementDivisions INNER JOIN
+                         TblSchoolManagementSchoolDivisions ON 
+                         TblStaffManagementDivisions.intDivision = TblSchoolManagementSchoolDivisions.TblSchoolManagementSchoolDivisionsID RIGHT OUTER JOIN
+                         TblStaff ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID
+WHERE                    tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                      TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+UNION
+
+SELECT     (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, 
+						 cast((SELECT     COUNT(TblTimetableManagerPeriods.TblTimetableManagerPeriodsID) AS Expr1
+FROM         TblTimetableManagerWeeks INNER JOIN
+                      TblTimetableManagerDays ON TblTimetableManagerWeeks.TblTimetableManagerWeeksID = TblTimetableManagerDays.intWeek INNER JOIN
+                      TblTimetableManagerPeriods ON TblTimetableManagerDays.TblTimetableManagerDaysID = TblTimetableManagerPeriods.intDay LEFT OUTER JOIN
+                      TblTimetableManagerWeeksDivisions ON TblTimetableManagerWeeks.TblTimetableManagerWeeksID = TblTimetableManagerWeeksDivisions.intWeek 
+WHERE TblTimetableManagerWeeksDivisions.intDivision IN (SELECT     TblStaffManagementDivisions.intDivision
+														FROM         TblStaff s1 INNER JOIN
+																			  TblStaffManagementDivisions ON s1.TblStaffID = TblStaffManagementDivisions.intStaff
+														WHERE     (s1.User_Code = TblStaff.user_code)) or isnull(TblTimetableManagerWeeksDivisions.intDivision, -1) = -1) - 
+			Count(Tblstaff.user_code) -
+			(SELECT COUNT(TblTimetableManagerAvailabilityID) FROM TblTimetableManagerAvailability WHERE (blnFree = 0 OR blnOffSite = 1) AND txtID = TblStaff.user_code) -
+			(SELECT COUNT(TblTimetableManagerStaffMeetingsID) FROM TblTimetableManagerStaffMeetings WHERE dtCancelledOn IS NULL AND txtTeacher = TblStaff.user_code) -
+			(SELECT COUNT(TblTimetableManagerTutorialsTeachersID) FROM TblTimetableManagerTutorialsTeachers WHERE txtTeacher = TblStaff.user_code) - 
+			(SELECT COUNT(TblTimetableManagerYearScheduleID) FROM TblTimetableManagerYearSchedule WHERE txtTeacher = TblStaff.user_code) as varchar(5)) as [value], 							
+			TblStaff.User_Code, 999 AS Rank, 6 AS [Order]
+FROM         TblTimetableManagerSchedule INNER JOIN
+                      TblStaff ON TblTimetableManagerSchedule.txtTeacher = TblStaff.User_Code INNER JOIN
+                      TblTimetableManagerTimetables ON 
+                      TblTimetableManagerSchedule.intTimetableID = TblTimetableManagerTimetables.TblTimetableManagerTimetablesID
+LEFT OUTER JOIN TblStaffManagementDivisions ON TblStaff.TblStaffID =  TblStaffManagementDivisions.intStaff
+WHERE     (TblTimetableManagerTimetables.intPublished = 1) AND tblstaff.systemstatus = 1
+AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+
+group by TblStaff.Surname, TblStaff.Initials, TblStaff.Firstname, Tblstaff.User_Code, TblStaffManagementDivisions.intDivision
+
+
+
+UNION
+SELECT DISTINCT 
+                         (CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) AS intDiv, 
+                         TblStaff.Surname + N', ' + TblStaff.Initials AS txtName, TblStaff.Surname, TblStaff.Firstname, '', TblStaff.User_Code, 999 AS [Rank], 8 AS [Order]
+FROM            TblStaffManagementDivisions RIGHT OUTER JOIN
+                         TblStaff ON TblStaffManagementDivisions.intStaff = TblStaff.TblStaffID
+WHERE                    tblstaff.systemstatus = 1 AND ((CASE WHEN TblStaffManagementDivisions.intDivision IS NULL OR
+                         TblStaffManagementDivisions.intDivision = 0 THEN - 1 ELSE TblStaffManagementDivisions.intDivision END) IN (@Division))
+
+
+
+
+
+
+ORDER BY TblStaff.Surname, TblStaff.Firstname, [order]</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="intDiv"><DataField>intDiv</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Surname"><DataField>Surname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Firstname"><DataField>Firstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Value"><DataField>Value</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="User_Code"><DataField>User_Code</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Rank"><DataField>Rank</DataField><rd:TypeName>System.Int64</rd:TypeName></Field><Field Name="Order"><DataField>Order</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet><DataSet Name="Divisions"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT        txtName, TblSchoolManagementSchoolDivisionsID, 2 AS Expr1
+FROM            TblSchoolManagementSchoolDivisions
+UNION
+SELECT        'No Division' AS Expr1, - 1 AS Expr2, 0 AS Expr3
+ORDER BY Expr1</CommandText></Query><Fields><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="TblSchoolManagementSchoolDivisionsID"><DataField>TblSchoolManagementSchoolDivisionsID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="Expr1"><DataField>Expr1</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet></DataSets><ReportParameters><ReportParameter Name="Division"><DataType>Integer</DataType><DefaultValue><DataSetReference><DataSetName>Divisions</DataSetName><ValueField>TblSchoolManagementSchoolDivisionsID</ValueField></DataSetReference></DefaultValue><AllowBlank>true</AllowBlank><ValidValues><DataSetReference><DataSetName>Divisions</DataSetName><ValueField>TblSchoolManagementSchoolDivisionsID</ValueField><LabelField>txtName</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter></ReportParameters><Language>en-US</Language><ConsumeContainerWhitespace>true</ConsumeContainerWhitespace><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>1a296aee-5f7f-4053-8399-82899af1ec4f</rd:ReportID></Report>

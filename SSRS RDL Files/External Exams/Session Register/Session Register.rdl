@@ -1,0 +1,524 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <DataSourceReference>iSAMS</DataSourceReference>
+      <rd:DataSourceID>30922e0e-571f-444b-ac1e-c6e42f70f9ff</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <BottomMargin>1cm</BottomMargin>
+  <RightMargin>0.5cm</RightMargin>
+  <PageWidth>21cm</PageWidth>
+  <ReportParameters>
+    <ReportParameter Name="intCycle">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>2</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>intCycle</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>Summer 08</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="sessiondate">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>12/5/2008</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AP">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>A</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>AP</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>A</Value>
+            <Label>Morning</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>P</Value>
+            <Label>Afternoon</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>20cm</InteractiveWidth>
+  <rd:GridSpacing>0.5cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <Body>
+    <ReportItems>
+      <Textbox Name="textbox5">
+        <Left>0.19687in</Left>
+        <Top>0.7875in</Top>
+        <rd:DefaultName>textbox5</rd:DefaultName>
+        <ZIndex>2</ZIndex>
+        <Width>7.28438in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontFamily>Calibri</FontFamily>
+          <FontWeight>700</FontWeight>
+          <FontSize>11pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.39375in</Height>
+        <Value>=First(Fields!txtformattimetabledate.Value, "iSAMS") &amp; " " &amp; First(Fields!Session.Value, "iSAMS")</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <Left>0.19687in</Left>
+        <Top>0.19688in</Top>
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <ZIndex>1</ZIndex>
+        <Width>7.28438in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontFamily>Calibri</FontFamily>
+          <FontWeight>700</FontWeight>
+          <FontSize>20pt</FontSize>
+          <Color>SteelBlue</Color>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.39374in</Height>
+        <Value>A Level Session Register</Value>
+      </Textbox>
+      <Table Name="table1">
+        <Left>0.19688in</Left>
+        <DataSetName>iSAMS</DataSetName>
+        <Top>1.37813in</Top>
+        <Width>7.29478in</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="txtCandidateForenames">
+                      <rd:DefaultName>txtCandidateForenames</rd:DefaultName>
+                      <ZIndex>4</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!txtCandidateForenames.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="txtCandidateSurname">
+                      <rd:DefaultName>txtCandidateSurname</rd:DefaultName>
+                      <ZIndex>3</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!txtCandidateSurname.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox10">
+                      <rd:DefaultName>textbox10</rd:DefaultName>
+                      <ZIndex>2</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!txtCandidateNumber.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox6">
+                      <rd:DefaultName>textbox6</rd:DefaultName>
+                      <ZIndex>1</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!txtForm.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox8">
+                      <rd:DefaultName>textbox8</rd:DefaultName>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.21in</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox2">
+                      <rd:DefaultName>textbox2</rd:DefaultName>
+                      <ZIndex>9</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>11pt</FontSize>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BackgroundColor>SteelBlue</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Forename(s)</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <rd:DefaultName>textbox3</rd:DefaultName>
+                      <ZIndex>8</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>11pt</FontSize>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BackgroundColor>SteelBlue</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Surname</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox9">
+                      <rd:DefaultName>textbox9</rd:DefaultName>
+                      <ZIndex>7</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>11pt</FontSize>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BackgroundColor>SteelBlue</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Cand. #</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox4">
+                      <rd:DefaultName>textbox4</rd:DefaultName>
+                      <ZIndex>6</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>11pt</FontSize>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BackgroundColor>SteelBlue</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Form</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox7">
+                      <rd:DefaultName>textbox7</rd:DefaultName>
+                      <ZIndex>5</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>11pt</FontSize>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BackgroundColor>SteelBlue</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.22in</Height>
+            </TableRow>
+          </TableRows>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>1.77187in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>2.16562in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>0.79792in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>0.59062in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1.96875in</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>0.43in</Height>
+      </Table>
+    </ReportItems>
+    <Height>28.7cm</Height>
+  </Body>
+  <rd:ReportID>13f0deb2-ee45-4c97-ad10-d7c542616ba1</rd:ReportID>
+  <LeftMargin>0.5cm</LeftMargin>
+  <DataSets>
+    <DataSet Name="iSAMS">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandText>select distinct Candidates.txtCandidateForenames, Candidates.txtCandidateSurname,Candidates.txtForm, Candidates.txtCandidateNumber, Exams.txtformattimetabledate,(case when Exams.txttimetablesession='A' then 'Morning' else 'Afternoon' end) as Session from 
+
+(SELECT DISTINCT tblExamManagerTeachingProgram.txtModuleCode, Table1.intUABCode, CONVERT(datetime,txtformattimetabledate,103) AS txtformattimetabledate, txtTimetableSession,tblExamManagerEntries.intCycle
+                                                                                                      
+ FROM TblExamManagerBaseDataComponents
+ INNER JOIN TblExamManagerBaseDataLink ON TblExamManagerBaseDataLink.txtComponentCode = TblExamManagerBaseDataComponents.txtComponentCode
+ INNER JOIN TblExamManagerBaseDataOptions ON TblExamManagerBaseDataOptions.txtOptionEntryCode = TblExamManagerBaseDataLink.txtOptionCode
+ INNER JOIN TblExamManagerBaseData AS Table1 ON Table1.TblExamManagerBaseDataID = TblExamManagerBaseDataComponents.intBaseData AND Table1.intCycle = @intCycle
+ INNER JOIN TblExamManagerBaseData AS Table2 ON Table2.TblExamManagerBaseDataID = TblExamManagerBaseDataLink.intBaseData AND Table2.intCycle = @intCycle
+ INNER JOIN TblExamsManagerUABIdentifiers ON TblExamsManagerUABIdentifiers.intUABCode = Table1.intUABCode                                                             
+ INNER JOIN tblExamManagerTeachingProgram ON tblExamManagerBaseDataOptions.txtOptionEntryCode = tblExamManagerTeachingProgram.txtModuleCode
+ INNER JOIN tblExamManagerTeachingProgramHeaders ON tblExamManagerTeachingProgram.intProgram = tblExamManagerTeachingProgramHeaders.tblExamManagerTeachingProgramHeadersID AND tblExamManagerTeachingProgramHeaders.intUABCode = Table1.intUABCode                                   
+ INNER JOIN tblExamManagerEntries ON tblExamManagerEntries.txtModuleCode = tblExamManagerTeachingProgram.txtModuleCode AND tblExamManagerEntries.intCycle = @intCycle                                                                              
+ WHERE TblExamManagerBaseDataComponents.txtTimetabled = 'T' AND (tblExamManagerTeachingProgramHeaders.intType = 1 OR tblExamManagerTeachingProgramHeaders.intType = 2)
+and txtformattimetabledate=convert(datetime,@sessiondate,103)
+and txttimetablesession=@AP
+and txtHeaderName like 'A%'
+) Exams
+
+inner join 
+
+ (SELECT txtModuleCode, intUABCode, txtCandidateNumber, txtCandidateForenames, txtCandidateSurname,tblExamManagerEntries.intCycle,txtForm
+ FROM TblExamManagerEntries
+ INNER JOIN TblPupilManagementPupils ON TblExamManagerEntries.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+ WHERE (
+                  (intSystemStatus = 1 AND intIsCandidate = 1) OR 
+                  (intSystemStatus = 10 AND intIsCandidate = 1) OR 
+                  (tblPupilManagementPupils.txtSchoolID IN (SELECT txtSchoolID FROM TblExamManagerReturningCandidates))
+            ) 
+ --AND TblExamManagerEntries.txtModuleCode = @modulecode
+ --AND TblExamManagerEntries.intUABCode = @uabcode
+) Candidates
+
+on Exams.txtModuleCode=Candidates.txtModuleCode and Exams.intUABCode=Candidates.intUABCode
+and Exams.intCycle =Candidates.intCycle
+
+--ORDER BY ExamSessions.txtformattimetabledate,ExamSessions.txtTimetableSession,Exams.txtModuleCode,Exams.intUABCode,Candidates.txtCandidateSurname,Candidates.txtCandidateForenames
+order by Candidates.txtform,Candidates.txtCandidateSurname,Candidates.txtCandidateForenames</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@intCycle">
+            <Value>=Parameters!intCycle.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@sessiondate">
+            <Value>=Parameters!sessiondate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@AP">
+            <Value>=Parameters!AP.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>iSAMS</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="txtCandidateForenames">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>txtCandidateForenames</DataField>
+        </Field>
+        <Field Name="txtCandidateSurname">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>txtCandidateSurname</DataField>
+        </Field>
+        <Field Name="txtForm">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>txtForm</DataField>
+        </Field>
+        <Field Name="txtCandidateNumber">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>txtCandidateNumber</DataField>
+        </Field>
+        <Field Name="txtformattimetabledate">
+          <rd:TypeName>System.DateTime</rd:TypeName>
+          <DataField>txtformattimetabledate</DataField>
+        </Field>
+        <Field Name="Session">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>Session</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SessionDates">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandText>select * from 
+(SELECT DISTINCT CONVERT(datetime,txtformattimetabledate,103) AS txtformattimetabledate
+ FROM TblExamManagerBaseDataComponents
+ INNER JOIN TblExamManagerBaseDataLink ON TblExamManagerBaseDataLink.txtComponentCode = TblExamManagerBaseDataComponents.txtComponentCode
+ INNER JOIN TblExamManagerBaseDataOptions ON TblExamManagerBaseDataOptions.txtOptionEntryCode = TblExamManagerBaseDataLink.txtOptionCode
+ INNER JOIN TblExamManagerBaseData AS Table1 ON Table1.TblExamManagerBaseDataID = TblExamManagerBaseDataComponents.intBaseData AND Table1.intCycle = @intCycle
+ INNER JOIN TblExamManagerBaseData AS Table2 ON Table2.TblExamManagerBaseDataID = TblExamManagerBaseDataLink.intBaseData AND Table2.intCycle = @intCycle		
+ INNER JOIN TblExamsManagerUABIdentifiers ON TblExamsManagerUABIdentifiers.intUABCode = Table1.intUABCode   											
+ INNER JOIN tblExamManagerTeachingProgram ON tblExamManagerBaseDataOptions.txtOptionEntryCode = tblExamManagerTeachingProgram.txtModuleCode AND tblExamManagerTeachingProgram.intUABCode = TblExamsManagerUABIdentifiers.intUABCode					
+ INNER JOIN tblExamManagerTeachingProgramHeaders ON tblExamManagerTeachingProgram.intProgram = tblExamManagerTeachingProgramHeaders.tblExamManagerTeachingProgramHeadersID
+ --this will ignore sessions with no entries (i think)
+ INNER JOIN tblExamManagerEntries ON tblExamManagerEntries.txtModuleCode = tblExamManagerTeachingProgram.txtModuleCode AND tblExamManagerEntries.intCycle = @intCycle
+WHERE TblExamManagerBaseDataComponents.txtTimetabled = 'T' AND (tblExamManagerTeachingProgramHeaders.intType = 1 OR tblExamManagerTeachingProgramHeaders.intType = 2)--1: current, 2: private, 3: archived (i think)
+GROUP BY txtformattimetabledate,txtTimetableSession) ExamSessions
+
+ORDER BY ExamSessions.txtformattimetabledate</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@intCycle">
+            <Value>=Parameters!intCycle.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>iSAMS</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="txtformattimetabledate">
+          <rd:TypeName>System.DateTime</rd:TypeName>
+          <DataField>txtformattimetabledate</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <Width>20cm</Width>
+  <InteractiveHeight>28.2cm</InteractiveHeight>
+  <Language>en-GB</Language>
+  <TopMargin>0.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

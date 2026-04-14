@@ -1,0 +1,2957 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <rd:DataSourceID>772c9ca1-961d-4a29-94df-9e6b84f683fc</rd:DataSourceID>
+      <DataSourceReference>iSAMS</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.6cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="txtStartDate">
+      <DataType>DateTime</DataType>
+      <Prompt>txtStartDate</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtEndDate">
+      <DataType>DateTime</DataType>
+      <Prompt>txtEndDate</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtTime">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>txtTime</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>txtSchoolID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="blnRegistered">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>blnRegistered</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="blnLate">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>blnLate</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtGroupBy">
+      <DataType>String</DataType>
+      <Prompt>txtGroupBy</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="intPresentCodeID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>intPresentCodeID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="intCodeID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>intCodeID</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>0.4cm</RightMargin>
+  <LeftMargin>0.4cm</LeftMargin>
+  <PageHeader>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox80">
+        <Top>0.8cm</Top>
+        <Style>
+          <BorderStyle>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <FontSize>8pt</FontSize>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+        </Style>
+        <ZIndex>2</ZIndex>
+        <Left>18.7cm</Left>
+        <Value>="All Pupils"</Value>
+      </Textbox>
+      <Textbox Name="textbox82">
+        <Top>0.4cm</Top>
+        <Width>7.5cm</Width>
+        <Style>
+          <FontSize>8pt</FontSize>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <Left>18.7cm</Left>
+        <Height>0.4cm</Height>
+        <Value>=IIF(Parameters!blnRegistered.Value = "1","Only Times Pupil Present","")&amp; IIF(Parameters!blnRegistered.Value = "0","Only Times Pupil Absent","") &amp; IIF(Parameters!blnLate.Value="1","Only Times Pupil Late","") &amp; IIF(isNothing(Parameters!blnRegistered.Value) and isNothing(Parameters!blnLate.Value) and isNothing(Parameters!intPresentCodeID.Value) and isNothing(Parameters!intCodeID.Value),"All Registration Information","") &amp; IIF( not isNothing(Parameters!intCodeID.Value) or not isNothing(Parameters!intPresentCodeID.Value),"By Registration Code","")</Value>
+      </Textbox>
+      <Textbox Name="textbox31">
+        <rd:DefaultName>textbox31</rd:DefaultName>
+        <Top>0.5cm</Top>
+        <Width>18.7cm</Width>
+        <Style>
+          <BorderStyle>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <FontSize>12pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+          <Language>en-GB</Language>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Value>="Registration Matrix " + Format(CDate(Parameters!txtStartDate.value),"dd/MM/yyyy")  + " - " + Format(CDate(Parameters!txtEndDate.Value),"dd/MM/yyyy")</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>1.2cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageHeader>
+  <BottomMargin>0.5cm</BottomMargin>
+  <rd:ReportID>36d3aa52-5785-466c-9dda-a872ad57105f</rd:ReportID>
+  <PageWidth>29.7cm</PageWidth>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Fields>
+        <Field Name="TblRegistrationSchoolRegistrationDateTimeID">
+          <DataField>TblRegistrationSchoolRegistrationDateTimeID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtDateTime">
+          <DataField>txtDateTime</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPreName">
+          <DataField>txtPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDOB">
+          <DataField>txtDOB</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtForm">
+          <DataField>txtForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtAcademicHouse">
+          <DataField>txtAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBoardingHouse">
+          <DataField>txtBoardingHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="blnRegistered">
+          <DataField>blnRegistered</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtTime">
+          <DataField>txtTime</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtReason">
+          <DataField>txtReason</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="blnLate">
+          <DataField>blnLate</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="intMinutesLate">
+          <DataField>intMinutesLate</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationStatus">
+          <DataField>txtRegistrationStatus</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationCode">
+          <DataField>txtRegistrationCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistrationCodeName">
+          <DataField>txtRegistrationCodeName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intSystemStatus">
+          <DataField>intSystemStatus</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtCountIntoStatistics">
+          <DataField>txtCountIntoStatistics</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegistaredAsStatistics">
+          <DataField>txtRegistaredAsStatistics</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAuthorisedAbsence">
+          <DataField>txtAuthorisedAbsence</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCode">
+          <DataField>txtCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPresentCode">
+          <DataField>txtPresentCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intAbsentRegistrationCode">
+          <DataField>intAbsentRegistrationCode</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID, TblRegistrationSchoolRegistrationDateTime.txtDateTime, 
+                         TblPupilManagementPupils.txtSchoolID, TblPupilManagementPupils.txtSurname, TblPupilManagementPupils.txtPreName, 
+                         TblPupilManagementPupils.txtDOB, TblPupilManagementPupils.txtForm, TblPupilManagementPupils.intNCYear, 
+                         TblPupilManagementPupils.txtAcademicHouse, TblPupilManagementPupils.txtBoardingHouse, TblRegistrationSchoolRegistrationPupils.blnRegistered, 
+                         TblSchoolManagementYears.txtYearName, LEFT(CONVERT(varchar(8), TblRegistrationSchoolRegistrationDateTime.txtDateTime, 108), 5) AS txtTime, 
+                         TblRegistrationSchoolRegistrationPupils.txtReason, TblRegistrationSchoolRegistrationPupils.blnLate, 
+                         TblRegistrationSchoolRegistrationPupils.intMinutesLate, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN 'Absent' ELSE '{' END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) THEN 'Absent' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN 'Present' ELSE 'Not Registered' END END AS txtRegistrationStatus, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN OOSCodes.txtCode ELSE '{' END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN TblRegistrationSchoolRegistrationCodes.txtCode WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN '8' WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN TblRegistrationSchoolRegistrationPresentCodes.txtCode ELSE 'Not Registered' END END AS txtRegistrationCode, 
+                         CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN OOSCodes.txtName IS NOT NULL 
+                         THEN OOSCodes.txtName ELSE '{' END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN TblRegistrationSchoolRegistrationCodes.txtName WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN '' WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) 
+                         THEN TblRegistrationSchoolRegistrationPresentCodes.txtName ELSE 'Not Registered' END END AS txtRegistrationCodeName, 
+                         TblPupilManagementPupils.intSystemStatus, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) 
+                         THEN (CASE WHEN OOSCodes.blnStatistic = 1 THEN 'Yes' WHEN OOSCodes.blnStatistic = 0 THEN 'No' ELSE '{' END) 
+                         ELSE (CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationCodes.blnStatistic = 1) THEN 'Yes' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnStatistic = 0) 
+                         THEN 'No' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 'Yes' ELSE 'Not Registered' END) END AS txtCountIntoStatistics, 
+                         CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) 
+                         THEN (CASE WHEN OOSCodes.blnAbsence = 1 THEN 'Absent' WHEN OOSCodes.blnAbsence = 0 THEN 'Present' ELSE '{' END) 
+                         ELSE (CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationCodes.blnAbsence = 1) THEN 'Absent' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnAbsence = 0) 
+                         THEN 'Present' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 'Present' ELSE 'Not Registered' END) 
+                         END AS txtRegistaredAsStatistics, CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND 
+                         (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) 
+                         THEN (CASE WHEN OOSCodes.blnAuthorised = 1 THEN 'Authorised' WHEN OOSCodes.blnAuthorised = 0 THEN 'UnAuthorised' ELSE '{' END) 
+                         ELSE (CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND 
+                         TblRegistrationSchoolRegistrationCodes.blnAuthorised = 1) THEN 'Authorised' WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL AND 
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered = 0 AND TblRegistrationSchoolRegistrationCodes.blnAuthorised = 0) 
+                         THEN 'UnAuthorised' WHEN (TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 'Present' ELSE 'Not Registered' END) 
+                         END AS txtAuthorisedAbsence, TblRegistrationSchoolRegistrationCodes.txtCode, TblRegistrationSchoolRegistrationPresentCodes.txtCode AS txtPresentCode, 
+                         (CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN OOSCodes.TblRegistrationSchoolRegistrationCodesID ELSE 0 END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL 
+                         AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN TblRegistrationSchoolRegistrationCodes.TblRegistrationSchoolRegistrationCodesID WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS
+                          NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 0 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL
+                          AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 0 ELSE 0 END END) AS intAbsentRegistrationCode
+FROM            TblPupilManagementPupils LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationDateTime ON TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @txtStartDate AND 
+                         @txtEndDate LEFT OUTER JOIN
+                         TblRegistrationOutOfSchoolPupils ON TblRegistrationOutOfSchoolPupils.txtSchoolID = TblPupilManagementPupils.txtSchoolID AND 
+                         TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN TblRegistrationOutOfSchoolPupils.txtStartDateTime AND 
+                         TblRegistrationOutOfSchoolPupils.txtEndDateTime LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationRegister ON 
+                         TblRegistrationSchoolRegistrationRegister.intRegistrationDateTime = TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID
+                          LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationPupils ON 
+                         TblRegistrationSchoolRegistrationPupils.intRegister = TblRegistrationSchoolRegistrationRegister.TblRegistrationSchoolRegistrationRegisterID AND 
+                         TblRegistrationSchoolRegistrationPupils.txtSchoolID = TblPupilManagementPupils.txtSchoolID LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationCodes ON 
+                         TblRegistrationSchoolRegistrationPupils.intCode = TblRegistrationSchoolRegistrationCodes.TblRegistrationSchoolRegistrationCodesID LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationPresentCodes ON 
+                         TblRegistrationSchoolRegistrationPupils.intPresentCode = TblRegistrationSchoolRegistrationPresentCodes.TblRegistrationSchoolRegistrationPresentCodesID
+                          LEFT OUTER JOIN
+                         TblRegistrationSchoolRegistrationCodes AS OOSCodes ON 
+                         TblRegistrationOutOfSchoolPupils.intCode = OOSCodes.TblRegistrationSchoolRegistrationCodesID LEFT OUTER JOIN
+                         TblSchoolManagementYears ON TblPupilManagementPupils.intNCYear = TblSchoolManagementYears.intNCYear
+WHERE        (LEFT(CONVERT(varchar(8), TblRegistrationSchoolRegistrationDateTime.txtDateTime, 108), 5) IN
+                             (SELECT        ID
+                               FROM            dbo.SplitCSV(@txtTime) AS SplitCSV_1) OR
+                         @txtTime IS NULL) AND (TblRegistrationSchoolRegistrationPupils.blnLate IN
+                             (SELECT        ID
+                               FROM            dbo.SplitCSV(@blnLate) AS SplitCSV_1) OR
+                         @blnLate IS NULL) AND (TblRegistrationSchoolRegistrationPresentCodes.TblRegistrationSchoolRegistrationPresentCodesID IN
+                             (SELECT        ID
+                               FROM            dbo.SplitCSV(@intPresentCodeID) AS SplitCSV_1) OR
+                         @intPresentCodeID IS NULL) AND (TblPupilManagementPupils.txtSchoolID IN
+                             (SELECT        ID
+                               FROM            dbo.SplitCSV(@txtSchoolID) AS SplitCSV_1) OR
+                         @txtSchoolID IS NULL) AND (TblPupilManagementPupils.intSystemStatus = 1 AND (TblPupilManagementPupils.txtEnrolmentDate &lt;= @txtStartDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate &lt;= @txtEndDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate IS NULL) OR
+                         TblPupilManagementPupils.intSystemStatus = - 1 AND (TblPupilManagementPupils.txtEnrolmentDate &lt;= @txtStartDate OR
+                         TblPupilManagementPupils.txtEnrolmentDate &lt;= @txtEndDate) AND TblPupilManagementPupils.txtLeavingDate &gt;= @txtStartDate) AND 
+                         (TblRegistrationSchoolRegistrationDateTime.txtDateTime BETWEEN @txtStartDate AND @txtEndDate) AND 
+                         ((CASE WHEN TblRegistrationOutOfSchoolPupils.txtSchoolID IS NOT NULL AND (TblRegistrationSchoolRegistrationPupils.blnRegistered &lt;&gt; 1 OR
+                         TblRegistrationSchoolRegistrationPupils.blnRegistered IS NULL) THEN CASE WHEN TblRegistrationOutOfSchoolPupils.intCode IS NOT NULL 
+                         THEN OOSCodes.TblRegistrationSchoolRegistrationCodesID ELSE 0 END ELSE CASE WHEN (TblRegistrationSchoolRegistrationPupils.intCode IS NOT NULL 
+                         AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 0) 
+                         THEN TblRegistrationSchoolRegistrationCodes.TblRegistrationSchoolRegistrationCodesID WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS
+                          NULL AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 0 WHEN (TblRegistrationSchoolRegistrationPupils.intPresentCode IS NOT NULL
+                          AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1) THEN 0 ELSE 0 END END) IN
+                             (SELECT        ID
+                               FROM            dbo.SplitCSV(@intCodeID) AS SplitCSV_1) OR
+                         @intCodeID IS NULL)</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@txtStartDate">
+            <Value>=Parameters!txtStartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtEndDate">
+            <Value>=Parameters!txtEndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtTime">
+            <Value>=Parameters!txtTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@blnLate">
+            <Value>=Parameters!blnLate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intPresentCodeID">
+            <Value>=Parameters!intPresentCodeID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intCodeID">
+            <Value>=Parameters!intCodeID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+      </Query>
+    </DataSet>
+    <DataSet Name="PresentCodes">
+      <Fields>
+        <Field Name="txtCode">
+          <DataField>txtCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtName">
+          <DataField>txtName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TblRegistrationSchoolRegistrationPresentCodesID">
+          <DataField>TblRegistrationSchoolRegistrationPresentCodesID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intOrder">
+          <DataField>intOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        txtCode, txtName, TblRegistrationSchoolRegistrationPresentCodesID, intOrder
+FROM            TblRegistrationSchoolRegistrationPresentCodes
+ORDER BY intOrder</CommandText>
+      </Query>
+    </DataSet>
+    <DataSet Name="AbsentCodes">
+      <Fields>
+        <Field Name="txtCode">
+          <DataField>txtCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtName">
+          <DataField>txtName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TblRegistrationSchoolRegistrationCodesID">
+          <DataField>TblRegistrationSchoolRegistrationCodesID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intOrder">
+          <DataField>intOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        txtCode, txtName, TblRegistrationSchoolRegistrationCodesID, intOrder
+FROM            TblRegistrationSchoolRegistrationCodes
+ORDER BY intOrder</CommandText>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code>Public FirstFive AS String = ""
+Public SecondFive AS String = ""
+Public ThirdFive AS String = ""
+Public TourthFive AS String = ""
+Public FifthFive AS String = ""
+Public SixthFive AS String = ""
+Public RecordCount AS Integer = 0
+Public PresentCodes AS String = "/ - Present (AM - no code)" + vbnewline + "\ - Present (PM - no code)" + vbnewline
+
+Public Function getCodeDescriptions (ByVal singleCode As String, ByVal singleDescription As String)
+
+if RecordCount &lt;5 then
+	FirstFive = FirstFive + singleCode + " - " + singleDescription + vbnewline	
+	
+end if  
+if RecordCount &gt;4 and  RecordCount &lt;10 then
+	SecondFive = SecondFive + singleCode + " - " + singleDescription + vbnewline	
+	
+end if  
+if RecordCount &gt;9 and  RecordCount &lt;15 then
+	ThirdFive = ThirdFive + singleCode + " - " + singleDescription + vbnewline	
+	
+end if  
+if RecordCount &gt;14 and  RecordCount &lt;20 then
+	TourthFive = TourthFive + singleCode + " - " + singleDescription + vbnewline	
+
+end if  
+if RecordCount &gt;19 and  RecordCount &lt;25 then
+	FifthFive = FifthFive + singleCode + " - " + singleDescription + vbnewline	
+	
+end if  
+if RecordCount &gt;24 and  RecordCount &lt;32 then
+	SixthFive = SixthFive + singleCode + " - " + singleDescription + vbnewline	
+	
+end if  
+RecordCount = RecordCount + 1
+
+End Function
+
+Public Function getPresentCode (ByVal singlePCode As String, ByVal singlePDescription As String)
+	
+PresentCodes = PresentCodes + singlePCode +" - " + singlePDescription + vbnewline
+
+End Function</Code>
+  <Width>28.9cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Matrix Name="matrix11">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>0.1cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <ZIndex>6</ZIndex>
+        <DataSetName>PresentCodes</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>0.1cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix11_RowGroup1">
+                <GroupExpressions>
+                  <GroupExpression>1=1</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <ReportItems>
+                <Textbox Name="textbox21">
+                  <Style>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>1</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Top>4.6cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.1cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix11_ColumnGroup1">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!TblRegistrationSchoolRegistrationPresentCodesID.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <ReportItems>
+                <Textbox Name="textbox60">
+                  <Style>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Width>0.2cm</Width>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox63">
+              <Style>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>3</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value />
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.1cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Textbox Name="textbox67">
+                    <Style>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <CanGrow>true</CanGrow>
+                    <Value>=Code.getPresentCode(Fields!txtCode.Value,Fields!txtName.Value)</Value>
+                  </Textbox>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+        <Height>0.2cm</Height>
+      </Matrix>
+      <Matrix Name="matrix8">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>0.1cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <ZIndex>5</ZIndex>
+        <DataSetName>AbsentCodes</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>0.1cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix8_RowGroup1">
+                <GroupExpressions>
+                  <GroupExpression>1=1</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <ReportItems>
+                <Textbox Name="textbox45">
+                  <rd:DefaultName>textbox45</rd:DefaultName>
+                  <Style>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>1</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Top>4.6cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.1cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix8_ColumnGroup1">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!TblRegistrationSchoolRegistrationCodesID.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <ReportItems>
+                <Textbox Name="textbox43">
+                  <rd:DefaultName>textbox43</rd:DefaultName>
+                  <Style>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Width>0.2cm</Width>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox38">
+              <rd:DefaultName>textbox38</rd:DefaultName>
+              <Style>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>3</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value />
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.1cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Textbox Name="textbox51">
+                    <rd:DefaultName>textbox51</rd:DefaultName>
+                    <Style>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <CanGrow>true</CanGrow>
+                    <Value>=Code.getCodeDescriptions(Fields!txtCode.Value, Fields!txtName.Value)</Value>
+                  </Textbox>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+        <Height>0.2cm</Height>
+        <Left>0.5cm</Left>
+      </Matrix>
+      <Table Name="table3">
+        <ZIndex>4</ZIndex>
+        <DataSetName>DataSet1</DataSetName>
+        <Top>5.05cm</Top>
+        <Width>28.8cm</Width>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox22">
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                        <TextAlign>Left</TextAlign>
+                      </Style>
+                      <ZIndex>5</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=code.PresentCodes</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox13">
+                      <rd:DefaultName>textbox13</rd:DefaultName>
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                      </Style>
+                      <ZIndex>4</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=code.FirstFive</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox23">
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                      </Style>
+                      <ZIndex>3</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=code.SecondFive</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox17">
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=code.ThirdFive</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox18">
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=code.TourthFive</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox19">
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=code.FifthFive</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>1.5cm</Height>
+            </TableRow>
+          </TableRows>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>4.8cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>4.8cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>4.8cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>4.8cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>4.8cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>4.8cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>1.5cm</Height>
+      </Table>
+      <Line Name="line2">
+        <Top>6.75cm</Top>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>3</ZIndex>
+      </Line>
+      <Line Name="line1">
+        <Top>4.85cm</Top>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>2</ZIndex>
+        <Height>0cm</Height>
+      </Line>
+      <List Name="list3">
+        <ZIndex>1</ZIndex>
+        <Left>3cm</Left>
+        <DataSetName>PresentCodes</DataSetName>
+        <Visibility>
+          <Hidden>true</Hidden>
+        </Visibility>
+        <Width>2.53968cm</Width>
+        <Height>0cm</Height>
+      </List>
+      <List Name="list1">
+        <Sorting>
+          <SortBy>
+            <SortExpression>=IIF(Parameters!txtGroupBy.Value ="txtSurname" or Parameters!txtGroupBy.Value = "txtDateTime" or Parameters!txtGroupBy.Value = "txtPresentCode" or Parameters!txtGroupBy.Value = "txtCode",Fields!intNCYear.Value,Fields(Parameters!txtGroupBy.Value).value)</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+          <SortBy>
+            <SortExpression>=Fields!txtSurname.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+          <SortBy>
+            <SortExpression>=Fields!txtPreName.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+          <SortBy>
+            <SortExpression>=Fields!txtDOB.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+          <SortBy>
+            <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+        </Sorting>
+        <DataSetName>DataSet1</DataSetName>
+        <ReportItems>
+          <Matrix Name="matrix4">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>9</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix4_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox20">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Unauth. Absence Count"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>2.95cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix4_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox34">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox35">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox36">
+                        <Style>
+                          <BackgroundColor>=IIF(SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value="UnAuthorised",1,0))&gt;0,"LightCoral","White")</BackgroundColor>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value = "UnAuthorised",1,0))</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Matrix Name="matrix7">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>8</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix7_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox54">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Absent %"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>4.15cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix7_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox85">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox86">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox87">
+                        <Style>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Absent",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Absent",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100),"0")</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+          </Matrix>
+          <Matrix Name="matrix9">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>7</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix9_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox92">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Late %"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>3.75cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix9_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox93">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox94">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox95">
+                        <Style>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" and Fields!blnLate.Value="True",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" and Fields!blnLate.Value="True",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))) * 100),"0")</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Matrix Name="matrix10">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>6</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix10_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox96">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Present %"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>3.35cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix10_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox97">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox98">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox99">
+                        <Style>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100),"0")</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Matrix Name="matrix6">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>5</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix6_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Registration Count"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>1.35cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix6_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox40">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox44">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox48">
+                        <Style>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Not Registered",0,1))</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Matrix Name="matrix5">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>4</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix5_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox52">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Auth. Absence Count"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>2.55cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix5_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox53">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox55">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox56">
+                        <Style>
+                          <BackgroundColor>=IIF(SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value="Authorised",1,0))&gt;0,"LightCoral","White")</BackgroundColor>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value = "Authorised",1,0))</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Matrix Name="matrix3">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>3</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix3_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox46">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Late Count"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>2.15cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix3_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox47">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox49">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox50">
+                        <Style>
+                          <BackgroundColor>=IIF(SUM(IIF(Fields!blnLate.Value="True",1,0))&gt;0,"Khaki","White")</BackgroundColor>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=SUM(IIF(Fields!blnLate.Value="True",1,0))</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Matrix Name="matrix2">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <ZIndex>2</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix2_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!intSystemStatus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="textbox37">
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>0.5pt</PaddingTop>
+                        <PaddingBottom>0.5pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>="Present Count"</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>1.75cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.08cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix2_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtDateTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox39">
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>1pt</PaddingLeft>
+                        <PaddingRight>1pt</PaddingRight>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox41">
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.32cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="textbox42">
+                        <Style>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>5pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>0.5pt</PaddingLeft>
+                          <PaddingRight>0.5pt</PaddingRight>
+                          <PaddingTop>0.5pt</PaddingTop>
+                          <PaddingBottom>0.5pt</PaddingBottom>
+                        </Style>
+                        <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Present",1,0))</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>0.4cm</Height>
+          </Matrix>
+          <Table Name="table1">
+            <ZIndex>1</ZIndex>
+            <DataSetName>DataSet1</DataSetName>
+            <TableGroups>
+              <TableGroup>
+                <Grouping Name="table1_Group1">
+                  <GroupExpressions>
+                    <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                  </GroupExpressions>
+                  <Filters>
+                    <Filter>
+                      <FilterExpression>=SUM(IIF(Fields!txtRegistrationStatus.Value="Not Registered",0,1))</FilterExpression>
+                      <Operator>GreaterThan</Operator>
+                      <FilterValues>
+                        <FilterValue>=0</FilterValue>
+                      </FilterValues>
+                    </Filter>
+                  </Filters>
+                </Grouping>
+                <Sorting>
+                  <SortBy>
+                    <SortExpression>=Fields!txtSurname.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                  <SortBy>
+                    <SortExpression>=Fields!txtPreName.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                  <SortBy>
+                    <SortExpression>=Fields!txtPreName.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                  <SortBy>
+                    <SortExpression>=Fields!txtSchoolID.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                </Sorting>
+                <Header>
+                  <TableRows>
+                    <TableRow>
+                      <TableCells>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox62">
+                              <rd:DefaultName>textbox62</rd:DefaultName>
+                              <Style>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>17</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Not Registered",0,1))</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox10">
+                              <rd:DefaultName>textbox10</rd:DefaultName>
+                              <Style>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>16</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Present" and Fields!txtTime.Value&lt;"12:00",1,0))</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox59">
+                              <rd:DefaultName>textbox59</rd:DefaultName>
+                              <Style>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>15</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Present" and Fields!txtTime.Value&gt;"12:00",1,0))</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox15">
+                              <rd:DefaultName>textbox15</rd:DefaultName>
+                              <Style>
+                                <BackgroundColor>=IIF(SUM(IIF(Fields!blnLate.Value="True", 1,0))&gt;0,"Khaki","White")</BackgroundColor>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>14</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=SUM(IIF(Fields!blnLate.Value="True",1,0))</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox12">
+                              <rd:DefaultName>textbox12</rd:DefaultName>
+                              <Style>
+                                <BackgroundColor>=IIF(SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value="Authorised",1,0))&gt;0,"LightCoral","White")</BackgroundColor>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>13</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value = "Authorised",1,0))</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox26">
+                              <rd:DefaultName>textbox26</rd:DefaultName>
+                              <Style>
+                                <BackgroundColor>=IIF(SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value="UnAuthorised",1,0))&gt;0,"LightCoral","White")</BackgroundColor>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>12</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value = "UnAuthorised",1,0))</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox66">
+                              <rd:DefaultName>textbox66</rd:DefaultName>
+                              <Style>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>11</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100),"0")</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox70">
+                              <rd:DefaultName>textbox70</rd:DefaultName>
+                              <Style>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>10</ZIndex>
+                              <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" and Fields!blnLate.Value="True",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" and Fields!blnLate.Value="True",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))) * 100),"0")</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox74">
+                              <rd:DefaultName>textbox74</rd:DefaultName>
+                              <Style>
+                                <BorderColor>
+                                  <Default>Silver</Default>
+                                </BorderColor>
+                                <BorderStyle>
+                                  <Bottom>Solid</Bottom>
+                                </BorderStyle>
+                                <BorderWidth>
+                                  <Default>0.5pt</Default>
+                                </BorderWidth>
+                                <FontSize>6pt</FontSize>
+                                <TextAlign>Center</TextAlign>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>9</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Absent",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Absent",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100),"0")</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                      </TableCells>
+                      <Height>0.35cm</Height>
+                    </TableRow>
+                  </TableRows>
+                </Header>
+              </TableGroup>
+            </TableGroups>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox11">
+                          <rd:DefaultName>textbox11</rd:DefaultName>
+                          <Style>
+                            <FontSize>7pt</FontSize>
+                            <TextAlign>Left</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>33</ZIndex>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ColSpan>2</ColSpan>
+                      <ReportItems>
+                        <Textbox Name="textbox8">
+                          <rd:DefaultName>textbox8</rd:DefaultName>
+                          <Style>
+                            <FontSize>7pt</FontSize>
+                            <TextAlign>Left</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>32</ZIndex>
+                          <Value>Present</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox57">
+                          <rd:DefaultName>textbox57</rd:DefaultName>
+                          <Style>
+                            <FontSize>7pt</FontSize>
+                            <TextAlign>Left</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>31</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ColSpan>2</ColSpan>
+                      <ReportItems>
+                        <Textbox Name="textbox9">
+                          <rd:DefaultName>textbox9</rd:DefaultName>
+                          <Style>
+                            <FontSize>7pt</FontSize>
+                            <TextAlign>Left</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>30</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Absent</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox64">
+                          <rd:DefaultName>textbox64</rd:DefaultName>
+                          <Style>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>29</ZIndex>
+                          <Value>%</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox68">
+                          <rd:DefaultName>textbox68</rd:DefaultName>
+                          <Style>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>28</ZIndex>
+                          <Value>%</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox72">
+                          <rd:DefaultName>textbox72</rd:DefaultName>
+                          <Style>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>27</ZIndex>
+                          <Value>%</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.35cm</Height>
+                </TableRow>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox61">
+                          <rd:DefaultName>textbox61</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>26</ZIndex>
+                          <Value>R#</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox4">
+                          <rd:DefaultName>textbox4</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>25</ZIndex>
+                          <Value>AM</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox58">
+                          <rd:DefaultName>textbox58</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>24</ZIndex>
+                          <Value>PM</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox6">
+                          <rd:DefaultName>textbox6</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>23</ZIndex>
+                          <Value>L</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox5">
+                          <rd:DefaultName>textbox5</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>22</ZIndex>
+                          <Value>A</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox25">
+                          <rd:DefaultName>textbox25</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>21</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>U</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox65">
+                          <rd:DefaultName>textbox65</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>20</ZIndex>
+                          <Value>P</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox69">
+                          <rd:DefaultName>textbox69</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>19</ZIndex>
+                          <Value>L</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox73">
+                          <rd:DefaultName>textbox73</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingLeft>1pt</PaddingLeft>
+                            <PaddingRight>1pt</PaddingRight>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>18</ZIndex>
+                          <Value>A</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.35cm</Height>
+                </TableRow>
+              </TableRows>
+              <RepeatOnNewPage>true</RepeatOnNewPage>
+            </Header>
+            <TableColumns>
+              <TableColumn>
+                <Width>0.55cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.55cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.55cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.45cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.45cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.4cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>0.45cm</Width>
+              </TableColumn>
+            </TableColumns>
+            <Height>1.4cm</Height>
+            <Footer>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox28">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>8</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Not Registered",0,1))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox29">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>7</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Present" and Fields!txtTime.Value&lt;"12:00",1,0))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox30">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>6</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Present" and Fields!txtTime.Value&gt;"12:00",1,0))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox32">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>5</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=SUM(IIF(Fields!blnLate.Value="True",1,0))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox33">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>4</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value = "Authorised",1,0))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox27">
+                          <rd:DefaultName>textbox27</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>3</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=SUM(IIF(Fields!txtRegistrationStatus.Value="Absent" and Fields!txtAuthorisedAbsence.Value = "UnAuthorised",1,0))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox24">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>2</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100),"0")</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox7">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>1</ZIndex>
+                          <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" and Fields!blnLate.Value="True",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present" and Fields!blnLate.Value="True",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Present",1,0))) * 100),"0")</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox14">
+                          <Style>
+                            <BorderStyle>
+                              <Top>Solid</Top>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontSize>6pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=IIF(SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Absent",1,0))&gt;0,Round((SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes" AND Fields!txtRegistaredAsStatistics.Value="Absent",1,0))/SUM(IIF(Fields!txtCountIntoStatistics.Value="Yes",1,0))) * 100),"0")</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.35cm</Height>
+                </TableRow>
+              </TableRows>
+            </Footer>
+            <Left>3.4cm</Left>
+          </Table>
+          <Matrix Name="matrix1">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>0.34cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <DataSetName>DataSet1</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix1_txtSchoolID">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                    </GroupExpressions>
+                    <Filters>
+                      <Filter>
+                        <FilterExpression>=SUM(IIF(Fields!txtRegistrationStatus.Value="Not Registered",0,1))</FilterExpression>
+                        <Operator>GreaterThan</Operator>
+                        <FilterValues>
+                          <FilterValue>=0</FilterValue>
+                        </FilterValues>
+                      </Filter>
+                    </Filters>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtSurname.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                    <SortBy>
+                      <SortExpression>=Fields!txtPreName.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDOB.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                    <SortBy>
+                      <SortExpression>=Fields!txtSchoolID.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="txtSchoolID">
+                      <rd:DefaultName>txtSchoolID</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>Silver</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <BorderWidth>
+                          <Default>0.5pt</Default>
+                        </BorderWidth>
+                        <FontSize>7pt</FontSize>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <Value>=Fields!txtSurname.Value + ", " + Fields!txtPreName.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.6cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix1_txtDateTime">
+                    <GroupExpressions>
+                      <GroupExpression>=Format(Fields!txtDateTime.Value,"dd/MM/yyy")</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtDateTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="txtDateTime">
+                      <rd:DefaultName>txtDateTime</rd:DefaultName>
+                      <Style>
+                        <FontSize>7pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <VerticalAlign>Bottom</VerticalAlign>
+                        <PaddingTop>1pt</PaddingTop>
+                      </Style>
+                      <ZIndex>3</ZIndex>
+                      <Value>=Day(Format(CDate(Fields!txtDateTime.Value),"dd/MM/yyyy"))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+              <ColumnGrouping>
+                <Height>0.1cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix1_ColumnGroup2">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!txtTime.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!txtTime.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="textbox2">
+                      <rd:DefaultName>textbox2</rd:DefaultName>
+                      <Style>
+                        <BorderStyle>
+                          <Bottom>Solid</Bottom>
+                        </BorderStyle>
+                        <FontSize>5pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingTop>1pt</PaddingTop>
+                        <PaddingBottom>1pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.34cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox1">
+                  <rd:DefaultName>textbox1</rd:DefaultName>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Left</TextAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>4</ZIndex>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.35cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="txtRegistrationCode">
+                        <rd:DefaultName>txtRegistrationCode</rd:DefaultName>
+                        <Style>
+                          <BackgroundColor>=IIF(Fields!blnLate.Value="True","Khaki",IIF(Fields!txtRegistrationStatus.Value="Absent","LightCoral","White"))</BackgroundColor>
+                          <BorderColor>
+                            <Default>Silver</Default>
+                          </BorderColor>
+                          <BorderStyle>
+                            <Left>None</Left>
+                            <Right>None</Right>
+                            <Bottom>Solid</Bottom>
+                          </BorderStyle>
+                          <BorderWidth>
+                            <Default>0.5pt</Default>
+                          </BorderWidth>
+                          <FontSize>6pt</FontSize>
+                          <TextAlign>=IIF(Fields!txtTime.Value&lt;"12:00","Right","Left")</TextAlign>
+                          <PaddingLeft>1pt</PaddingLeft>
+                          <PaddingRight>1pt</PaddingRight>
+                          <PaddingTop>1pt</PaddingTop>
+                          <PaddingBottom>1pt</PaddingBottom>
+                        </Style>
+                        <Value>=IIF(Fields!txtRegistrationCode.Value="Not Registered","",IIF(Fields!txtRegistrationCode.Value="8",IIF(Fields!txtTime.Value&lt;"12:00","/","\"),Fields!txtRegistrationCode.Value))</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>1.05cm</Height>
+          </Matrix>
+        </ReportItems>
+        <Filters>
+          <Filter>
+            <FilterExpression>=IIF(Isnothing(Parameters!blnRegistered.Value),"Show All",IIF(Parameters!blnRegistered.Value=1,"Present","Absent"))</FilterExpression>
+            <Operator>Equal</Operator>
+            <FilterValues>
+              <FilterValue>=IIF(Isnothing(Parameters!blnRegistered.Value),"Show All",Fields!txtRegistrationStatus.Value)</FilterValue>
+            </FilterValues>
+          </Filter>
+        </Filters>
+        <Width>7.8cm</Width>
+        <Style>
+          <Language>en-GB</Language>
+        </Style>
+        <Grouping Name="list1_Details_Group">
+          <GroupExpressions>
+            <GroupExpression>1=1</GroupExpression>
+          </GroupExpressions>
+          <PageBreakAtStart>true</PageBreakAtStart>
+        </Grouping>
+        <Height>4.55cm</Height>
+      </List>
+    </ReportItems>
+    <Height>6.75cm</Height>
+  </Body>
+  <Language>en-GB</Language>
+  <PageFooter>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox83">
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>4pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>25.8cm</Left>
+        <Value>="Page " &amp; Globals!PageNumber</Value>
+      </Textbox>
+      <Textbox Name="textbox84">
+        <Width>25.8cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>4pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Value>="Printed on " + Day(Now()).ToString + " " + MonthName(Month(Now())) + " " + Year(Now()).ToString</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>0.7cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageFooter>
+  <TopMargin>0.5cm</TopMargin>
+  <PageHeight>21cm</PageHeight>
+</Report>

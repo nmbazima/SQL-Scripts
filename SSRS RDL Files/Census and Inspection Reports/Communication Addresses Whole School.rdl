@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <rd:DataSourceID>75405534-a980-47b8-9770-ede865c9e5c9</rd:DataSourceID>
+      <DataSourceReference>iSAMS</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <PageHeader>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox32">
+        <Top>1cm</Top>
+        <Width>1.4cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>7</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>8cm</Left>
+        <Height>0.6cm</Height>
+        <Value>FORM</Value>
+      </Textbox>
+      <Textbox Name="textbox3">
+        <Top>1cm</Top>
+        <Width>10cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>6</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>19.2cm</Left>
+        <Height>0.6cm</Height>
+        <Value>ADDRESS</Value>
+      </Textbox>
+      <Textbox Name="textbox12">
+        <Top>1cm</Top>
+        <Width>5.5cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>5</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>13.7cm</Left>
+        <Height>0.6cm</Height>
+        <Value>PARENTS/GUARDIANS</Value>
+      </Textbox>
+      <Textbox Name="textbox11">
+        <Top>1cm</Top>
+        <Width>2.5cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>4</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>11.2cm</Left>
+        <Height>0.6cm</Height>
+        <Value>TELEPHONE</Value>
+      </Textbox>
+      <Textbox Name="textbox10">
+        <Top>1cm</Top>
+        <Width>1.8cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>3</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>9.4cm</Left>
+        <Height>0.6cm</Height>
+        <Value>DOB</Value>
+      </Textbox>
+      <Textbox Name="textbox4">
+        <Top>1cm</Top>
+        <Width>2cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>2</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>6cm</Left>
+        <Height>0.6cm</Height>
+        <Value>STATUS</Value>
+      </Textbox>
+      <Textbox Name="textbox2">
+        <rd:DefaultName>textbox2</rd:DefaultName>
+        <Top>1cm</Top>
+        <Width>5.5cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.6cm</Height>
+        <Value>NAME</Value>
+      </Textbox>
+      <Textbox Name="textbox5">
+        <Width>8.6cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Times New Roman</FontFamily>
+          <FontSize>12pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <TextAlign>Center</TextAlign>
+          <VerticalAlign>Middle</VerticalAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>1pt</PaddingTop>
+          <PaddingBottom>1pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Left>10.55cm</Left>
+        <Height>0.55cm</Height>
+        <Value>COMMUNICATION ADDRESSES</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>1.65cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageHeader>
+  <BottomMargin>0.5cm</BottomMargin>
+  <rd:ReportID>6492f8a6-0aa7-4327-a1be-9a2d8e6236d1</rd:ReportID>
+  <EmbeddedImages>
+    <EmbeddedImage Name="hall_logo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <PageWidth>29.7cm</PageWidth>
+  <DataSets>
+    <DataSet Name="Main">
+      <Fields>
+        <Field Name="intSystemStatus">
+          <DataField>intSystemStatus</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TblPupilManagementPupilsID">
+          <DataField>TblPupilManagementPupilsID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtForename">
+          <DataField>txtForename</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtForm">
+          <DataField>txtForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBoardingHouse">
+          <DataField>txtBoardingHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAddressType">
+          <DataField>txtAddressType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRelationType">
+          <DataField>txtRelationType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAddress1">
+          <DataField>txtAddress1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAddress2">
+          <DataField>txtAddress2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAddress3">
+          <DataField>txtAddress3</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtTown">
+          <DataField>txtTown</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCounty">
+          <DataField>txtCounty</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCountry">
+          <DataField>txtCountry</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPostcode">
+          <DataField>txtPostcode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtFax">
+          <DataField>txtFax</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intOrder">
+          <DataField>intOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtLetterSalutation">
+          <DataField>txtLetterSalutation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDayTelephone">
+          <DataField>txtDayTelephone</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtMobile1">
+          <DataField>txtMobile1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDOB">
+          <DataField>txtDOB</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="intStudentHome">
+          <DataField>intStudentHome</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intMonths">
+          <DataField>intMonths</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtGender">
+          <DataField>txtGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtMobile2">
+          <DataField>txtMobile2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtProfession">
+          <DataField>txtProfession</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtWorkTelephone">
+          <DataField>txtWorkTelephone</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="StxtAddress1">
+          <DataField>StxtAddress1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSOS">
+          <DataField>txtSOS</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intFamily">
+          <DataField>intFamily</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TblPupilManagementAddressesID">
+          <DataField>TblPupilManagementAddressesID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtWorkFax">
+          <DataField>txtWorkFax</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtYearCode">
+          <DataField>txtYearCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtLabelSalutation">
+          <DataField>txtLabelSalutation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSiblingsIDList">
+          <DataField>txtSiblingsIDList</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSecondarySurname">
+          <DataField>txtSecondarySurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPreName">
+          <DataField>txtPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtType">
+          <DataField>txtType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        TblPupilManagementPupils.intSystemStatus, TblPupilManagementPupils.TblPupilManagementPupilsID, TblPupilManagementPupils.txtForename, 
+                         TblPupilManagementPupils.txtSurname, TblPupilManagementPupils.intNCYear, TblPupilManagementPupils.txtForm, 
+                         TblPupilManagementPupils.txtBoardingHouse, TblPupilManagementAddresses.txtAddressType, TblPupilManagementAddresses.txtRelationType, 
+                         TblPupilManagementAddresses.txtAddress1, TblPupilManagementAddresses.txtAddress2, TblPupilManagementAddresses.txtAddress3, 
+                         TblPupilManagementAddresses.txtTown, TblPupilManagementAddresses.txtCounty, TblPupilManagementAddresses.txtCountry, 
+                         TblPupilManagementAddresses.txtPostcode, TblPupilManagementAddresses.txtFax, TblPupilManagementAddresses.intOrder, 
+                         TblPupilManagementAddresses.txtLetterSalutation, TblPupilManagementAddresses.txtDayTelephone, TblPupilManagementAddresses.txtMobile1, 
+                         TblPupilManagementPupils.txtDOB, TblPupilManagementAddresses.intStudentHome, DATEDIFF(Month, TblPupilManagementPupils.txtDOB, { fn NOW() }) 
+                         AS intMonths, TblPupilManagementPupils.txtSchoolID, TblPupilManagementPupils.txtGender, TblPupilManagementAddresses.txtMobile2, 
+                         TblPupilManagementAddresses.txtProfession, TblPupilManagementAddresses.txtWorkTelephone, 
+                         TblPupilManagementAddresses.txtAddress1 AS StxtAddress1, TblPupilManagementAddresses.txtSOS, TblPupilManagementPupils.intFamily, 
+                         TblPupilManagementAddresses.TblPupilManagementAddressesID, TblPupilManagementAddresses.txtWorkFax, TblSchoolManagementYears.txtYearCode, 
+                         TblPupilManagementAddresses.txtLabelSalutation, TblPupilManagementPupils.txtSiblingsIDList, TblPupilManagementAddresses.txtSecondarySurname, 
+                         TblPupilManagementPupils.txtPreName, TblPupilManagementPupils.txtType
+FROM            TblPupilManagementPupils INNER JOIN
+                         TblPupilManagementAddressLink ON TblPupilManagementAddressLink.txtSchoolID = TblPupilManagementPupils.txtSchoolID LEFT OUTER JOIN
+                         TblPupilManagementAddresses ON 
+                         TblPupilManagementAddressLink.intAddressID = TblPupilManagementAddresses.TblPupilManagementAddressesID LEFT OUTER JOIN
+                         TblSchoolManagementYears ON TblPupilManagementPupils.intNCYear = TblSchoolManagementYears.intNCYear
+WHERE        (TblPupilManagementAddresses.intStudentHome = 1) AND (TblPupilManagementPupils.intSystemStatus = 1)</CommandText>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code />
+  <Width>29.7cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <List Name="list1">
+        <Sorting>
+          <SortBy>
+            <SortExpression>=Fields!intNCYear.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+        </Sorting>
+        <DataSetName>Main</DataSetName>
+        <KeepTogether>true</KeepTogether>
+        <ReportItems>
+          <Table Name="table1">
+            <DataSetName>Main</DataSetName>
+            <KeepTogether>true</KeepTogether>
+            <TableGroups>
+              <TableGroup>
+                <Grouping Name="table1_Group1">
+                  <GroupExpressions>
+                    <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                  </GroupExpressions>
+                </Grouping>
+                <Sorting>
+                  <SortBy>
+                    <SortExpression>=Fields!txtSurname.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                  <SortBy>
+                    <SortExpression>=Fields!txtForename.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                  <SortBy>
+                    <SortExpression>=Fields!txtDOB.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                  <SortBy>
+                    <SortExpression>=Fields!txtSchoolID.Value</SortExpression>
+                    <Direction>Ascending</Direction>
+                  </SortBy>
+                </Sorting>
+                <Header>
+                  <TableRows>
+                    <TableRow>
+                      <TableCells>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox20">
+                              <rd:DefaultName>textbox20</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>13</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=UCase(Fields!txtSurname.Value) + " " + Fields!txtPreName.Value</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox21">
+                              <rd:DefaultName>textbox21</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>12</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Fields!txtType.Value</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox30">
+                              <rd:DefaultName>textbox30</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>11</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Fields!txtForm.Value</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox14">
+                              <rd:DefaultName>textbox14</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>10</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Format(Fields!txtDOB.Value,"dd/MM/yyyy")</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox16">
+                              <rd:DefaultName>textbox16</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>9</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Fields!txtDayTelephone.Value</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox18">
+                              <rd:DefaultName>textbox18</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>8</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Fields!txtLabelSalutation.Value</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                        <TableCell>
+                          <ReportItems>
+                            <Textbox Name="textbox22">
+                              <rd:DefaultName>textbox22</rd:DefaultName>
+                              <Style>
+                                <FontFamily>Times New Roman</FontFamily>
+                                <FontSize>9pt</FontSize>
+                                <PaddingTop>1pt</PaddingTop>
+                                <PaddingBottom>1pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>7</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Fields!txtAddress1.Value + IIF(isNothing(Fields!txtAddress2.Value) or Fields!txtAddress2.Value ="","",", " + Fields!txtAddress2.Value) +  IIF(isNothing(Fields!txtAddress3.Value) or Fields!txtAddress3.Value ="","",", " + Fields!txtAddress3.Value) +  IIF(isNothing(Fields!txtTown.Value) or Fields!txtTown.Value ="","",", " + Fields!txtTown.Value) +  IIF(isNothing(Fields!txtCounty.Value) or Fields!txtCounty.Value ="","",", " + Fields!txtCounty.Value) +  IIF(isNothing(Fields!txtPostcode.Value) or Fields!txtPostcode.Value ="","",", " + Fields!txtPostcode.Value) +  IIF(isNothing(Fields!txtCountry.Value) or Fields!txtCountry.Value ="" or Fields!txtCountry.Value ="UK","",", " + Fields!txtCountry.Value)</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                      </TableCells>
+                      <Height>0.42063cm</Height>
+                    </TableRow>
+                  </TableRows>
+                </Header>
+              </TableGroup>
+            </TableGroups>
+            <Width>28.7cm</Width>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox7">
+                          <rd:DefaultName>textbox7</rd:DefaultName>
+                          <Visibility>
+                            <Hidden>true</Hidden>
+                          </Visibility>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>20</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>="Year Group: " + Fields!txtYearCode.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox8">
+                          <rd:DefaultName>textbox8</rd:DefaultName>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>19</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox28">
+                          <rd:DefaultName>textbox28</rd:DefaultName>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>18</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox13">
+                          <rd:DefaultName>textbox13</rd:DefaultName>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>17</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox15">
+                          <rd:DefaultName>textbox15</rd:DefaultName>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>16</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox17">
+                          <rd:DefaultName>textbox17</rd:DefaultName>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>15</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox9">
+                          <rd:DefaultName>textbox9</rd:DefaultName>
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>1pt</PaddingTop>
+                            <PaddingBottom>1pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>14</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.07937cm</Height>
+                </TableRow>
+              </TableRows>
+              <RepeatOnNewPage>true</RepeatOnNewPage>
+            </Header>
+            <TableColumns>
+              <TableColumn>
+                <Width>5.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>2cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>1.4cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>1.8cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>2.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>5.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>10cm</Width>
+              </TableColumn>
+            </TableColumns>
+            <Footer>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox23">
+                          <rd:DefaultName>textbox23</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>6</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox24">
+                          <rd:DefaultName>textbox24</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>5</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox31">
+                          <rd:DefaultName>textbox31</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>4</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox25">
+                          <rd:DefaultName>textbox25</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>3</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox26">
+                          <rd:DefaultName>textbox26</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>2</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox27">
+                          <rd:DefaultName>textbox27</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>1</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox29">
+                          <Style>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <TextAlign>Right</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>="Number of Records: " + Count(Fields!TblPupilManagementAddressesID.Value).ToString</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.6cm</Height>
+                </TableRow>
+              </TableRows>
+            </Footer>
+            <Left>0.5cm</Left>
+          </Table>
+        </ReportItems>
+        <Grouping Name="list1_Details_Group">
+          <GroupExpressions>
+            <GroupExpression>1=1</GroupExpression>
+          </GroupExpressions>
+          <PageBreakAtStart>true</PageBreakAtStart>
+        </Grouping>
+      </List>
+    </ReportItems>
+    <Height>1.1cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <PageFooter>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox19">
+        <Width>4cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <FontFamily>Times New Roman</FontFamily>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>1pt</PaddingTop>
+          <PaddingBottom>1pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>25.25cm</Left>
+        <Value>="Page " &amp; Globals!PageNumber</Value>
+      </Textbox>
+      <Textbox Name="textbox57">
+        <Width>24.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <FontFamily>Times New Roman</FontFamily>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>1pt</PaddingTop>
+          <PaddingBottom>1pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Value>="Printed on " + Day(Now()).ToString + " " + MonthName(Month(Now())) + " " + Year(Now()).ToString + " at " + Format(Now(),"hh:mm")</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>0.5cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageFooter>
+  <TopMargin>0.5cm</TopMargin>
+  <PageHeight>21cm</PageHeight>
+</Report>

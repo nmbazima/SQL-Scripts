@@ -1,0 +1,4 @@
+BACKUP LOG [iSAMS_TridentColSolwezi] 
+TO  DISK = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Backup\iSAMS_TridentColSolwezi-20231028-18-12-40.bak' 
+WITH NOFORMAT, NOINIT,  NAME = N'iSAMS_TridentColSolwezi-Transaction-Log-2023-10-28T16:12:46', 
+NOSKIP, REWIND, NOUNLOAD, COMPRESSION,  STATS = 10;

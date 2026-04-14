@@ -1,0 +1,364 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <rd:DataSourceID>a71f561a-1da0-4c87-80c3-c88d910c870e</rd:DataSourceID>
+      <DataSourceReference>iSAMS</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="TblInternalExamsSessionsID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>TblInternalExamsSessionsID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TblInternalExamsProgrammesID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>TblInternalExamsProgrammesID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TblInternalExamsPapersID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>TblInternalExamsPapersID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtForm">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>txtForm</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="intNCYear">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>intNCYear</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtHouse">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>txtHouse</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>txtSchoolID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="intSystemStatus">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>intSystemStatus</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TblTeachingManagerSetsID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>TblTeachingManagerSetsID</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>2.5cm</RightMargin>
+  <LeftMargin>2.5cm</LeftMargin>
+  <BottomMargin>2.5cm</BottomMargin>
+  <rd:ReportID>a662c136-a399-43ca-9954-435be6d4302c</rd:ReportID>
+  <PageWidth>29.7cm</PageWidth>
+  <DataSets>
+    <DataSet Name="iSAMS">
+      <Fields>
+        <Field Name="txtDescription">
+          <DataField>txtDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TxtSubjectCode">
+          <DataField>TxtSubjectCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="PupilName">
+          <DataField>PupilName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Mark">
+          <DataField>Mark</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT txtDescription, TblTeachingManagerSubjects.TxtSubjectCode, (txtForename + ' ' + txtSurname) as PupilName,
+
+(CASE WHEN blnAbsent = 'True' THEN
+(SELECT top 1 txtAbsentName FROM TblInternalExamsSettings)
+WHEN TxtGrade is not null AND CAST(intMark as nvarchar(50)) is not null THEN
+TxtGrade + ' ' + CAST(intMark as nvarchar(50))
+WHEN TxtGrade is not null THEN
+TxtGrade
+WHEN CAST(intMark as nvarchar(50)) is not null THEN
+CAST(intMark as nvarchar(50))
+END) as Mark
+
+FROM TblInternalExamsResults
+INNER JOIN TblInternalExamsPapers ON TblInternalExamsResults.txtPaperCode = TblInternalExamsPapers.txtPaperCode
+INNER JOIN TblInternalExamsProgrammes ON TblInternalExamsPapers.intProgrammeID = TblInternalExamsProgrammes.TblInternalExamsProgrammesID
+INNER JOIN TblPupilManagementPupils ON TblInternalExamsResults.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+INNER JOIN TblInternalExamsSessions ON TblInternalExamsPapers.intSessionID = TblInternalExamsSessions.TblInternalExamsSessionsID
+INNER JOIN TblTeachingManagerSubjects ON TblInternalExamsProgrammes.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+WHERE (TblInternalExamsSessions.TblInternalExamsSessionsID = @TblInternalExamsSessionsID OR @TblInternalExamsSessionsID IS NULL)
+AND (TblInternalExamsProgrammes.TblInternalExamsProgrammesID = @TblInternalExamsProgrammesID OR @TblInternalExamsProgrammesID IS NULL)
+AND (TblInternalExamsPapers.TblInternalExamsPapersID = @TblInternalExamsPapersID OR @TblInternalExamsPapersID IS NULL)
+AND (TblPupilManagementPupils.txtForm  = @txtForm OR @txtForm IS NULL)
+AND (TblPupilManagementPupils.intNCYear  = @intNCYear OR @intNCYear IS NULL)
+AND (TblPupilManagementPupils.txtAcademicHouse  = @txtHouse OR @txtHouse IS NULL)
+AND (TblPupilManagementPupils.txtSchoolID  = @txtSchoolID OR @txtSchoolID IS NULL)
+AND (TblPupilManagementPupils.intSystemStatus  = @intSystemStatus OR @intSystemStatus IS NULL)
+
+AND ((SELECT top 1 TblTeachingManagerSetListsID FROM TblTeachingManagerSetLists
+WHERE txtSchoolID = TblPupilManagementPupils.txtSchoolID AND intSetID = @TblTeachingManagerSetsID) IS NOT NULL OR @TblTeachingManagerSetsID IS NULL)
+
+AND (TblInternalExamsResults.bitDeleted is null)
+AND (blnIsInternalExamCandidate = 'True')
+AND (intPaperStatus &lt;&gt; -1)
+
+ORDER BY txtForename + ' ' + txtSurname</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@TblInternalExamsSessionsID">
+            <Value>=Parameters!TblInternalExamsSessionsID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@TblInternalExamsProgrammesID">
+            <Value>=Parameters!TblInternalExamsProgrammesID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@TblInternalExamsPapersID">
+            <Value>=Parameters!TblInternalExamsPapersID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtForm">
+            <Value>=Parameters!txtForm.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intNCYear">
+            <Value>=Parameters!intNCYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtHouse">
+            <Value>=Parameters!txtHouse.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intSystemStatus">
+            <Value>=Parameters!intSystemStatus.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@TblTeachingManagerSetsID">
+            <Value>=Parameters!TblTeachingManagerSetsID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="Session">
+      <Fields>
+        <Field Name="TblInternalExamsSessionsID">
+          <DataField>TblInternalExamsSessionsID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtDescription">
+          <DataField>TxtDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT TblInternalExamsSessionsID, TxtDescription FROM TblInternalExamsSessions</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code />
+  <Width>12.69841cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Textbox Name="textbox1">
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Height>0.53333cm</Height>
+        <Value>iSAMS Pupil_Subject Matrix</Value>
+      </Textbox>
+      <List Name="List1">
+        <Sorting>
+          <SortBy>
+            <SortExpression>=Fields!txtDescription.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+        </Sorting>
+        <DataSetName>iSAMS</DataSetName>
+        <ReportItems>
+          <Textbox Name="txtDescription">
+            <rd:DefaultName>txtDescription</rd:DefaultName>
+            <Top>0.25cm</Top>
+            <Style>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.53333cm</Height>
+            <Value>=First(Fields!txtDescription.Value)</Value>
+          </Textbox>
+          <Matrix Name="matrix1">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>1.25cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <DataSetName>iSAMS</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>4cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix1_PupilName">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!PupilName.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="PupilName">
+                      <rd:DefaultName>PupilName</rd:DefaultName>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontSize>8pt</FontSize>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!PupilName.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>1.26984cm</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.53333cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix1_TxtSubjectCode">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!TxtSubjectCode.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!TxtSubjectCode.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="TxtSubjectCode">
+                      <rd:DefaultName>TxtSubjectCode</rd:DefaultName>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!TxtSubjectCode.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>5.25cm</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox4">
+                  <rd:DefaultName>textbox4</rd:DefaultName>
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>
+                  </Value>
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.53333cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <List Name="list2">
+                        <ReportItems>
+                          <Textbox Name="Mark">
+                            <rd:DefaultName>Mark</rd:DefaultName>
+                            <Style>
+                              <FontSize>8pt</FontSize>
+                              <TextAlign>Center</TextAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                            <CanGrow>true</CanGrow>
+                            <Height>0.5cm</Height>
+                            <Value>=Fields!Mark.Value</Value>
+                          </Textbox>
+                        </ReportItems>
+                        <Style>
+                          <BorderStyle>
+                            <Default>Solid</Default>
+                          </BorderStyle>
+                          <FontSize>8pt</FontSize>
+                          <TextAlign>Center</TextAlign>
+                        </Style>
+                      </List>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+            <Height>1.06666cm</Height>
+          </Matrix>
+        </ReportItems>
+        <Top>0.53333cm</Top>
+        <Grouping Name="list1_intSessionID">
+          <GroupExpressions>
+            <GroupExpression>=Fields!txtDescription.Value</GroupExpression>
+          </GroupExpressions>
+          <PageBreakAtEnd>true</PageBreakAtEnd>
+        </Grouping>
+      </List>
+    </ReportItems>
+    <Height>3.40317cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>2.5cm</TopMargin>
+  <PageHeight>21cm</PageHeight>
+</Report>

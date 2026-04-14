@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <rd:DataSourceID>4d7e1d36-baf5-4b75-8c61-73de701ab8a0</rd:DataSourceID>
+      <DataSourceReference>iSAMS</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="IntNCYear">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>NCYears</DataSetName>
+          <ValueField>intNCYear</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>NC Year</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>NCYears</DataSetName>
+          <ValueField>intNCYear</ValueField>
+          <LabelField>txtYearName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>0.5cm</RightMargin>
+  <LeftMargin>0.5cm</LeftMargin>
+  <PageHeader>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox5">
+        <rd:DefaultName>textbox5</rd:DefaultName>
+        <Width>6cm</Width>
+        <CanGrow>true</CanGrow>
+        <Value>="Curriculum Form: " + First(ReportItems!txtYearGroup.Value)</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>0.5cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageHeader>
+  <BottomMargin>0.5cm</BottomMargin>
+  <rd:ReportID>3adec266-96f9-4e3b-a62e-ac936693cd0d</rd:ReportID>
+  <PageWidth>21cm</PageWidth>
+  <DataSets>
+    <DataSet Name="Main">
+      <Fields>
+        <Field Name="txtSubjectCode">
+          <DataField>txtSubjectCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSubjectName">
+          <DataField>txtSubjectName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="No_OfGroups">
+          <DataField>No.OfGroups</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="LessonsPerCyclePerGroup">
+          <DataField>LessonsPerCyclePerGroup</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="No_OfPupils">
+          <DataField>No.OfPupils</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intYear">
+          <DataField>intYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT DISTINCT sb.txtSubjectCode, sb.txtSubjectName,
+                             (SELECT        COUNT(txtSetCode) AS Expr1
+                               FROM            TblTeachingManagerSets
+                               WHERE        (intSubject = sb.TblTeachingManagerSubjectsID) AND (intYear = s.intYear)) AS [No.OfGroups],
+                             (SELECT        COUNT(TblTimetableManagerSchedule.TblTimetableManagerScheduleID) /
+                                                             (SELECT        COUNT(txtSetCode) AS Expr1
+                                                               FROM            TblTeachingManagerSets AS TblTeachingManagerSets_3
+                                                               WHERE        (intSubject = sb.TblTeachingManagerSubjectsID) AND (intYear = s.intYear)) AS Expr1
+                               FROM            TblTimetableManagerSchedule INNER JOIN
+                                                         TblTeachingManagerSets AS TblTeachingManagerSets_2 ON 
+                                                         TblTimetableManagerSchedule.txtCode = TblTeachingManagerSets_2.txtSetCode INNER JOIN
+                                                         TblTeachingManagerSubjects ON 
+                                                         TblTeachingManagerSets_2.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID INNER JOIN
+                                                         TblTimetableManagerTimetables ON 
+                                                         TblTimetableManagerSchedule.intTimetableID = TblTimetableManagerTimetables.TblTimetableManagerTimetablesID
+                               WHERE        (TblTeachingManagerSubjects.TblTeachingManagerSubjectsID = sb.TblTeachingManagerSubjectsID) AND 
+                                                         (TblTimetableManagerTimetables.intPublished = 1) AND (TblTeachingManagerSets_2.intYear = s.intYear)) AS LessonsPerCyclePerGroup,
+                             (SELECT        COUNT(TblTeachingManagerSetLists.txtSchoolID) AS Expr1
+                               FROM            TblTeachingManagerSets AS TblTeachingManagerSets_1 INNER JOIN
+                                                         TblTeachingManagerSetLists ON TblTeachingManagerSets_1.TblTeachingManagerSetsID = TblTeachingManagerSetLists.intSetID
+                               WHERE        (TblTeachingManagerSets_1.intSubject = sb.TblTeachingManagerSubjectsID) AND (TblTeachingManagerSets_1.intYear = s.intYear)) 
+                         AS [No.OfPupils], TblSchoolManagementYears.txtYearName, s.intYear
+FROM            TblTeachingManagerSets AS s INNER JOIN
+                         TblSchoolManagementYears ON s.intYear = TblSchoolManagementYears.intNCYear LEFT OUTER JOIN
+                         TblTeachingManagerSubjects AS sb ON s.intSubject = sb.TblTeachingManagerSubjectsID
+WHERE        (s.intYear IN (@intNCYear))</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@intNCYear">
+            <Value>=Parameters!IntNCYear.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+      </Query>
+    </DataSet>
+    <DataSet Name="NCYears">
+      <Fields>
+        <Field Name="txtYearName">
+          <DataField>txtYearName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        txtYearName, intNCYear
+FROM            TblSchoolManagementYears</CommandText>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code />
+  <Width>19cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <List Name="list1">
+        <Sorting>
+          <SortBy>
+            <SortExpression>=Fields!intYear.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+        </Sorting>
+        <DataSetName>Main</DataSetName>
+        <ReportItems>
+          <Table Name="table1">
+            <DataSetName>Main</DataSetName>
+            <PageBreakAtEnd>true</PageBreakAtEnd>
+            <Details>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="txtSubjectCode">
+                          <rd:DefaultName>txtSubjectCode</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>7</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=UCASE(Fields!txtSubjectCode.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="txtSubjectName">
+                          <rd:DefaultName>txtSubjectName</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>6</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!txtSubjectName.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="No_OfGroups">
+                          <rd:DefaultName>No_OfGroups</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>5</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!No_OfGroups.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="LessonsPerCyclePerGroup">
+                          <rd:DefaultName>LessonsPerCyclePerGroup</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>4</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!LessonsPerCyclePerGroup.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="No_OfPupils">
+                          <rd:DefaultName>No_OfPupils</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>3</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!No_OfPupils.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox10">
+                          <rd:DefaultName>textbox10</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>2</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox19">
+                          <rd:DefaultName>textbox19</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>1</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox22">
+                          <rd:DefaultName>textbox22</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.5cm</Height>
+                </TableRow>
+              </TableRows>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!txtSubjectName.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+            </Details>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ColSpan>8</ColSpan>
+                      <ReportItems>
+                        <Rectangle Name="rectangle1">
+                          <ZIndex>16</ZIndex>
+                          <ReportItems>
+                            <Textbox Name="txtYearGroup">
+                              <Visibility>
+                                <Hidden>true</Hidden>
+                              </Visibility>
+                              <Width>2.53968cm</Width>
+                              <Style>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                              <CanGrow>true</CanGrow>
+                              <Value>=First(Fields!txtYearName.Value)</Value>
+                            </Textbox>
+                          </ReportItems>
+                          <Style>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                          </Style>
+                        </Rectangle>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.25cm</Height>
+                </TableRow>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox1">
+                          <rd:DefaultName>textbox1</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>15</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Code</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox2">
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>14</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Subject Name</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox3">
+                          <rd:DefaultName>textbox3</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>13</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>No. of groups</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox15">
+                          <rd:DefaultName>textbox15</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>12</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Lessons per cycle per group</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox12">
+                          <rd:DefaultName>textbox12</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>11</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>No. of pupils</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox4">
+                          <rd:DefaultName>textbox4</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>10</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Option (O)?</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox18">
+                          <rd:DefaultName>textbox18</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>9</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Setted by ability (Y)?</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox21">
+                          <rd:DefaultName>textbox21</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <BorderWidth>
+                              <Default>0.5pt</Default>
+                            </BorderWidth>
+                            <FontFamily>Times New Roman</FontFamily>
+                            <FontSize>8pt</FontSize>
+                            <TextAlign>Center</TextAlign>
+                            <VerticalAlign>Bottom</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>8</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Notes</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>1cm</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+            <TableColumns>
+              <TableColumn>
+                <Width>1.25cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>4.75cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>1.25cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>2cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>1.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>1.5cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>2cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>4.75cm</Width>
+              </TableColumn>
+            </TableColumns>
+            <Height>1.75cm</Height>
+          </Table>
+        </ReportItems>
+        <Grouping Name="list1_Details_Group">
+          <GroupExpressions>
+            <GroupExpression>=Fields!intYear.Value</GroupExpression>
+          </GroupExpressions>
+        </Grouping>
+        <Height>2cm</Height>
+      </List>
+    </ReportItems>
+    <Height>4cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>0.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>1948195e-ce55-47cc-8fe7-7989c1f83409</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="Server"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT        txtInternaliSAMSAddress
+FROM            TbliSAMSManagerSettings</CommandText></Query><Fields><Field Name="txtInternaliSAMSAddress"><DataField>txtInternaliSAMSAddress</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="AllergyReport"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@userCode"><Value>=Parameters!userCode.Value</Value></QueryParameter><QueryParameter Name="@personIds"><Value>=Parameters!personIds.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @ConditionsPermissionCheck AS NVARCHAR(MAX);
+
+SET @ConditionsPermissionCheck  = (SELECT dbo.f_CheckUserHasActivityPermission(@userCode, 'iSAMS_MEDICALCENTRE', 'Condition', 'Read', 5));
+
+WITH MainTable AS 
+    (SELECT * 
+     FROM	(SELECT	dbo.f_CanViewMedicalRecord(@userCode, intMedicalRecordTypeID, AuditBaseData.intSensitivity) AS 'txtAllowed',*, RANK() OVER(PARTITION BY gKey ORDER BY dSubmitDateTime DESC) AS 'intRnk'
+			 FROM	TblMedicalAuditBase AuditBaseData
+			 JOIN	TblMedicalAuditLog AuditLogData ON AuditBaseData.TblMedicalAuditBaseId = AuditLogData.intMedicalAuditBaseId
+			 WHERE	AuditBaseData.intMedicalRecordTypeId = 2) MostRecentRecord
+     WHERE  intRnk = 1
+			AND intMedicalAuditActionId NOT IN (4,5)
+			AND intMedicalRecordTypeId = 2
+    )
+	,cteAllConditions AS 
+	(SELECT	Condition.intPersonId, bAllergy, CASE WHEN txtAllowed = 1 THEN CAST(txtGroup AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS 'txtGroup',
+			txtSeverity, CASE WHEN txtAllowed = 1 THEN CAST(txtType AS NVARCHAR(MAX)) ELSE 'Sensitive data' END AS 'txtAllergen'
+	 FROM	MainTable 
+	 INNER JOIN VwMedicalRecordCondition AS Condition ON MainTable.TblMedicalAuditBaseId = Condition.intMedicalAuditBaseId
+	 JOIN dbo.SplitCSV(@personIds) AS personIds ON personIds.ID = condition.intPersonId
+	 JOIN TblMedicalConditionGroup AS ConditionType ON Condition.intMedicalConditionGroupId = ConditionType.TblMedicalConditionGroupId
+	 JOIN TblMedicalConditionSeverity AS Severity ON Condition.intMedicalConditionSeverityId = Severity.TblMedicalConditionSeverityId
+	 WHERE	ISNULL(condition.bDeleted, 0) &lt;&gt; 1
+			AND ISNULL(condition.bArchived, 0) &lt;&gt;1
+	)
+	,ctePupilsWithSevereAllergies AS
+	(SELECT	DISTINCT intPersonId
+	 FROM	cteAllConditions
+	 WHERE	bAllergy = 1
+			--AND txtSeverity = 'Severe' 
+	)
+	,ctePupilPictures AS
+	(SELECT	txtPath AS 'txtPupilPicturePath', txtSchoolID, DENSE_RANK() OVER (PARTITION BY txtSchoolID ORDER BY txtSubmitDateTime DESC) AS 'intPictureRank'
+	 FROM	TblPupilManagementPictures
+	)
+	,ctePupilConditionOnOneRow AS
+	(SELECT	intPersonId,
+			STUFF((	SELECT 
+						DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+					FROM
+						cteAllConditions conditions
+					WHERE 
+						conditions.intPersonId = cteAllConditions.intPersonId
+						AND conditions.bAllergy = 1
+						AND conditions.txtSeverity = 'Severe'
+					FOR XML PATH('')), 
+					1, 2, '') AS txtSevereAllergies,
+			STUFF((	SELECT 
+						DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+					FROM
+						cteAllConditions conditions
+					WHERE 
+						conditions.intPersonId = cteAllConditions.intPersonId
+						AND conditions.bAllergy = 1
+						AND conditions.txtSeverity = 'Moderate'
+					FOR XML PATH('')), 
+					1, 2, '') AS txtModerateAllergies,
+			STUFF((	SELECT 
+						DISTINCT ', ' + txtGroup + ' - ' + txtAllergen
+					FROM
+						cteAllConditions conditions
+					WHERE 
+						conditions.intPersonId = cteAllConditions.intPersonId
+						AND conditions.bAllergy = 1
+						AND conditions.txtSeverity &lt;&gt; 'Severe'
+						AND conditions.txtSeverity &lt;&gt; 'Moderate'
+					FOR XML PATH('')), 
+					1, 2, '') AS txtConditions
+	 FROM	cteAllConditions
+	 WHERE	intPersonId IN (SELECT intPersonId FROM ctePupilsWithSevereAllergies)
+	 GROUP BY intPersonId
+	)
+
+SELECT	ctePupilConditionOnOneRow.intPersonId, Pupil.txtSchoolID, Pupil.txtSurname, Pupil.txtForename, Pupil.txtPreName, Pupil.txtForm, Pupil.intNCYear, 
+		TblSchoolManagementYears.txtYearName, Pupil.txtAdditionalHealth, ctePupilPictures.txtPupilPicturePath, txtSevereAllergies, txtModerateAllergies,
+		txtConditions
+FROM	ctePupilConditionOnOneRow
+INNER JOIN TblPupilManagementPupils AS Pupil ON ctePupilConditionOnOneRow.intPersonId = Pupil.intPersonId
+LEFT OUTER JOIN TblSchoolManagementYears ON Pupil.intNCYear = TblSchoolManagementYears.intNCYear
+LEFT OUTER JOIN ctePupilPictures ON Pupil.txtSchoolID = ctePupilPictures.txtSchoolID AND ctePupilPictures.intPictureRank = 1</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="intPersonId"><DataField>intPersonId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSurname"><DataField>txtSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForename"><DataField>txtForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPreName"><DataField>txtPreName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForm"><DataField>txtForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPupilPicturePath"><DataField>txtPupilPicturePath</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intNCYear"><DataField>intNCYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtAdditionalHealth"><DataField>txtAdditionalHealth</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSevereAllergies"><DataField>txtSevereAllergies</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtModerateAllergies"><DataField>txtModerateAllergies</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtConditions"><DataField>txtConditions</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="CurrentYear"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>WITH CurrentAccademicYear AS
+
+(SELECT Top(1) intSchoolYear AS intCurrentAcademinYear
+
+FROM TblSchoolManagementTermDates
+WHERE txtFinishDate &gt;= GETDATE()
+ORDER BY txtFinishDate
+)
+
+
+SELECT intCurrentAcademinYear, 
+(SELECT top(1) Year(txtStartDate) FROM TblSchoolManagementTermDates
+WHERE TblSchoolManagementTermDates.intSchoolYear = CurrentAccademicYear.intCurrentAcademinYear ORDER BY intTerm ASC) AS intFirstTermYear,
+(SELECT top(1) Year(txtFinishDate) FROM TblSchoolManagementTermDates
+WHERE TblSchoolManagementTermDates.intSchoolYear = CurrentAccademicYear.intCurrentAcademinYear ORDER BY intTerm DESC) AS intLastTermYear
+FROM CurrentAccademicYear
+</CommandText><rd:UseGenericDesigner>true</rd:UseGenericDesigner></Query><Fields><Field Name="intCurrentAcademinYear"><DataField>intCurrentAcademinYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intFirstTermYear"><DataField>intFirstTermYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intLastTermYear"><DataField>intLastTermYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="Tablix1"><TablixBody><TablixColumns><TablixColumn><Width>9.6cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>9.2cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Rectangle1"><ReportItems><Textbox Name="Textbox1"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSurname.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Fields!txtForename.Value</Value><Style><FontSize>12pt</FontSize></Style></TextRun><TextRun><Value> (</Value><Style><FontSize>12pt</FontSize></Style></TextRun><TextRun><Value>=Fields!txtPreName.Value</Value><Style><FontSize>12pt</FontSize></Style></TextRun><TextRun><Value>)</Value><Style><FontSize>12pt</FontSize></Style></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>=Fields!txtYearName.Value</Value><Style /></TextRun><TextRun><Value>  Form: </Value><Style /></TextRun><TextRun><Value>=Fields!txtForm.Value</Value><Style /></TextRun></TextRuns><Style /></Paragraph><Paragraph><TextRuns><TextRun><Value>=IIF(First(Fields!intFirstTermYear.Value, "CurrentYear") = First(Fields!intLastTermYear.Value, "CurrentYear"), First(Fields!intFirstTermYear.Value, "CurrentYear"),
+First(Fields!intFirstTermYear.Value, "CurrentYear") &amp; "-" &amp; First(Fields!intLastTermYear.Value, "CurrentYear"))</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Top>5.35875cm</Top><Left>0.2cm</Left><Height>1.55688cm</Height><Width>9.2cm</Width><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Textbox Name="Textbox2"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(TRIM(Fields!txtSevereAllergies.Value) = "", "", "Severe Allergy")</Value><Style><FontWeight>Bold</FontWeight><Color>Red</Color></Style></TextRun><TextRun><Value>=IIF(TRIM(Fields!txtSevereAllergies.Value) = "", "", vbcrlf &amp; Fields!txtSevereAllergies.Value)</Value><Style><Color>Red</Color></Style></TextRun><TextRun><Value>=IIF(TRIM(Fields!txtSevereAllergies.Value) = "","", vbcrlf &amp; vbcrlf) &amp; IIF(TRIM(Fields!txtModerateAllergies.Value) = "", "", "Moderate Allergy")</Value><Style><FontWeight>Bold</FontWeight><Color>Orange</Color></Style></TextRun><TextRun><Value>=IIF(TRIM(Fields!txtModerateAllergies.Value) = "", "", vbcrlf &amp; Fields!txtModerateAllergies.Value)</Value><Style><Color>Orange</Color></Style></TextRun><TextRun><Value>=IIF(TRIM(Fields!txtConditions.Value) = "", "", vbcrlf &amp; vbcrlf &amp; "Other Allergy" &amp; vbcrlf)</Value><Style><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=IIF(TRIM(Fields!txtConditions.Value) = "", "", Fields!txtConditions.Value)</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox2</rd:DefaultName><Top>0.2cm</Top><Left>3.9cm</Left><Height>4.8cm</Height><Width>5.5cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Image Name="Image1"><Source>External</Source><Value>=IIF(TRIM(Fields!txtPupilPicturePath.Value) = "", "",
+IIF(Right(First(Fields!txtInternaliSAMSAddress.Value, "Server"), 1) = "/",
+Left(First(Fields!txtInternaliSAMSAddress.Value, "Server"), Len(First(Fields!txtInternaliSAMSAddress.Value, "Server")) - 1)
+,First(Fields!txtInternaliSAMSAddress.Value, "Server")
+) &amp; Fields!txtPupilPicturePath.Value
+)</Value><Sizing>FitProportional</Sizing><Top>0.2cm</Top><Left>0.2cm</Left><Height>4.8cm</Height><Width>3.5cm</Width><ZIndex>2</ZIndex><Style><Border><Style>None</Style></Border></Style></Image><Textbox Name="Textbox3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(TRIM(Fields!txtAdditionalHealth.Value) = "", "", "Medical Flag Note" &amp; vbcrlf)</Value><Style><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=IIF(TRIM(Fields!txtAdditionalHealth.Value) = "", "", Fields!txtAdditionalHealth.Value)</Value><Style /></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox3</rd:DefaultName><Top>6.98618cm</Top><Left>0.2cm</Left><Height>1.84354cm</Height><Width>9.2cm</Width><ZIndex>3</ZIndex><Style><Border><Style>None</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="txtSchoolID"><GroupExpressions><GroupExpression>=Fields!txtSchoolID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!intNCYear.Value</Value></SortExpression><SortExpression><Value>=Fields!txtForm.Value</Value></SortExpression><SortExpression><Value>=Fields!txtSurname.Value</Value></SortExpression><SortExpression><Value>=Fields!txtForename.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>AllergyReport</DataSetName><Height>9.2cm</Height><Width>9.6cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><Height>9.2cm</Height><Style /></Body><Width>9.6cm</Width><Page><PageHeight>29.7cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>0.8cm</LeftMargin><RightMargin>0.8cm</RightMargin><TopMargin>0.8cm</TopMargin><BottomMargin>0.8cm</BottomMargin><Columns>2</Columns><ColumnSpacing>0.2cm</ColumnSpacing><Style /></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="personIds"><DataType>String</DataType><Prompt>person Ids</Prompt></ReportParameter><ReportParameter Name="userCode"><DataType>String</DataType><Nullable>true</Nullable><AllowBlank>true</AllowBlank><Prompt>userCode</Prompt><Hidden>true</Hidden></ReportParameter></ReportParameters><Language>=User!Language</Language><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>e72c5b98-7948-440a-b134-f92bd28e2842</rd:ReportID></Report>

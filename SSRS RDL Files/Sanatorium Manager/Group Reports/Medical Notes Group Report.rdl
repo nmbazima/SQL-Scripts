@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <rd:DataSourceID>a04f71ed-b698-4dec-94e7-6a7071011511</rd:DataSourceID>
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString>Data Source=192.168.231.15;Initial Catalog=trunk</ConnectString>
+      </ConnectionProperties>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="txtSchoolID">
+      <DataType>String</DataType>
+      <Prompt>txtSchoolID</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <BottomMargin>1cm</BottomMargin>
+  <rd:ReportID>468eaeac-91ed-465f-91c1-fa4cde1745c1</rd:ReportID>
+  <PageWidth>29.7cm</PageWidth>
+  <DataSets>
+    <DataSet Name="iSAMS">
+      <Fields>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtPreName">
+          <DataField>txtPreName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtSurname">
+          <DataField>txtSurname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TblPupilManagementHealthNotesID">
+          <DataField>TblPupilManagementHealthNotesID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtType">
+          <DataField>txtType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtNote">
+          <DataField>txtNote</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDate">
+          <DataField>txtDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtSubmitBy">
+          <DataField>txtSubmitBy</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="blnPrivate">
+          <DataField>blnPrivate</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="txtUsername">
+          <DataField>txtUsername</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT
+pupils.txtSchoolID,
+pupils.txtPreName,
+pupils.txtSurname,
+notes.TblPupilManagementHealthNotesID, 
+notes.txtType,
+notes.txtNote,
+notes.txtDate,
+notes.txtSubmitBy,
+notes.blnPrivate,
+users.txtUsername
+
+FROM TblPupilManagementHealthNotes notes 
+INNER JOIN TblPupilManagementPupils pupils ON notes.txtSchoolID = pupils.txtSchoolID
+LEFT OUTER JOIN TbliSAMSManagerUsers users ON notes.txtSubmitBy = users.txtUsercode
+
+WHERE pupils.txtSchoolID IN ( SELECT ID FROM dbo.SplitCSV( @txtSchoolID ) ) 
+AND (notes.blnDeleted = 0 OR notes.blnDeleted is NULL)
+
+ORDER BY pupils.txtSurname, pupils.txtForename, pupils.txtSchoolID, notes.txtDate DESC</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@txtSchoolID">
+            <Value>=Parameters!txtSchoolID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code />
+  <Width>29.7cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Table Name="table3">
+        <ZIndex>1</ZIndex>
+        <DataSetName>iSAMS</DataSetName>
+        <Visibility>
+          <Hidden>=IIF((Count(Fields!TblPupilManagementHealthNotesID.Value) &gt; 0), true, false)</Hidden>
+        </Visibility>
+        <Top>4.25cm</Top>
+        <Width>28.75cm</Width>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox15">
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>No Results Found</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.6272cm</Height>
+            </TableRow>
+          </TableRows>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>28.75cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>1.25cm</Height>
+        <Footer>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox16">
+                      <Style>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Please alter your selections to re-query the iSAMS database</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.6228cm</Height>
+            </TableRow>
+          </TableRows>
+        </Footer>
+        <Left>0.5cm</Left>
+      </Table>
+      <Rectangle Name="pnlMain">
+        <Left>0.5cm</Left>
+        <Visibility>
+          <Hidden>=IIF((Count(Fields!TblPupilManagementHealthNotesID.Value) = 0), true, false)</Hidden>
+        </Visibility>
+        <ReportItems>
+          <Table Name="table1">
+            <ZIndex>2</ZIndex>
+            <Top>1.5cm</Top>
+            <TableGroups>
+              <TableGroup>
+                <Grouping Name="table1_Group1">
+                  <GroupExpressions>
+                    <GroupExpression>=Fields!txtSchoolID.Value</GroupExpression>
+                  </GroupExpressions>
+                </Grouping>
+                <Header>
+                  <TableRows>
+                    <TableRow>
+                      <TableCells>
+                        <TableCell>
+                          <ColSpan>4</ColSpan>
+                          <ReportItems>
+                            <Textbox Name="textbox14">
+                              <rd:DefaultName>textbox14</rd:DefaultName>
+                              <Style>
+                                <FontStyle>Italic</FontStyle>
+                                <FontWeight>700</FontWeight>
+                                <VerticalAlign>Bottom</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                              <ZIndex>4</ZIndex>
+                              <CanGrow>true</CanGrow>
+                              <Value>=Fields!txtPreName.Value + " " + Fields!txtSurname.Value</Value>
+                            </Textbox>
+                          </ReportItems>
+                        </TableCell>
+                      </TableCells>
+                      <Height>0.75cm</Height>
+                    </TableRow>
+                  </TableRows>
+                </Header>
+              </TableGroup>
+            </TableGroups>
+            <Width>28.27645cm</Width>
+            <Details>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox5">
+                          <rd:DefaultName>textbox5</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>3</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=IIF(Fields!blnPrivate.Value = true,Fields!txtType.Value + " (Private)",Fields!txtType.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox6">
+                          <rd:DefaultName>textbox6</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>2</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=FormatDateTime(Fields!txtDate.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox7">
+                          <rd:DefaultName>textbox7</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>1</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!txtNote.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox12">
+                          <rd:DefaultName>textbox12</rd:DefaultName>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!txtUsername.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.63492cm</Height>
+                </TableRow>
+              </TableRows>
+            </Details>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox2">
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontWeight>700</FontWeight>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>8</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Type</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox3">
+                          <rd:DefaultName>textbox3</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontWeight>700</FontWeight>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>7</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Date</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox4">
+                          <rd:DefaultName>textbox4</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontWeight>700</FontWeight>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>6</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Note</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox11">
+                          <rd:DefaultName>textbox11</rd:DefaultName>
+                          <Style>
+                            <BorderStyle>
+                              <Bottom>Solid</Bottom>
+                            </BorderStyle>
+                            <FontWeight>700</FontWeight>
+                            <TextAlign>Right</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>5</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Submitted By</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.63492cm</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+            <TableColumns>
+              <TableColumn>
+                <Width>5.77645cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>3cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>15cm</Width>
+              </TableColumn>
+              <TableColumn>
+                <Width>4.5cm</Width>
+              </TableColumn>
+            </TableColumns>
+            <Height>2.01984cm</Height>
+            <Left>0.25cm</Left>
+          </Table>
+          <Line Name="line1">
+            <Top>1.25cm</Top>
+            <Width>28.25cm</Width>
+            <Style>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <BorderWidth>
+                <Default>2pt</Default>
+              </BorderWidth>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <Left>0.25cm</Left>
+            <Height>0cm</Height>
+          </Line>
+          <Textbox Name="textbox1">
+            <rd:DefaultName>textbox1</rd:DefaultName>
+            <Top>0.25cm</Top>
+            <Width>7.75cm</Width>
+            <Style>
+              <FontSize>20pt</FontSize>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Medical Notes Report</Value>
+          </Textbox>
+        </ReportItems>
+        <Top>0.25cm</Top>
+        <Width>28.75cm</Width>
+        <Height>3.75cm</Height>
+      </Rectangle>
+    </ReportItems>
+    <Height>5.75cm</Height>
+  </Body>
+  <Language>en-GB</Language>
+  <PageFooter>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Line Name="lineFooter_breaker">
+        <Top>0.25cm</Top>
+        <Width>-28.35cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>4</ZIndex>
+        <Left>29.1cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Textbox Name="txtFooter_PageNumber">
+        <Top>1cm</Top>
+        <Width>9.85cm</Width>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>8pt</FontSize>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>3</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>19.25cm</Left>
+        <Height>0.5cm</Height>
+        <Value>="Page " + Globals!PageNumber.ToString() + " of " + Globals!TotalPages.ToString()</Value>
+      </Textbox>
+      <Textbox Name="txtFooter_URL">
+        <Top>1cm</Top>
+        <Action>
+          <Hyperlink>http://www.isams.co.uk</Hyperlink>
+        </Action>
+        <Width>5.25cm</Width>
+        <Style>
+          <Color>Navy</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>8pt</FontSize>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>2</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.75cm</Left>
+        <Height>0.5cm</Height>
+        <Value>www.isams.co.uk</Value>
+      </Textbox>
+      <Textbox Name="txtFooter_TimeTaken">
+        <Top>0.5cm</Top>
+        <Width>5.25cm</Width>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>8pt</FontSize>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.75cm</Left>
+        <Height>0.5cm</Height>
+        <Value>="Execution Time: " +
+			IIf(System.DateTime.Now.Subtract(Globals!ExecutionTime).TotalSeconds &lt; 1, "0 seconds", 
+			(
+			IIf(System.DateTime.Now.Subtract(Globals!ExecutionTime).Hours &gt; 0, System.DateTime.Now.Subtract(Globals!ExecutionTime).Hours &amp; " hour(s), ", "") +
+			IIf(System.DateTime.Now.Subtract(Globals!ExecutionTime).Minutes &gt; 0, System.DateTime.Now.Subtract(Globals!ExecutionTime).Minutes &amp; " minute(s), ", "") +
+			IIf(System.DateTime.Now.Subtract(Globals!ExecutionTime).Seconds &gt; 0, System.DateTime.Now.Subtract(Globals!ExecutionTime).Seconds &amp; " second(s)", ""))
+			)
+		</Value>
+      </Textbox>
+      <Textbox Name="txtFooter_PrintBy">
+        <Top>0.5cm</Top>
+        <Width>14.25cm</Width>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>8pt</FontSize>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Left>14.85cm</Left>
+        <Height>0.5cm</Height>
+        <Value>=" Printed on " + Globals!ExecutionTime.ToString()</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>1.75cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageFooter>
+  <TopMargin>1cm</TopMargin>
+  <PageHeight>21cm</PageHeight>
+</Report>

@@ -1,0 +1,1636 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="iSAMS">
+      <rd:DataSourceID>7160eea3-e500-4ea7-b572-39e7de039e7b</rd:DataSourceID>
+      <DataSourceReference>iSAMS</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="RowGrouping">
+      <DataType>String</DataType>
+      <Prompt>Row Grouping</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>intEnrolmentSchoolYear</Value>
+            <Label>School Year on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentTerm</Value>
+            <Label>Enrolment Term</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>intEnrolmentNCYear</Value>
+            <Label>Year Group on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentForm</Value>
+            <Label>Form on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEntryType</Value>
+            <Label>Entry Type</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentAcademicHouse</Value>
+            <Label>Academic House on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentHouse</Value>
+            <Label>House on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Name</Value>
+            <Label>Current School</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtPreviousSchoolType</Value>
+            <Label>Current School Type</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtVerification</Value>
+            <Label>Verification</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtAdmissionsStatus</Value>
+            <Label>Admission Status</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnquiryReason</Value>
+            <Label>Enquiry Reason</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnquiryType</Value>
+            <Label>Enquiry Method</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtOfferType</Value>
+            <Label>Offer Type</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtTutor</Value>
+            <Label>Personal Tutor</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtType</Value>
+            <Label>Boarding Status</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtWithdrawnReason</Value>
+            <Label>Withdrawn Reason</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtRejectedReason</Value>
+            <Label>Rejected Reason</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtCountryofResidence</Value>
+            <Label>Country of Residence</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtNationality</Value>
+            <Label>Nationality</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtLanguage</Value>
+            <Label>Language</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEthnicGroup</Value>
+            <Label>Ethnic Group</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>blnDiplomaticAndForces</Value>
+            <Label>Diplomatic and Forces</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtReligion</Value>
+            <Label>Religion</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>blnBaptised</Value>
+            <Label>Baptised</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>blnConfirmation</Value>
+            <Label>Confirmed</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBirthPlace</Value>
+            <Label>Birth Place</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBirthCounty</Value>
+            <Label>Birth County</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBirthCountry</Value>
+            <Label>Birth Country</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ColumnGrouping">
+      <DataType>String</DataType>
+      <Prompt>Column Grouping</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>intEnrolmentSchoolYear</Value>
+            <Label>School Year on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentTerm</Value>
+            <Label>Enrolment Term</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>intEnrolmentNCYear</Value>
+            <Label>Year Group on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentForm</Value>
+            <Label>Form on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEntryType</Value>
+            <Label>Entry Type</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentAcademicHouse</Value>
+            <Label>Academic House on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnrolmentHouse</Value>
+            <Label>House on Entry</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Name</Value>
+            <Label>Current School</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtPreviousSchoolType</Value>
+            <Label>Current School Type</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtVerification</Value>
+            <Label>Verification</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtAdmissionsStatus</Value>
+            <Label>Admission Status</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnquiryReason</Value>
+            <Label>Enquiry Reason</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEnquiryType</Value>
+            <Label>Enquiry Method</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtOfferType</Value>
+            <Label>Offer Type</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtTutor</Value>
+            <Label>Personal Tutor</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtType</Value>
+            <Label>Boarding Status</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtWithdrawnReason</Value>
+            <Label>Withdrawn Reason</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtRejectedReason</Value>
+            <Label>Rejected Reason</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtCountryofResidence</Value>
+            <Label>Country of Residence</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtNationality</Value>
+            <Label>Nationality</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtLanguage</Value>
+            <Label>Language</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtEthnicGroup</Value>
+            <Label>Ethnic Group</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>blnDiplomaticAndForces</Value>
+            <Label>Diplomatic and Forces</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtReligion</Value>
+            <Label>Religion</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>blnBaptised</Value>
+            <Label>Baptised</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>blnConfirmation</Value>
+            <Label>Confirmed</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBirthPlace</Value>
+            <Label>Birth Place</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBirthCounty</Value>
+            <Label>Birth County</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>txtBirthCountry</Value>
+            <Label>Birth Country</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="intEnrolmentSchoolYear">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>-10</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>School Year on Entry</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>EnrolmentSchoolYear</DataSetName>
+          <ValueField>intEnrolmentSchoolYear</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="intEnrolmentNCYear">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>-10</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Year Group on Entry</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Year</DataSetName>
+          <ValueField>intEnrolmentNCYear</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtEnrolmentAcademicHouse">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ALL</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Academic House on Entry</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>AHouse</DataSetName>
+          <ValueField>txtEnrolmentAcademicHouse</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtEnrolmentForm">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ALL</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Form on Entry</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Form</DataSetName>
+          <ValueField>txtEnrolmentForm</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtEnrolmentHouse">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ALL</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>House on Entry</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>BHouse</DataSetName>
+          <ValueField>txtEnrolmentHouse</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtType">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ALL</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Boarding Status</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>SchoolStatus</DataSetName>
+          <ValueField>txtName</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtAdmissionsStatus">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ALL</Value>
+        </Values>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Admissions Status</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>AdmissionStatus</DataSetName>
+          <ValueField>Name</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="txtOfferType">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ALL</Value>
+        </Values>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Offer Type</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>OfferType</DataSetName>
+          <ValueField>Name</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="DateStart">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>EnquiryDate</DataSetName>
+          <ValueField>MinEDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Enquired After</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>EnquiryDate</DataSetName>
+          <ValueField>MaxEDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Enquired Before</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="DateRegisteredStart">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>RegisteredDate</DataSetName>
+          <ValueField>MinRDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Registered After</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndRegisteredDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>RegisteredDate</DataSetName>
+          <ValueField>MaxRDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Registered Before</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="MinDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>EnquiryDate</DataSetName>
+          <ValueField>MinEDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>MinDate</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>EnquiryDate</DataSetName>
+          <ValueField>MinEDate</ValueField>
+          <LabelField>MinEDate</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="MaxDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>EnquiryDate</DataSetName>
+          <ValueField>MaxEDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>MaxDate</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>EnquiryDate</DataSetName>
+          <ValueField>MaxEDate</ValueField>
+          <LabelField>MaxEDate</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="MinRDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>RegisteredDate</DataSetName>
+          <ValueField>MinRDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>MinRDate</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>RegisteredDate</DataSetName>
+          <ValueField>MinRDate</ValueField>
+          <LabelField>MinRDate</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="MaxRDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>RegisteredDate</DataSetName>
+          <ValueField>MaxRDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>MaxRDate</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>RegisteredDate</DataSetName>
+          <ValueField>MaxRDate</ValueField>
+          <LabelField>MaxRDate</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>0.5cm</RightMargin>
+  <LeftMargin>0.5cm</LeftMargin>
+  <PageHeader>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox31">
+        <rd:DefaultName>textbox31</rd:DefaultName>
+        <Style>
+          <BorderStyle>
+            <Bottom>Solid</Bottom>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <FontSize>12pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+          <Language>en-GB</Language>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.7cm</Height>
+        <Value>="Admissions Matrix" </Value>
+      </Textbox>
+    </ReportItems>
+    <Height>1.15cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageHeader>
+  <BottomMargin>0.5cm</BottomMargin>
+  <rd:ReportID>a80890ab-3221-4ad7-9fdc-ddf765fcc132</rd:ReportID>
+  <PageWidth>29.7cm</PageWidth>
+  <DataSets>
+    <DataSet Name="Main">
+      <Fields>
+        <Field Name="txtSchoolID">
+          <DataField>txtSchoolID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtDOB">
+          <DataField>txtDOB</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtGender">
+          <DataField>txtGender</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intSystemStatus">
+          <DataField>intSystemStatus</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtForm">
+          <DataField>txtForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intNCYear">
+          <DataField>intNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtTutor">
+          <DataField>txtTutor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtType">
+          <DataField>txtType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtAcademicHouse">
+          <DataField>txtAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBoardingHouse">
+          <DataField>txtBoardingHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtCountryofResidence">
+          <DataField>txtCountryofResidence</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtNationality">
+          <DataField>txtNationality</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtLanguage">
+          <DataField>txtLanguage</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtReligion">
+          <DataField>txtReligion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEthnicGroup">
+          <DataField>txtEthnicGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBirthPlace">
+          <DataField>txtBirthPlace</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBirthCounty">
+          <DataField>txtBirthCounty</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBirthCountry">
+          <DataField>txtBirthCountry</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtBloodGroup">
+          <DataField>txtBloodGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtVerification">
+          <DataField>txtVerification</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEntryType">
+          <DataField>txtEntryType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intEnrolmentSchoolYear">
+          <DataField>intEnrolmentSchoolYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intEnrolmentNCYear">
+          <DataField>intEnrolmentNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentHouse">
+          <DataField>txtEnrolmentHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentAcademicHouse">
+          <DataField>txtEnrolmentAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentForm">
+          <DataField>txtEnrolmentForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnquiryType">
+          <DataField>txtEnquiryType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtLeavingReason">
+          <DataField>txtLeavingReason</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intLeavingNCYear">
+          <DataField>intLeavingNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="intLeavingSchoolYear">
+          <DataField>intLeavingSchoolYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="txtLeavingForm">
+          <DataField>txtLeavingForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtLeavingBoardingHouse">
+          <DataField>txtLeavingBoardingHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtLeavingAcademicHouse">
+          <DataField>txtLeavingAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentDate">
+          <DataField>txtEnrolmentDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Surname">
+          <DataField>Surname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Firstname">
+          <DataField>Firstname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="blnDiplomaticAndForces">
+          <DataField>blnDiplomaticAndForces</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="txtAdmissionsStatus">
+          <DataField>txtAdmissionsStatus</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentTerm">
+          <DataField>txtEnrolmentTerm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnquiryDate">
+          <DataField>txtEnquiryDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtOfferType">
+          <DataField>txtOfferType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRegisteredDate">
+          <DataField>txtRegisteredDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="txtPreviousSchoolType">
+          <DataField>txtPreviousSchoolType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtRejectedReason">
+          <DataField>txtRejectedReason</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtWithdrawnReason">
+          <DataField>txtWithdrawnReason</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnquiryReason">
+          <DataField>txtEnquiryReason</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="blnBaptised">
+          <DataField>blnBaptised</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="blnConfirmation">
+          <DataField>blnConfirmation</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT        TblPupilManagementPupils.txtSchoolID, TblPupilManagementPupils.txtDOB, TblPupilManagementPupils.txtGender, 
+                         TblPupilManagementPupils.intSystemStatus, TblPupilManagementPupils.txtForm, TblPupilManagementPupils.intNCYear, 
+                         TblPupilManagementPupils.txtTutor, TblPupilManagementPupils.txtType, TblPupilManagementPupils.txtAcademicHouse, 
+                         TblPupilManagementPupils.txtBoardingHouse, TblPupilManagementPupils.txtCountryofResidence, TblPupilManagementPupils.txtNationality, 
+                         TblPupilManagementPupils.txtLanguage, TblPupilManagementPupils.txtReligion, TblPupilManagementPupils.txtEthnicGroup, 
+                         TblPupilManagementPupils.txtBirthPlace, TblPupilManagementPupils.txtBirthCounty, TblPupilManagementPupils.txtBirthCountry, 
+                         TblPupilManagementPupils.txtBloodGroup, TblPupilManagementPupils.txtVerification, TblPupilManagementPupils.txtEntryType, 
+                         TblPupilManagementPupils.intEnrolmentSchoolYear, TblPupilManagementPupils.intEnrolmentNCYear, TblPupilManagementPupils.txtEnrolmentHouse, 
+                         TblPupilManagementPupils.txtEnrolmentAcademicHouse, TblPupilManagementPupils.txtEnrolmentForm, TblPupilManagementPupils.txtEnquiryType, 
+                         TblSchools.Name, TblPupilManagementPupils.txtLeavingReason, TblPupilManagementPupils.intLeavingNCYear, 
+                         TblPupilManagementPupils.intLeavingSchoolYear, TblPupilManagementPupils.txtLeavingForm, TblPupilManagementPupils.txtLeavingBoardingHouse, 
+                         TblPupilManagementPupils.txtLeavingAcademicHouse, TblPupilManagementPupils.txtEnrolmentDate, TblStaff.Surname, TblStaff.Firstname, 
+                         TblPupilManagementPupils.blnDiplomaticAndForces, TblPupilManagementPupils.txtAdmissionsStatus, TblPupilManagementPupils.txtEnrolmentTerm, 
+                         TblPupilManagementPupils.txtEnquiryDate, TblPupilManagementPupils.txtOfferType, TblPupilManagementPupils.txtRegisteredDate, 
+                         TblPupilManagementPupils.txtPreviousSchoolType, TblPupilManagementPupils.txtRejectedReason, TblPupilManagementPupils.txtWithdrawnReason, 
+                         TblPupilManagementPupils.txtEnquiryReason, TblPupilManagementPupils.blnBaptised, TblPupilManagementPupils.blnConfirmation
+FROM            TblPupilManagementPupils LEFT OUTER JOIN
+                         TblSchools ON TblPupilManagementPupils.intPreviousSchool = TblSchools.TblSchoolsID LEFT OUTER JOIN
+                         TblStaff ON TblPupilManagementPupils.txtTutor = TblStaff.User_Code
+WHERE        (TblPupilManagementPupils.intSystemStatus = 0) AND (TblPupilManagementPupils.txtType IN (@txtType) OR
+                         'ALL' IN (@txtType)) AND (TblPupilManagementPupils.txtEnrolmentAcademicHouse IN (@txtEnrolmentAcademicHouse) OR
+                         'ALL' IN (@txtEnrolmentAcademicHouse)) AND (TblPupilManagementPupils.txtEnrolmentHouse IN (@txtEnrolmentHouse) OR
+                         'ALL' IN (@txtEnrolmentHouse)) AND (TblPupilManagementPupils.txtEnrolmentForm IN (@txtEnrolmentForm) OR
+                         'ALL' IN (@txtEnrolmentForm)) AND (TblPupilManagementPupils.intEnrolmentNCYear IN (@intEnrolmentNCYear) OR
+                         (- 10) IN (@intEnrolmentNCYear)) AND (TblPupilManagementPupils.intEnrolmentSchoolYear IN (@intEnrolmentSchoolYear) OR
+                         (- 10) IN (@intEnrolmentSchoolYear)) AND (TblPupilManagementPupils.txtEnquiryDate BETWEEN @DateStart AND @EndDate OR
+                         TblPupilManagementPupils.txtEnquiryDate IS NULL) AND (TblPupilManagementPupils.txtRegisteredDate BETWEEN @DateRegisteredStart AND 
+                         @EndRegisteredDate OR
+                         TblPupilManagementPupils.txtRegisteredDate IS NULL) AND (TblPupilManagementPupils.txtAdmissionsStatus IN (@txtAdmissionsStatus) OR
+                         'ALL' IN (@txtAdmissionsStatus)) AND (TblPupilManagementPupils.txtOfferType IN (@txtOfferType) OR
+                         'ALL' IN (@txtOfferType))</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@txtType">
+            <Value>=Parameters!txtType.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtEnrolmentAcademicHouse">
+            <Value>=Parameters!txtEnrolmentAcademicHouse.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtEnrolmentHouse">
+            <Value>=Parameters!txtEnrolmentHouse.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtEnrolmentForm">
+            <Value>=Parameters!txtEnrolmentForm.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intEnrolmentNCYear">
+            <Value>=Parameters!intEnrolmentNCYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@intEnrolmentSchoolYear">
+            <Value>=Parameters!intEnrolmentSchoolYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@DateStart">
+            <Value>=Parameters!DateStart.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@DateRegisteredStart">
+            <Value>=Parameters!DateRegisteredStart.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndRegisteredDate">
+            <Value>=Parameters!EndRegisteredDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtAdmissionsStatus">
+            <Value>=Parameters!txtAdmissionsStatus.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@txtOfferType">
+            <Value>=Parameters!txtOfferType.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+      </Query>
+    </DataSet>
+    <DataSet Name="Year">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intEnrolmentNCYear">
+          <DataField>intEnrolmentNCYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MyOrder">
+          <DataField>MyOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No Year Group Filter' as Label , -10 as intEnrolmentNCYear, 0 as MyOrder
+UNION ALL
+
+
+SELECT DISTINCT   txtYearName  as Label, intEnrolmentNCYear, 1 as MyOrder  FROM TblPupilManagementPupils
+LEFT OUTER JOIN TblSchoolManagementYears ON TblPupilManagementPupils.intEnrolmentNCYear = TblSchoolManagementYears.intNCYear
+
+WHERE   intEnrolmentNCYear is not null 
+AND intSystemStatus =0
+ORDER BY Myorder,  intEnrolmentNCYear</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="AHouse">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentAcademicHouse">
+          <DataField>txtEnrolmentAcademicHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Myorder">
+          <DataField>Myorder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No Academic House Filter' as Label , 'ALL' as txtEnrolmentAcademicHouse , 0 As Myorder
+UNION ALL
+SELECT  DISTINCT txtEnrolmentAcademicHouse  AS Label, txtEnrolmentAcademicHouse, 1 As Myorder FROM TblPupilManagementPupils
+WHERE txtEnrolmentAcademicHouse  &lt;&gt;'' AND txtEnrolmentAcademicHouse  is not null AND intSystemStatus=0
+
+ORDER BY Myorder, txtEnrolmentAcademicHouse</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="BHouse">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentHouse">
+          <DataField>txtEnrolmentHouse</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Myorder">
+          <DataField>Myorder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No Boarding House Filter' as Label , 'ALL' as txtEnrolmentHouse , 0 As Myorder
+UNION ALL
+SELECT  DISTINCT txtEnrolmentHouse AS Label, txtEnrolmentHouse, 1 As Myorder FROM TblPupilManagementPupils
+WHERE txtEnrolmentHouse &lt;&gt;'' AND txtEnrolmentHouse is not null AND intSystemStatus=0
+
+ORDER BY Myorder, txtEnrolmentHouse</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="Form">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtEnrolmentForm">
+          <DataField>txtEnrolmentForm</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="MyOrder">
+          <DataField>MyOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No Form Filter' as Label , 'ALL' as txtEnrolmentForm ,0 as MyOrder
+UNION ALL
+
+SELECT DISTINCT txtEnrolmentForm  as Label, txtEnrolmentForm, 1 as MyOrder  FROM TblPupilManagementPupils
+WHERE txtEnrolmentForm &lt;&gt;'' AND txtEnrolmentForm  is not null  AND intSystemStatus=0
+ORDER BY MyOrder, txtEnrolmentForm</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="SchoolStatus">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="txtName">
+          <DataField>txtName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Myorder">
+          <DataField>Myorder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No School Status Filter' as Label , 'ALL' as txtName , 0 As Myorder
+UNION ALL
+
+SELECT txtName  AS Label, txtName , 1 As Myorder FROM TblPupilManagementSchoolStatus
+ORDER BY Myorder, txtName</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="EnquiryDate">
+      <Fields>
+        <Field Name="MinEDate">
+          <DataField>MinEDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="MaxEDate">
+          <DataField>MaxEDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT MIN(txtEnquiryDate) AS MinEDate,  MAX(txtEnquiryDate) AS MaxEDate  FROM TblPupilMAnagementPupils</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="EnrolmentSchoolYear">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="intEnrolmentSchoolYear">
+          <DataField>intEnrolmentSchoolYear</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MyOrder">
+          <DataField>MyOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No School Year Filter' as Label , -10 as intEnrolmentSchoolYear , 0 as MyOrder
+UNION ALL
+
+
+SELECT DISTINCT   CONVERT(varchar(20),intEnrolmentSchoolYear ) as Label , intEnrolmentSchoolYear , 1 as MyOrder  FROM TblPupilManagementPupils
+
+
+WHERE   intEnrolmentSchoolYear is not null 
+AND intSystemStatus =0
+ORDER BY Myorder,  intEnrolmentSchoolYear</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="RegisteredDate">
+      <Fields>
+        <Field Name="MinRDate">
+          <DataField>MinRDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="MaxRDate">
+          <DataField>MaxRDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT MIN(txtRegisteredDate) AS MinRDate,  MAX(txtRegisteredDate) AS MaxRDate  FROM TblPupilMAnagementPupils</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="AdmissionStatus">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Myorder">
+          <DataField>Myorder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No Admission Status Filter' as Label , 'ALL' as Name , 0 As Myorder
+UNION ALL
+
+SELECT Name  as Label,  Name, 1 As Myorder 
+
+ FROM TblUsefulLists WHERE ListType='AdmissionsStatus'
+
+ORDER BY Myorder, Name</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="OfferType">
+      <Fields>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Myorder">
+          <DataField>Myorder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>iSAMS</DataSourceName>
+        <CommandText>SELECT  'No Offer Type  Filter' as Label , 'ALL' as Name , 0 As Myorder
+UNION ALL
+
+SELECT Name  as Label,  Name, 1 As Myorder 
+
+ FROM TblUsefulLists WHERE ListType='OfferType'
+
+ORDER BY Myorder, Name</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code />
+  <Width>28.7cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <List Name="list1">
+        <DataSetName>Main</DataSetName>
+        <ReportItems>
+          <Matrix Name="matrix1">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>1.8cm</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <DataSetName>Main</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>3cm</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix1_RowGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields(Parameters!RowGrouping.Value).value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=IIF(Parameters!RowGrouping.Value ="txtForm",Fields!intNCYear.Value,IIF(Parameters!RowGrouping.Value ="txtTutor",Fields!Surname.Value + "," + Fields!Firstname.Value,Fields(Parameters!RowGrouping.Value).value))</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <Subtotal>
+                    <ReportItems>
+                      <Textbox Name="textbox16">
+                        <rd:DefaultName>textbox16</rd:DefaultName>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                          <FontWeight>700</FontWeight>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                        <CanGrow>true</CanGrow>
+                        <Value>Total</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </Subtotal>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <rd:DefaultName>textbox3</rd:DefaultName>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Left</TextAlign>
+                        <VerticalAlign>Middle</VerticalAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=IIF(isNothing(Fields(Parameters!RowGrouping.Value).value),"Unspecified",IIF(Parameters!RowGrouping.Value ="txtTutor",Fields!Surname.Value + ", " + Fields!Firstname.Value,Fields(Parameters!RowGrouping.Value).value))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.9cm</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix1_ColumnGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields(Parameters!ColumnGrouping.Value).value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=IIF(Parameters!ColumnGrouping.Value ="txtForm",Fields!intNCYear.Value,IIF(Parameters!ColumnGrouping.Value ="txtTutor",Fields!Surname.Value + "," + Fields!Firstname.Value,Fields(Parameters!ColumnGrouping.Value).value))</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <Subtotal>
+                    <ReportItems>
+                      <Textbox Name="textbox18">
+                        <rd:DefaultName>textbox18</rd:DefaultName>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                          <FontWeight>700</FontWeight>
+                          <TextAlign>Center</TextAlign>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                        <ZIndex>3</ZIndex>
+                        <CanGrow>true</CanGrow>
+                        <Value>Total</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </Subtotal>
+                  <ReportItems>
+                    <Textbox Name="textbox2">
+                      <rd:DefaultName>textbox2</rd:DefaultName>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <TextAlign>Center</TextAlign>
+                        <VerticalAlign>Bottom</VerticalAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>4</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=IIF(isNothing(Fields(Parameters!ColumnGrouping.Value).value),"Unspecified",IIF(Parameters!ColumnGrouping.Value ="txtTutor",Fields!Surname.Value + ", " + Fields!Firstname.Value,Fields(Parameters!ColumnGrouping.Value).Value))</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Corner>
+              <ReportItems>
+                <Table Name="table2">
+                  <ZIndex>5</ZIndex>
+                  <Style>
+                    <FontSize>9pt</FontSize>
+                  </Style>
+                  <Header>
+                    <TableRows>
+                      <TableRow>
+                        <TableCells>
+                          <TableCell>
+                            <ReportItems>
+                              <Textbox Name="textbox21">
+                                <rd:DefaultName>textbox21</rd:DefaultName>
+                                <Style>
+                                  <FontSize>7pt</FontSize>
+                                  <FontWeight>700</FontWeight>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                                <ZIndex>1</ZIndex>
+                                <Value>=Parameters!ColumnGrouping.Label</Value>
+                              </Textbox>
+                            </ReportItems>
+                          </TableCell>
+                        </TableCells>
+                        <Height>0.45cm</Height>
+                      </TableRow>
+                      <TableRow>
+                        <TableCells>
+                          <TableCell>
+                            <ReportItems>
+                              <Textbox Name="textbox22">
+                                <rd:DefaultName>textbox22</rd:DefaultName>
+                                <Style>
+                                  <FontSize>7pt</FontSize>
+                                  <FontWeight>700</FontWeight>
+                                </Style>
+                                <Value>=Parameters!RowGrouping.Label</Value>
+                              </Textbox>
+                            </ReportItems>
+                          </TableCell>
+                        </TableCells>
+                        <Height>0.45cm</Height>
+                      </TableRow>
+                    </TableRows>
+                    <RepeatOnNewPage>true</RepeatOnNewPage>
+                  </Header>
+                  <TableColumns>
+                    <TableColumn>
+                      <Width>3cm</Width>
+                    </TableColumn>
+                  </TableColumns>
+                </Table>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.9cm</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Table Name="table1">
+                        <ZIndex>1</ZIndex>
+                        <Header>
+                          <TableRows>
+                            <TableRow>
+                              <TableCells>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox13">
+                                      <rd:DefaultName>textbox13</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>14</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox14">
+                                      <rd:DefaultName>textbox14</rd:DefaultName>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>13</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox17">
+                                      <rd:DefaultName>textbox17</rd:DefaultName>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>12</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox15">
+                                      <rd:DefaultName>textbox15</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>11</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                              </TableCells>
+                              <Height>0.1cm</Height>
+                            </TableRow>
+                            <TableRow>
+                              <TableCells>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox8">
+                                      <rd:DefaultName>textbox8</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>10</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ColSpan>2</ColSpan>
+                                  <ReportItems>
+                                    <Textbox Name="textbox5">
+                                      <Style>
+                                        <BorderStyle>
+                                          <Left>Solid</Left>
+                                          <Right>Solid</Right>
+                                          <Top>Solid</Top>
+                                        </BorderStyle>
+                                        <FontSize>8pt</FontSize>
+                                        <FontWeight>700</FontWeight>
+                                        <TextAlign>Center</TextAlign>
+                                        <VerticalAlign>Bottom</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>1pt</PaddingTop>
+                                        <PaddingBottom>1pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>9</ZIndex>
+                                      <Value>=COUNT(Fields!txtSchoolID.Value)</Value>
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox10">
+                                      <rd:DefaultName>textbox10</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>8</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                              </TableCells>
+                              <Height>0.35cm</Height>
+                            </TableRow>
+                            <TableRow>
+                              <TableCells>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox4">
+                                      <rd:DefaultName>textbox4</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>7</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox6">
+                                      <rd:DefaultName>textbox6</rd:DefaultName>
+                                      <Style>
+                                        <BorderStyle>
+                                          <Left>Solid</Left>
+                                          <Bottom>Solid</Bottom>
+                                        </BorderStyle>
+                                        <FontSize>6pt</FontSize>
+                                        <TextAlign>Right</TextAlign>
+                                        <VerticalAlign>Bottom</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>1pt</PaddingTop>
+                                        <PaddingBottom>1pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>6</ZIndex>
+                                      <Value>="M:" &amp; IIF(COUNT(Fields!txtSchoolID.Value)=0,0,SUM(IIF(Fields!txtGender.Value="M",1,0)))</Value>
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox19">
+                                      <rd:DefaultName>textbox19</rd:DefaultName>
+                                      <Style>
+                                        <BorderStyle>
+                                          <Right>Solid</Right>
+                                          <Bottom>Solid</Bottom>
+                                        </BorderStyle>
+                                        <FontSize>6pt</FontSize>
+                                        <TextAlign>Left</TextAlign>
+                                        <VerticalAlign>Bottom</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>1pt</PaddingTop>
+                                        <PaddingBottom>1pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>5</ZIndex>
+                                      <Value>="F:" &amp; IIF(COUNT(Fields!txtSchoolID.Value)=0,0,SUM(IIF(Fields!txtGender.Value="F",1,0)))</Value>
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox7">
+                                      <rd:DefaultName>textbox7</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>4</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                              </TableCells>
+                              <Height>0.35cm</Height>
+                            </TableRow>
+                            <TableRow>
+                              <TableCells>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox9">
+                                      <rd:DefaultName>textbox9</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>3</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox11">
+                                      <rd:DefaultName>textbox11</rd:DefaultName>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>2</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox20">
+                                      <rd:DefaultName>textbox20</rd:DefaultName>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <ZIndex>1</ZIndex>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                                <TableCell>
+                                  <ReportItems>
+                                    <Textbox Name="textbox12">
+                                      <rd:DefaultName>textbox12</rd:DefaultName>
+                                      <Style>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                      <CanGrow>true</CanGrow>
+                                      <Value />
+                                    </Textbox>
+                                  </ReportItems>
+                                </TableCell>
+                              </TableCells>
+                              <Height>0.10053cm</Height>
+                            </TableRow>
+                          </TableRows>
+                        </Header>
+                        <TableColumns>
+                          <TableColumn>
+                            <Width>0.1cm</Width>
+                          </TableColumn>
+                          <TableColumn>
+                            <Width>0.8cm</Width>
+                          </TableColumn>
+                          <TableColumn>
+                            <Width>0.8cm</Width>
+                          </TableColumn>
+                          <TableColumn>
+                            <Width>0.11058cm</Width>
+                          </TableColumn>
+                        </TableColumns>
+                      </Table>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+          </Matrix>
+        </ReportItems>
+        <Width>6.6cm</Width>
+        <Style>
+          <Language>en-US</Language>
+        </Style>
+        <Grouping Name="list1_Details_Group">
+          <GroupExpressions>
+            <GroupExpression>1=1</GroupExpression>
+          </GroupExpressions>
+        </Grouping>
+      </List>
+    </ReportItems>
+    <Height>2.7cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <PageFooter>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <ReportItems>
+      <Textbox Name="textbox25">
+        <Top>0.3cm</Top>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>4pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>25.2cm</Left>
+        <Value>="Page " &amp; Globals!PageNumber</Value>
+      </Textbox>
+      <Textbox Name="textbox57">
+        <Top>0.3cm</Top>
+        <Width>25.2cm</Width>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>2pt</Default>
+          </BorderWidth>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>4pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Value>="Printed on " + Day(Now()).ToString + " " + MonthName(Month(Now())) + " " + Year(Now()).ToString</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>1cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+  </PageFooter>
+  <TopMargin>0.5cm</TopMargin>
+  <PageHeight>21cm</PageHeight>
+</Report>

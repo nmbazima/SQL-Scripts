@@ -1,0 +1,484 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>5c6229dc-f13f-4a67-8211-1df35e0dd410</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="Gradebooks"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@userCode"><Value>=Parameters!userCode.Value</Value></QueryParameter><QueryParameter Name="@Live"><Value>=Parameters!Live.Value</Value></QueryParameter><QueryParameter Name="@CycleId"><Value>=Parameters!CycleId.Value</Value></QueryParameter><QueryParameter Name="@TagId"><Value>=Parameters!TagId.Value</Value></QueryParameter></QueryParameters><CommandText>
+DECLARE @adminUser BIT = 0;
+
+SELECT
+    TOP (1) @adminUser = TbliSAMSManagerModuleSecurity.intFull
+FROM TbliSAMSManagerModules
+INNER JOIN TbliSAMSManagerModuleSecurity ON TbliSAMSManagerModules.TbliSAMSManagerModulesID = TbliSAMSManagerModuleSecurity.intModuleID
+INNER JOIN TbliSAMSManagerUsers ON TbliSAMSManagerModuleSecurity.txtSecurityID = TbliSAMSManagerUsers.txtSecurityID
+WHERE TbliSAMSManagerModules.txtModuleID = 'iSAMS_GRADEBOOKS'
+AND TbliSAMSManagerUsers.txtUserCode = @userCode;
+
+
+
+
+WITH GradebooksAccess AS
+(
+SELECT DISTINCT ModelId as GradebookID
+FROM tracking.Model
+INNER JOIN tracking.[User] ON [User].ModelId = Model.Id
+WHERE isNull(Model.Deleted, 0) = 0 
+	AND ([User].UserCode = @userCode or @adminUser = 1)
+)
+
+SELECT DISTINCT
+[tracking].[Model].ID AS GradebookID,
+[tracking].[Model].Name AS GradebookName
+
+FROM [tracking].[Model]
+INNER JOIN GradebooksAccess ON [tracking].[Model].Id = GradebooksAccess.GradebookID
+LEFT OUTER JOIN [tracking].[AspectLink] ON [tracking].[Model].[Id] = [tracking].[AspectLink].[ModelId]
+LEFT OUTER JOIN [tracking].[Aspect] ON [tracking].[AspectLink].[AspectId] = [tracking].[Aspect].[Id]
+LEFT OUTER JOIN [tag].[Tag] ON [tracking].[Model].Id = [tag].[Tag].EntityId AND [tag].[Tag].EntityTypeId = 2
+LEFT OUTER JOIN TblTeachingManagerSets ON [tracking].[Model].ClassId = TblTeachingManagerSets.tblTeachingManagerSetsID
+LEFT OUTER JOIN curriculum.CourseSchedule ON TblTeachingManagerSets.intCourseSchedule = curriculum.CourseSchedule.Id
+LEFT OUTER JOIN curriculum.Course ON curriculum.CourseSchedule.Course = curriculum.Course.Id
+LEFT OUTER JOIN [curriculum].[Cycle] ON [curriculum].Course.[Cycle] = [curriculum].[Cycle].[Id]
+WHERE [tracking].[Aspect].Type IN ('Assessment','Calculation')
+AND ISNULL([tracking].[Model].Deleted,0) &lt;&gt; 1
+AND isNull([tracking].[Model].Archived,0) IN (@Live)
+AND (isNull([curriculum].[Cycle].[Id],-100) = @CycleId)
+AND (CONCAT([tag].[Tag].CategoryId,'_',[tag].[Tag].CategoryEntityId) IN (@TagId) OR  '-100_-100' IN (@TagId))
+ORDER BY [tracking].[Model].Name</CommandText></Query><Fields><Field Name="GradebookID"><DataField>GradebookID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="GradebookName"><DataField>GradebookName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="AssessmentElements"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@Live"><Value>=Parameters!Live.Value</Value></QueryParameter><QueryParameter Name="@GradebookID"><Value>=Parameters!GradebookID.Value</Value></QueryParameter></QueryParameters><CommandText>WITH  MyCTE
+AS
+(
+        -- anchor
+    SELECT  Id, [Name], ParentId,1 AS [Level], 
+                 CAST(([Name]) AS VARCHAR(MAX)) AS Hierarchy
+    FROM    tracking.[AspectLinkGrouping]
+    WHERE   ParentId IS NULL
+
+    UNION ALL
+        --recursive member
+    SELECT  t2.id, t2.[Name], t2.ParentID,M.[level] + 1 AS [Level],
+                 CAST((M.Hierarchy + ' &gt; ' + t2.Name) AS VARCHAR(MAX)) AS Hierarchy
+    FROM    tracking.[AspectLinkGrouping] AS t2
+            JOIN MyCTE AS M ON t2.ParentId = M.Id   
+)
+
+SELECT DISTINCT
+	CASE WHEN MyCTE.Hierarchy IS NULL THEN [tracking].[Aspect].Name ELSE MyCTE.Hierarchy + ' &gt; ' + [tracking].[Aspect].Name END AS ElementName
+FROM [tracking].[Model]
+
+LEFT OUTER JOIN [tracking].[AspectLink] ON [tracking].[Model].[Id] = [tracking].[AspectLink].[ModelId] AND ISNULL([tracking].[AspectLink].Deleted,0) &lt;&gt; 1
+LEFT OUTER JOIN [tracking].[Aspect] ON [tracking].[AspectLink].[AspectId] = [tracking].[Aspect].[Id]
+LEFT OUTER JOIN MyCTE ON [tracking].[AspectLink].[AspectLinkGroupingId] = MyCTE.[Id]
+WHERE  [tracking].[Aspect].Type IN ('Assessment','Calculation')
+
+AND isNull([tracking].[Model].Archived,0) IN (@Live)
+AND [tracking].[Model].ID IN (@GradebookID)
+ORDER BY ElementName</CommandText></Query><Fields><Field Name="ElementName"><DataField>ElementName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="GradebookData"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@userCode"><Value>=Parameters!userCode.Value</Value></QueryParameter><QueryParameter Name="@ElementName"><Value>=Parameters!ElementName.Value</Value></QueryParameter><QueryParameter Name="@intRegister"><Value>=Parameters!intRegister.Value</Value></QueryParameter><QueryParameter Name="@Live"><Value>=Parameters!Live.Value</Value></QueryParameter><QueryParameter Name="@GradebookID"><Value>=Parameters!GradebookID.Value</Value></QueryParameter><QueryParameter Name="@CategoryId"><Value>=Parameters!CategoryId.Value</Value></QueryParameter></QueryParameters><CommandText>DECLARE @adminUser BIT = 0;
+
+SELECT
+    TOP (1) @adminUser = TbliSAMSManagerModuleSecurity.intFull
+FROM TbliSAMSManagerModules
+INNER JOIN TbliSAMSManagerModuleSecurity ON TbliSAMSManagerModules.TbliSAMSManagerModulesID = TbliSAMSManagerModuleSecurity.intModuleID
+INNER JOIN TbliSAMSManagerUsers ON TbliSAMSManagerModuleSecurity.txtSecurityID = TbliSAMSManagerUsers.txtSecurityID
+WHERE TbliSAMSManagerModules.txtModuleID = 'iSAMS_GRADEBOOKS'
+AND TbliSAMSManagerUsers.txtUserCode = @userCode;
+
+WITH GradebookElements AS
+(
+	SELECT 
+	'Group' AS Type,
+	[Id],
+	[ParentId],
+	[Name],
+	[Order]
+	FROM tracking.[AspectLinkGrouping]
+	WHERE ModelId IN (@GradebookID)
+
+	UNION ALL
+
+
+	SELECT
+	'Element' AS Type,
+	[tracking].[Aspect].Id,
+	[tracking].[AspectLink].[AspectLinkGroupingId] AS [ParentId],
+	[tracking].[Aspect].Name,
+	[tracking].[AspectLink].[Order]
+	FROM [tracking].[Aspect]
+	INNER JOIN [tracking].[AspectLink] ON [tracking].[AspectLink].[AspectId] = [tracking].[Aspect].[Id] AND ISNULL([tracking].[AspectLink].Deleted,0) &lt;&gt; 1
+	WHERE ModelId IN (@GradebookID) 
+	AND [tracking].[Aspect].Type IN ('Assessment','Calculation')
+),
+
+
+HierarchyCTE AS (
+  SELECT *,
+    CAST([Order] AS REAL) ElementOrderInHierarchy,
+    1 level,
+	CAST(([Name]) AS VARCHAR(MAX)) AS ElementNameWithHierarchy
+  FROM GradebookElements
+  WHERE ParentId IS NULL
+  UNION ALL
+  SELECT t2.*,
+    HierarchyCTE.ElementOrderInHierarchy + (CAST( t2.[Order] AS REAL) / POWER(10, HierarchyCTE.level)) ElementOrderInHierarchy,
+    HierarchyCTE.level + 1 level,
+	CAST((HierarchyCTE.ElementNameWithHierarchy + ' &gt; ' + t2.Name) AS VARCHAR(MAX)) AS ElementNameWithHierarchy
+	FROM    GradebookElements AS t2
+            JOIN HierarchyCTE ON t2.ParentId = HierarchyCTE.Id  
+
+),
+ GradebooksAccess AS
+(
+SELECT DISTINCT ModelId as GradebookID
+FROM tracking.Model
+INNER JOIN tracking.[User] ON [User].ModelId = Model.Id
+WHERE isNull(Model.Deleted, 0) = 0 
+	AND ([User].UserCode = @userCode or @adminUser = 1)
+),
+
+ SelectedRegisters AS
+(
+	SELECT	TblPupilRegistersRegisterId, txtName AS txtRegisterName, TblPupilRegistersRegister.txtReportingKey, TblPupilRegistersRegister.txtWorkflow, txtCode AS txtRegisterCode
+	FROM	TblPupilRegistersRegister
+	WHERE	TblPupilRegistersRegisterId IN (@intRegister)
+)
+,DateRangedRegister AS
+(
+	SELECT	SelectedRegisters.txtRegisterName, 
+	SelectedRegisters.txtRegisterCode,
+			SelectedRegisters.TblPupilRegistersRegisterId,
+			SelectedRegisters.txtReportingKey,
+			(CASE WHEN Register.txtSchoolId IS NULL THEN 'No' WHEN Register.bOnRegister = 0 THEN 'No' ELSE 'Yes' END) AS txtOnRegister,
+			TblPupilManagementPupils.txtSchoolID,
+			SelectedRegisters.txtWorkflow
+	FROM	SelectedRegisters
+	INNER JOIN TblPupilManagementPupils ON 1 = 1
+	OUTER APPLY dbo.f_PupilRegisters_GetLatestScreeningLogsWithRanges(TblPupilManagementPupils.txtSchoolID, SelectedRegisters.TblPupilRegistersRegisterId) AS Register
+	WHERE	SelectedRegisters.txtWorkflow = 'RegisterWithRanges'
+)
+,NoneDateRangedRegister AS 
+(
+	SELECT	SelectedRegisters.txtRegisterName, 
+	SelectedRegisters.txtRegisterCode,
+			SelectedRegisters.TblPupilRegistersRegisterId,
+			SelectedRegisters.txtReportingKey,
+			(CASE WHEN Register.txtSchoolId IS NULL THEN 'No' WHEN Register.bOnRegister = 0 THEN 'No' ELSE 'Yes' END) AS txtOnRegister,
+			TblPupilManagementPupils.txtSchoolID,
+			SelectedRegisters.txtWorkflow
+	FROM	SelectedRegisters
+	INNER JOIN TblPupilManagementPupils ON 1 = 1
+	OUTER APPLY dbo.f_PupilRegisters_GetLatestScreeningLogs(TblPupilManagementPupils.txtSchoolID, SelectedRegisters.TblPupilRegistersRegisterId) AS Register
+	WHERE	SelectedRegisters.txtWorkflow &lt;&gt; 'RegisterWithRanges'
+)
+,Registers AS
+(
+	SELECT	*
+	FROM	DateRangedRegister
+		UNION ALL
+	SELECT	*
+	FROM	NoneDateRangedRegister
+),
+
+
+GradebookData AS (
+SELECT 
+[tracking].[Model].ID AS GradebookID,
+[tracking].[Model].Name AS GradebookName,
+[tracking].[AspectLink].Deleted AS ElementDeleted,
+[tracking].[AspectLink].[Order] AS ElementOrder,
+[tracking].[Aspect].id AS ElementId,
+[tracking].[Aspect].Name AS ElementName,
+[tracking].[Aspect].Type AS ElementType,
+HierarchyCTE.ElementNameWithHierarchy,
+HierarchyCTE.ElementOrderInHierarchy,
+[tracking].[Aspect].GradesetId AS ElementGradesetId,
+
+
+[tracking].[Assessment].SchoolId AS txtSchoolId,
+[tracking].[Assessment].Absent AS ElementEntryAbsent,
+[tracking].[Assessment].Value  AS ElementValueTransposed
+
+FROM [tracking].[Model]
+INNER JOIN GradebooksAccess ON [tracking].[Model].Id = GradebooksAccess.GradebookID
+LEFT OUTER JOIN [tracking].[AspectLink] ON [tracking].[Model].[Id] = [tracking].[AspectLink].[ModelId]
+LEFT OUTER JOIN [tracking].[Aspect] ON [tracking].[AspectLink].[AspectId] = [tracking].[Aspect].[Id] AND ISNULL([tracking].[AspectLink].Deleted,0) &lt;&gt; 1
+LEFT OUTER JOIN [tracking].[Assessment] ON [tracking].[Aspect].id = [tracking].[Assessment].[AspectId]
+LEFT OUTER JOIN HierarchyCTE ON [tracking].Aspect.Id = HierarchyCTE.[Id] AND HierarchyCTE.Type = 'Element'
+WHERE
+HierarchyCTE.ElementNameWithHierarchy IN (@ElementName)
+AND  [tracking].[Aspect].Type IN ('Assessment')
+AND isNull([tracking].[Model].Archived,0) IN (@Live)
+AND [tracking].[Model].ID IN (@GradebookID)
+
+UNION ALL
+
+SELECT 
+[tracking].[Model].ID AS GradebookID,
+[tracking].[Model].Name AS GradebookName,
+[tracking].[AspectLink].Deleted AS ElementDeleted,
+[tracking].[AspectLink].[Order] AS ElementOrder,
+[tracking].[Aspect].id AS ElementId,
+[tracking].[Aspect].Name AS ElementName,
+[tracking].[Aspect].Type AS ElementType,
+HierarchyCTE.ElementNameWithHierarchy,
+HierarchyCTE.ElementOrderInHierarchy,
+[tracking].[Aspect].GradesetId AS ElementGradesetId,
+
+
+[tracking].[CalculationValue].SchoolId AS txtSchoolId,
+NULL AS ElementEntryAbsent,
+[tracking].[CalculationValue].Value  AS ElementValueTransposed
+
+FROM [tracking].[Model]
+INNER JOIN GradebooksAccess ON [tracking].[Model].Id = GradebooksAccess.GradebookID
+LEFT OUTER JOIN [tracking].[AspectLink] ON [tracking].[Model].[Id] = [tracking].[AspectLink].[ModelId]
+LEFT OUTER JOIN [tracking].[Aspect] ON [tracking].[AspectLink].[AspectId] = [tracking].[Aspect].[Id] AND ISNULL([tracking].[AspectLink].Deleted,0) &lt;&gt; 1
+LEFT OUTER JOIN [tracking].[CalculationValue] ON [tracking].[Aspect].[id] = [tracking].[CalculationValue].[AspectId]
+LEFT OUTER JOIN HierarchyCTE ON [tracking].Aspect.Id = HierarchyCTE.[Id] AND HierarchyCTE.Type = 'Element'
+WHERE
+HierarchyCTE.ElementNameWithHierarchy IN (@ElementName)
+AND  [tracking].[Aspect].Type IN ('Calculation')
+AND isNull([tracking].[Model].Archived,0) IN (@Live)
+AND [tracking].[Model].ID IN (@GradebookID)
+)
+
+
+SELECT 
+GradebookData.GradebookID,
+GradebookData.GradebookName,
+GradebookData.txtSchoolId AS SchoolId,
+PotentialGradeset.Description AS PotentialGradesetItemValue,
+PotentialGradeset.Value AS PotentialGradesetItemTransposed,
+PotentialGradeset.[Order] AS PotentialGradesetItemOrder,
+GradebookData.ElementName,
+GradebookData.ElementId,
+GradebookData.ElementType,
+GradebookData.ElementOrder,
+GradebookData.ElementNameWithHierarchy,
+GradebookData.ElementOrderInHierarchy,
+CASE WHEN GradebookData.ElementType = 'Calculation' THEN GradebookData.ElementValueTransposed ELSE [tracking].[GradesetValue].Description END AS ElementValue,
+GradebookData.ElementEntryAbsent,
+GradebookData.ElementValueTransposed,
+[tracking].[GradesetValue].[Order] AS ElementValueOrder,
+
+TblPupilManagementPupils.txtForename,
+TblPupilManagementPupils.txtSurname,
+TblPupilManagementPupils.txtGender, 
+TblPupilManagementPupils.intSystemStatus,
+TblPupilManagementPupils.txtEthnicGroup, 
+TblPupilManagementPupils.txtForm,
+TblPupilManagementPupils.intNCYear,
+TblPupilManagementPupils.txtDOB,
+TblSchoolManagementYears.txtYearName,
+TblPupilManagementPupils.txtAcademicHouse,
+TblPupilManagementPupils.txtBoardingHouse,
+TblPupilManagementPupils.txtType AS txtBoardingStatus,
+Registers.txtRegisterName,
+Registers.txtRegisterCode,
+Registers.txtOnRegister,
+Registers.txtWorkflow,
+CONCAT([tag].[Tag].CategoryId,'_',[tag].[Tag].CategoryEntityId) AS TagCategory,
+[Tag].CategoryId
+FROM GradebookData
+INNER JOIN TblPupilManagementPupils ON GradebookData.txtSchoolId = TblPupilManagementPupils.txtSchoolID
+LEFT OUTER JOIN TblSchoolManagementYears ON TblPupilManagementPupils.intNCYear = TblSchoolManagementYears.intNCYear
+LEFT OUTER JOIN Registers ON TblPupilManagementPupils.txtSchoolID = Registers.txtSchoolID
+
+LEFT OUTER JOIN [tracking].[Gradeset] ON GradebookData.ElementGradesetId = [tracking].[Gradeset].Id
+LEFT OUTER JOIN [tracking].[GradesetValue] ON [tracking].[Gradeset].Id = [tracking].[GradesetValue].GradesetId AND [tracking].[GradesetValue].Value = GradebookData.ElementValueTransposed
+LEFT OUTER JOIN [tag].[Tag] ON GradebookData.GradebookID = [tag].[Tag].EntityId AND [tag].[Tag].EntityTypeId = 2 AND [Tag].CategoryId = @CategoryId
+--LEFT OUTER JOIN TblTeachingManagerSubjects ON [tag].[Tag].CategoryEntityId = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID AND [tag].[Tag].CategoryId = 5
+
+LEFT OUTER JOIN [tracking].[GradesetValue] AS PotentialGradeset ON GradebookData.ElementGradesetId = PotentialGradeset.GradesetId </CommandText></Query><Fields><Field Name="GradebookID"><DataField>GradebookID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="GradebookName"><DataField>GradebookName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="SchoolId"><DataField>SchoolId</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="PotentialGradesetItemValue"><DataField>PotentialGradesetItemValue</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="PotentialGradesetItemTransposed"><DataField>PotentialGradesetItemTransposed</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="PotentialGradesetItemOrder"><DataField>PotentialGradesetItemOrder</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="ElementName"><DataField>ElementName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="ElementType"><DataField>ElementType</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="ElementId"><DataField>ElementId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="ElementOrder"><DataField>ElementOrder</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="ElementNameWithHierarchy"><DataField>ElementNameWithHierarchy</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="ElementOrderInHierarchy"><DataField>ElementOrderInHierarchy</DataField><rd:TypeName>System.Single</rd:TypeName></Field><Field Name="ElementValue"><DataField>ElementValue</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForename"><DataField>txtForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="ElementEntryAbsent"><DataField>ElementEntryAbsent</DataField><rd:TypeName>System.Boolean</rd:TypeName></Field><Field Name="ElementValueTransposed"><DataField>ElementValueTransposed</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSurname"><DataField>txtSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtEthnicGroup"><DataField>txtEthnicGroup</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="ElementValueOrder"><DataField>ElementValueOrder</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtGender"><DataField>txtGender</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intSystemStatus"><DataField>intSystemStatus</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="intNCYear"><DataField>intNCYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtForm"><DataField>txtForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDOB"><DataField>txtDOB</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtAcademicHouse"><DataField>txtAcademicHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtBoardingHouse"><DataField>txtBoardingHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtBoardingStatus"><DataField>txtBoardingStatus</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtRegisterName"><DataField>txtRegisterName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtOnRegister"><DataField>txtOnRegister</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtRegisterCode"><DataField>txtRegisterCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtWorkflow"><DataField>txtWorkflow</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="TagCategory"><DataField>TagCategory</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="NoGroup"><Value>NoGroup</Value></Field><Field Name="CategoryId"><DataField>CategoryId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet><DataSet Name="Registers"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@userCode"><Value>=Parameters!userCode.Value</Value></QueryParameter></QueryParameters><CommandText>SELECT -100 AS TblPupilRegistersRegisterId, 'N/A' As txtName, 0 as intType
+UNION ALL
+SELECT	TblPupilRegistersRegister.TblPupilRegistersRegisterId, TblPupilRegistersRegister.txtName, 1 as intType
+FROM f_PupilRegisters_GetRegistersWithReadActivityPermission(@userCode) AS RegistersAccess
+INNER JOIN TblPupilRegistersRegister ON RegistersAccess.RegisterId = TblPupilRegistersRegister.TblPupilRegistersRegisterId
+WHERE	(TblPupilRegistersRegister.bActive = 1)
+
+ORDER BY intType,	 txtName</CommandText></Query><Fields><Field Name="TblPupilRegistersRegisterId"><DataField>TblPupilRegistersRegisterId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="intType"><DataField>intType</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet><DataSet Name="Disclaimer"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@Path"><Value>=Globals!ReportFolder</Value></QueryParameter><QueryParameter Name="@Report"><Value>=Globals!ReportName</Value></QueryParameter></QueryParameters><CommandText>
+				  SELECT	TblSQLReportingServicesDisclaimer.txtDisclaimerBackgroundColour,
+				  TblSQLReportingServicesDisclaimer.txtDisclaimerBorderColour,
+				  TblSQLReportingServicesDisclaimer.txtDisclaimerDescription,
+				  TblSQLReportingServicesDisclaimer.txtDisclaimerTextColour,
+				  TblSQLReportingServicesDisclaimer.txtDisclaimerTitle
+				  FROM	TblSQLReportingServicesDisclaimerReport
+				  INNER JOIN TblSQLReportingServicesDisclaimer ON TblSQLReportingServicesDisclaimerReport.SQLReportingServicesDisclaimerId = TblSQLReportingServicesDisclaimer.TblSQLReportingServicesDisclaimerID
+				  WHERE	TblSQLReportingServicesDisclaimerReport.bitEnabled = 1
+				  AND TblSQLReportingServicesDisclaimer.bitEnabled = 1
+				  AND TblSQLReportingServicesDisclaimerReport.txtReportPath = @Path + '/' + @Report
+			  </CommandText></Query><Fields><Field Name="txtDisclaimerBackgroundColour"><DataField>txtDisclaimerBackgroundColour</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDisclaimerBorderColour"><DataField>txtDisclaimerBorderColour</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDisclaimerDescription"><DataField>txtDisclaimerDescription</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDisclaimerTextColour"><DataField>txtDisclaimerTextColour</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtDisclaimerTitle"><DataField>txtDisclaimerTitle</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="SchoolLogo"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	TblReportsCustomImages.txtPath + TblReportsCustomImages.txtFileName AS txtSchoolLogoPath, 
+		TblReportsCustomImages.txtName
+FROM	TblReportsCustomImages
+ORDER BY TblReportsCustomImages.dtSubmittedTime DESC</CommandText></Query><Fields><Field Name="txtSchoolLogoPath"><DataField>txtSchoolLogoPath</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtName"><DataField>txtName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="iSAMSAddress"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT	txtExternaliSAMSAddress AS txtiSAMSAddress
+FROM	TbliSAMSManagerSettings</CommandText></Query><Fields><Field Name="txtiSAMSAddress"><DataField>txtiSAMSAddress</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="CurriculumCycle"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@userCode"><Value>=Parameters!userCode.Value</Value></QueryParameter></QueryParameters><CommandText>WITH  GradebooksAccess AS
+(
+SELECT DISTINCT ModelId AS GradebookID
+FROM tracking.[User]
+WHERE UserCode = @userCode
+AND Exception = 1
+)
+
+SELECT 'N/A' AS CycleName,
+-100 AS CycleId,
+1 AS StartYear,
+1 As TypeOrder
+
+
+UNION ALL
+
+SELECT DISTINCT 
+[curriculum].[Cycle].Name AS CycleName,
+[curriculum].[Cycle].Id AS CycleId,
+[curriculum].[Cycle].StartYear,
+2 AS Typerder
+FROM [tracking].[Model]
+INNER JOIN GradebooksAccess ON [tracking].[Model].Id = GradebooksAccess.GradebookID
+INNER JOIN TblTeachingManagerSets ON [tracking].[Model].ClassId = TblTeachingManagerSets.tblTeachingManagerSetsID
+INNER JOIN curriculum.CourseSchedule ON TblTeachingManagerSets.intCourseSchedule = curriculum.CourseSchedule.Id
+INNER JOIN curriculum.Course ON curriculum.CourseSchedule.Course = curriculum.Course.Id
+INNER JOIN [curriculum].[Cycle] ON [curriculum].Course.[Cycle] = [curriculum].[Cycle].[Id]
+
+WHERE [curriculum].[Cycle].Id IS NOT NULL
+ORDER BY TypeOrder ASC, StartYear DESC , CycleName ASC</CommandText></Query><Fields><Field Name="CycleName"><DataField>CycleName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="CycleId"><DataField>CycleId</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="StartYear"><DataField>StartYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="TypeOrder"><DataField>TypeOrder</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet><DataSet Name="TagCategories"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT -100 AS [Id],
+'N/A' AS [Name],
+0 AS OrderType
+
+UNION ALL
+
+SELECT 
+[Id],[Name], 1 AS OrderType
+FROM [tag].[Category]
+ORDER BY OrderType, [Id]</CommandText></Query><Fields><Field Name="Id"><DataField>Id</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="Name"><DataField>Name</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="OrderType"><DataField>OrderType</DataField><rd:TypeName>System.Int32</rd:TypeName></Field></Fields></DataSet><DataSet Name="Tags"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@CategoryId"><Value>=Parameters!CategoryId.Value</Value></QueryParameter></QueryParameters><CommandText>SELECT 
+CONCAT('-100_',-100) AS Id,
+'N/A' AS Name
+WHERE -100 = @CategoryId
+
+UNION ALL
+
+SELECT 
+CONCAT('0_',Id) AS Id,
+Name
+FROM tag.CustomTag
+WHERE 0 = @CategoryId
+
+UNION ALL
+
+SELECT 
+CONCAT('1_',TblTeachingManagerSubjectDepartmentsID) AS Id,
+txtDepartmentName AS Name
+FROM TblTeachingManagerSubjectDepartments
+WHERE TblTeachingManagerSubjectDepartments.blnActive = 1
+AND 1 = @CategoryId
+
+UNION ALL
+
+SELECT 
+CONCAT('2_',TblTeachingManagerSetsId) AS Id,
+txtName AS Name
+FROM TblTeachingManagerSets
+WHERE TblTeachingManagerSets.blnActive = 1
+AND 2 = @CategoryId
+
+UNION ALL
+
+SELECT 
+CONCAT('3_',intTagId) AS Id,
+txtForm AS Name
+FROM TblSchoolManagementForms
+WHERE 3 = @CategoryId
+
+UNION ALL
+
+SELECT 
+CONCAT('4_',TblSchoolManagementHousesId) AS Id,
+txtHouseName AS Name
+FROM TblSchoolManagementHouses
+WHERE 4 = @CategoryId
+AND txtHouseType = 'Academic'
+
+UNION ALL
+
+SELECT 
+CONCAT('5_',TblTeachingManagerSubjectsId) AS Id,
+txtSubjectName AS Name
+FROM TblTeachingManagerSubjects
+WHERE TblTeachingManagerSubjects.blnActive = 1
+AND 5 = @CategoryId
+
+UNION ALL
+
+SELECT 
+CONCAT('6_',TblSchoolManagementHousesId) AS Id,
+txtHouseName AS Name
+FROM TblSchoolManagementHouses
+WHERE 6 = @CategoryId
+AND txtHouseType = 'Boarding'
+
+UNION ALL
+
+SELECT 
+CONCAT('7_',intNCYear) AS Id,
+txtYearName AS Name
+FROM TblSchoolManagementYears
+WHERE 7 = @CategoryId
+
+
+UNION ALL
+
+SELECT DISTINCT
+CONCAT('8_',TblStaffId) AS Id,
+CONCAT(Firstname,' ', Surname) AS Name
+FROM TblPupilManagementPupils
+INNER JOIN TblStaff ON TblPupilManagementPupils.txtTutor = TblStaff.User_Code
+WHERE 8 = @CategoryId
+--AND TblStaff.SystemStatus = 1
+
+
+UNION ALL
+--Personal Tutor is Form Tutor
+SELECT DISTINCT
+CONCAT('9_',TblStaffId) AS Id,
+CONCAT(Firstname,' ', Surname) AS Name
+FROM TblSchoolManagementForms
+INNER JOIN TblStaff ON TblSchoolManagementForms.txtFormTutor = TblStaff.User_Code
+WHERE 9 = @CategoryId
+--AND TblStaff.SystemStatus = 1
+
+UNION ALL
+
+SELECT DISTINCT
+CONCAT('10_',TblStaffId) AS Id,
+CONCAT(Firstname,' ', Surname) AS Name
+FROM TblSchoolManagementYears
+INNER JOIN TblStaff ON TblSchoolManagementYears.txtYearTutor = TblStaff.User_Code
+WHERE 10 = @CategoryId
+--AND TblStaff.SystemStatus = 1
+
+ORDER BY Name</CommandText></Query><Fields><Field Name="Id"><DataField>Id</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="Name"><DataField>Name</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="Tablix3"><TablixCorner><TablixCornerRows><TablixCornerRow><TablixCornerCell><CellContents><Textbox Name="Textbox1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "Group",  
+Parameters!GroupDataBy.Value="GradebookID","Gradebook",
+
+Parameters!GroupDataBy.Value="TagCategory",Lookup(Fields!CategoryId.Value,Fields!Id.Value,Fields!Name.Value, "TagCategories"),
+true,""
+)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell><TablixCornerCell><CellContents><Textbox Name="Textbox38"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Column Name</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell><TablixCornerCell><CellContents><Textbox Name="Textbox30"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox30</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell></TablixCornerRow></TablixCornerRows></TablixCorner><TablixBody><TablixColumns><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.7cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="txtComponentCode3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value),CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value),CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value, Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)))</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtComponentCode1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox128"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(ReportItems!StudentTotalForGroup.Value=0,0,IIF(isNothing(Fields!PotentialGradesetItemValue.Value),CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value),CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value, Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)))
+/ ReportItems!StudentTotalForGroup.Value)</Value><Style><FontSize>12pt</FontSize><Format>0.00%</Format><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox128</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtComponentCode6"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value, Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)))</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtComponentCode1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox137"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(ReportItems!AllStudentsRegistersSection2.Value = 0, 0, IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value, Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing))) / ReportItems!AllStudentsRegistersSection2.Value)</Value><Style><FontSize>12pt</FontSize><Format>0.00%</Format><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox128</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.7cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="StudentTotalForGroup"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox133"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox133</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="AllStudentsRegistersSection2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><LeftBorder><Style>None</Style></LeftBorder><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox521"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox518</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember><Group Name="GroupByParameter"><GroupExpressions><GroupExpression>=IIF(CStr(Fields(Parameters!GroupBy.Value).Value) = "NoGroup", "N/A", Fields(Parameters!GroupBy.Value).Value)</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=IIF(Parameters!GroupBy.Value = "txtForm", Fields!intNCYear.Value, Fields(Parameters!GroupBy.Value).Value)</Value></SortExpression><SortExpression><Value>=Fields(Parameters!GroupBy.Value).Value</Value></SortExpression></SortExpressions><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="txtProgramme4"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(CStr(Fields(Parameters!GroupBy.Value).Value) = "NoGroup", "", IIF(Parameters!GroupBy.Value = "intNCYear", Fields!txtYearName.Value, Fields(Parameters!GroupBy.Value).Value))</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtProgramme1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixMember><TablixMember><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="Group2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>All Students</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Group1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixMember></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="GradebookID"><GroupExpressions><GroupExpression>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "",  
+Parameters!GroupDataBy.Value="GradebookID",Fields!GradebookID.Value,
+
+Parameters!GroupDataBy.Value="TagCategory",Lookup(Fields!TagCategory.Value,Fields!Id.Value,Fields!Name.Value, "Tags"),
+true,""
+)</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "",  
+Parameters!GroupDataBy.Value="GradebookID",Fields!GradebookName.Value,
+
+Parameters!GroupDataBy.Value="TagCategory",Lookup(Fields!TagCategory.Value,Fields!Id.Value,Fields!Name.Value, "Tags"),
+true,""
+)</Value></SortExpression></SortExpressions><TablixMembers><TablixMember><TablixHeader><Size>4cm</Size><CellContents><Textbox Name="GradebookName"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "N/A",  
+Parameters!GroupDataBy.Value="GradebookID",Fields!GradebookName.Value,
+
+Parameters!GroupDataBy.Value="TagCategory",Lookup(Fields!TagCategory.Value,Fields!Id.Value,Fields!Name.Value, "Tags"),
+true,""
+)</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>GradebookName</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><Group Name="ElementId"><GroupExpressions><GroupExpression>=Fields!ElementNameWithHierarchy.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!ElementOrderInHierarchy.Value</Value></SortExpression></SortExpressions><TablixMembers><TablixMember><TablixHeader><Size>6cm</Size><CellContents><Textbox Name="txtProgramme3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!ElementNameWithHierarchy.Value</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtProgramme1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><Group Name="PotentialGradesetItemValue1"><GroupExpressions><GroupExpression>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value),Fields!ElementValue.Value,Fields!PotentialGradesetItemValue.Value)</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value),Fields!ElementValue.Value,Fields!PotentialGradesetItemOrder.Value)</Value></SortExpression></SortExpressions><TablixHeader><Size>5cm</Size><CellContents><Textbox Name="PotentialGradesetItemValue1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value),Fields!ElementValue.Value,Fields!PotentialGradesetItemValue.Value)</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>PotentialGradesetItemValue1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader></TablixMember></TablixMembers></TablixMember><TablixMember><TablixHeader><Size>6cm</Size><CellContents><Textbox Name="Textbox17"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Entries</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><TablixHeader><Size>5cm</Size><CellContents><Textbox Name="Textbox21"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox21</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader></TablixMember></TablixMembers></TablixMember></TablixMembers><KeepTogether>true</KeepTogether></TablixMember></TablixMembers></TablixMember></TablixMembers></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>GradebookData</DataSetName><Filters><Filter><FilterExpression>=SWITCH(
+Fields!ElementEntryAbsent.Value = 1,False,
+True,True)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue DataType="Boolean">true</FilterValue></FilterValues></Filter></Filters><Height>2.1cm</Height><Width>23cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix5"><TablixCorner><TablixCornerRows><TablixCornerRow><TablixCornerCell><CellContents><Textbox Name="Textbox607"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox607</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell><TablixCornerCell><CellContents><Textbox Name="Textbox608"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox608</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell><TablixCornerCell><CellContents><Textbox Name="Textbox609"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox609</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell></TablixCornerRow><TablixCornerRow><TablixCornerCell><CellContents><Textbox Name="Textbox3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "Group",  
+Parameters!GroupDataBy.Value="GradebookID","Gradebook",
+
+Parameters!GroupDataBy.Value="TagCategory",Lookup(Fields!CategoryId.Value,Fields!Id.Value,Fields!Name.Value, "TagCategories"),
+true,""
+)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell><TablixCornerCell><CellContents><Textbox Name="Textbox39"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Column Name</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell><TablixCornerCell><CellContents><Textbox Name="Textbox32"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox30</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCornerCell></TablixCornerRow></TablixCornerRows></TablixCorner><TablixBody><TablixColumns><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.7cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="txtComponentCode8"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(IIF(Fields!txtOnRegister.Value = "Yes", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value And Fields!txtOnRegister.Value = "Yes", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)))</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtComponentCode1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox129"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(ReportItems!StudentsOn.Value = 0, 0, IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(IIF(Fields!txtOnRegister.Value="Yes",Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value,nothing)), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value AND Fields!txtOnRegister.Value="Yes", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing))) / ReportItems!StudentsOn.Value)</Value><Style><FontSize>12pt</FontSize><Format>0.00%</Format><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox128</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtComponentCode9"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(IIF(Fields!txtOnRegister.Value = "No", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value And Fields!txtOnRegister.Value = "No", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)))</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtComponentCode1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox130"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(ReportItems!StudentsOff.Value = 0, 0, IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(IIF(Fields!txtOnRegister.Value = "No", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value And Fields!txtOnRegister.Value = "No", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing))) / ReportItems!StudentsOff.Value)</Value><Style><FontSize>12pt</FontSize><Format>0.00%</Format><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox128</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtComponentCode5"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value, Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing)))</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtComponentCode1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox136"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(ReportItems!AllStudentsRegistersSection.Value = 0, 0, IIF(isNothing(Fields!PotentialGradesetItemValue.Value), CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value), CountDistinct(IIF(Fields!PotentialGradesetItemValue.Value = Fields!ElementValue.Value, Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing))) / ReportItems!AllStudentsRegistersSection.Value)</Value><Style><FontSize>12pt</FontSize><Format>0.00%</Format><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox128</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.7cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="StudentsOn"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=CountDistinct(IIF(Fields!txtOnRegister.Value = "Yes", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing))</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox134"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox133</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="StudentsOff"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=CountDistinct(IIF(Fields!txtOnRegister.Value = "No", Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value, Nothing))</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox473"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox473</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="AllStudentsRegistersSection"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=CountDistinct(Fields!SchoolId.Value &amp; "_" &amp; Fields!ElementId.Value)</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><LeftBorder><Style>None</Style></LeftBorder><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox520"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox518</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>1pt</PaddingLeft><PaddingRight>1pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember><Group Name="GroupByParameter2"><GroupExpressions><GroupExpression>=Fields!txtRegisterName.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!txtRegisterName.Value</Value></SortExpression></SortExpressions><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="txtProgramme5"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtRegisterName.Value</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtProgramme1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="Textbox463"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>On</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox463</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixMember><TablixMember><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="Textbox465"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Off</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox464</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixMember></TablixMembers></TablixMember><TablixMember><Group Name="Group1"><GroupExpressions><GroupExpression>AllStudents</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>AllStudents</Value></SortExpression></SortExpressions><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="Textbox605"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox605</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><TablixHeader><Size>0.7cm</Size><CellContents><Textbox Name="Group1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>All Students</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Group1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixMember></TablixMembers></TablixMember></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="GradebookID2"><GroupExpressions><GroupExpression>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "",  
+Parameters!GroupDataBy.Value="GradebookID",Fields!GradebookID.Value,
+
+Parameters!GroupDataBy.Value="TagCategory",Lookup(Fields!TagCategory.Value,Fields!Id.Value,Fields!Name.Value, "Tags"),
+true,""
+)</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "", Parameters!GroupDataBy.Value = "GradebookID", Fields!GradebookName.Value, Parameters!GroupDataBy.Value = "TagCategory", Lookup(Fields!TagCategory.Value, Fields!Id.Value, Fields!Name.Value, "Tags"), True, "")</Value></SortExpression></SortExpressions><TablixMembers><TablixMember><TablixHeader><Size>4cm</Size><CellContents><Textbox Name="GradebookName3"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=SWITCH(CStr(Fields(Parameters!GroupDataBy.Value).Value) = "NoGroup", "N/A", Parameters!GroupDataBy.Value = "GradebookID", Fields!GradebookName.Value, Parameters!GroupDataBy.Value = "TagCategory", Lookup(Fields!TagCategory.Value, Fields!Id.Value, Fields!Name.Value, "Tags"), True, "")</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>GradebookName</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><Group Name="ElementId2"><GroupExpressions><GroupExpression>=Fields!ElementNameWithHierarchy.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!ElementOrderInHierarchy.Value</Value></SortExpression></SortExpressions><TablixMembers><TablixMember><TablixHeader><Size>6cm</Size><CellContents><Textbox Name="txtProgramme7"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!ElementNameWithHierarchy.Value</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtProgramme1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><Group Name="PotentialGradesetItemValue2"><GroupExpressions><GroupExpression>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value),Fields!ElementValue.Value,Fields!PotentialGradesetItemValue.Value)</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value), Fields!ElementValue.Value, Fields!PotentialGradesetItemOrder.Value)</Value></SortExpression></SortExpressions><TablixHeader><Size>5cm</Size><CellContents><Textbox Name="PotentialGradesetItemValue2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(isNothing(Fields!PotentialGradesetItemValue.Value), Fields!ElementValue.Value, Fields!PotentialGradesetItemValue.Value)</Value><Style><FontSize>12pt</FontSize><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>PotentialGradesetItemValue1</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader></TablixMember></TablixMembers></TablixMember><TablixMember><TablixHeader><Size>6cm</Size><CellContents><Textbox Name="Textbox19"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Entries</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader><TablixMembers><TablixMember><TablixHeader><Size>5cm</Size><CellContents><Textbox Name="Textbox22"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value /><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#373948</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox21</rd:DefaultName><Style><Border><Color>#c1bfc5</Color><Style>Solid</Style><Width>0.5pt</Width></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixHeader></TablixMember></TablixMembers></TablixMember></TablixMembers><KeepTogether>true</KeepTogether></TablixMember></TablixMembers></TablixMember></TablixMembers></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>GradebookData</DataSetName><Filters><Filter><FilterExpression>=SWITCH(Fields!ElementEntryAbsent.Value = 1, False, True, True)</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue DataType="Boolean">true</FilterValue></FilterValues></Filter></Filters><Top>2.6cm</Top><Height>2.8cm</Height><Width>27cm</Width><ZIndex>1</ZIndex><Visibility><Hidden>=IIF(Parameters!intRegister.Count = 1 AND Parameters!intRegister.Value(0) = -100,True,False)</Hidden></Visibility><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><Height>2.12598in</Height><Style /></Body><Width>10.62992in</Width><Page><PageHeight>1000cm</PageHeight><PageWidth>29.7cm</PageWidth><LeftMargin>1cm</LeftMargin><RightMargin>1cm</RightMargin><TopMargin>1cm</TopMargin><BottomMargin>1cm</BottomMargin><ColumnSpacing>0.13cm</ColumnSpacing><Style /></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="userCode"><DataType>String</DataType><Nullable>true</Nullable><DefaultValue><Values><Value>test</Value></Values></DefaultValue><AllowBlank>true</AllowBlank><Prompt>userCode</Prompt><Hidden>true</Hidden></ReportParameter><ReportParameter Name="CycleId"><DataType>String</DataType><Prompt>Curriculum Manager Cycle:</Prompt><ValidValues><DataSetReference><DataSetName>CurriculumCycle</DataSetName><ValueField>CycleId</ValueField><LabelField>CycleName</LabelField></DataSetReference></ValidValues></ReportParameter><ReportParameter Name="Live"><DataType>String</DataType><DefaultValue><Values><Value>0</Value></Values></DefaultValue><Prompt>Live\Archived Gradebooks:</Prompt><ValidValues><ParameterValues><ParameterValue><Value>0</Value><Label>Live</Label></ParameterValue><ParameterValue><Value>1</Value><Label>Archived</Label></ParameterValue></ParameterValues></ValidValues><MultiValue>true</MultiValue></ReportParameter><ReportParameter Name="CategoryId"><DataType>String</DataType><DefaultValue><Values><Value>-100</Value></Values></DefaultValue><Prompt>Tags Category:</Prompt><ValidValues><DataSetReference><DataSetName>TagCategories</DataSetName><ValueField>Id</ValueField><LabelField>Name</LabelField></DataSetReference></ValidValues></ReportParameter><ReportParameter Name="TagId"><DataType>String</DataType><DefaultValue><Values><Value>-100_-100</Value></Values></DefaultValue><Prompt>Tag(s):</Prompt><ValidValues><DataSetReference><DataSetName>Tags</DataSetName><ValueField>Id</ValueField><LabelField>Name</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter><ReportParameter Name="GradebookID"><DataType>String</DataType><Prompt>Gradebook(s):</Prompt><ValidValues><DataSetReference><DataSetName>Gradebooks</DataSetName><ValueField>GradebookID</ValueField><LabelField>GradebookName</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter><ReportParameter Name="ElementName"><DataType>String</DataType><Prompt>Column Name(s): </Prompt><ValidValues><DataSetReference><DataSetName>AssessmentElements</DataSetName><ValueField>ElementName</ValueField><LabelField>ElementName</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter><ReportParameter Name="intRegister"><DataType>String</DataType><DefaultValue><Values><Value>-100</Value></Values></DefaultValue><Prompt>Include Breakdown by Register(s):</Prompt><ValidValues><DataSetReference><DataSetName>Registers</DataSetName><ValueField>TblPupilRegistersRegisterId</ValueField><LabelField>txtName</LabelField></DataSetReference></ValidValues><MultiValue>true</MultiValue></ReportParameter><ReportParameter Name="GroupBy"><DataType>String</DataType><DefaultValue><Values><Value>intNCYear</Value></Values></DefaultValue><Prompt>Group Students By:</Prompt><ValidValues><ParameterValues><ParameterValue><Value>txtGender</Value><Label>Gender</Label></ParameterValue><ParameterValue><Value>txtEthnicGroup</Value><Label>Ethnic Category</Label></ParameterValue><ParameterValue><Value>intNCYear</Value><Label>Year Group</Label></ParameterValue><ParameterValue><Value>txtForm</Value><Label>Form</Label></ParameterValue><ParameterValue><Value>txtAcademicHouse</Value><Label>Academic House</Label></ParameterValue><ParameterValue><Value>txtBoardingHouse</Value><Label>Boarding House</Label></ParameterValue><ParameterValue><Value>txtBoardingStatus</Value><Label>Boarding Status</Label></ParameterValue><ParameterValue><Value>NoGroup</Value><Label>N/A</Label></ParameterValue></ParameterValues></ValidValues></ReportParameter><ReportParameter Name="GroupDataBy"><DataType>String</DataType><DefaultValue><Values><Value>GradebookID</Value></Values></DefaultValue><Prompt>Group Columns By:</Prompt><ValidValues><ParameterValues><ParameterValue><Value>GradebookID</Value><Label>Gradebook</Label></ParameterValue><ParameterValue><Value>TagCategory</Value><Label>Selected Tags Category</Label></ParameterValue><ParameterValue><Value>NoGroup</Value><Label>N/A</Label></ParameterValue></ParameterValues></ValidValues></ReportParameter></ReportParameters><ConsumeContainerWhitespace>true</ConsumeContainerWhitespace><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>407f8038-1f88-4c64-ab5d-697547caf032</rd:ReportID></Report>

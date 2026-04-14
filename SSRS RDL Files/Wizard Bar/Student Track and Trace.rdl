@@ -1,0 +1,595 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMSTraining</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>545e7d40-ba31-4b21-9730-1af427605be1</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="iSAMSAddress"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>
+					SELECT	txtExternaliSAMSAddress AS 'txtiSAMSAddress'
+					FROM	TbliSAMSManagerSettings
+				</CommandText></Query><Fields><Field Name="txtiSAMSAddress"><DataField>txtiSAMSAddress</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="SchoolLogo"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>
+					SELECT        txtPath + txtFilename AS txtSchoolLogoPath
+					FROM            TblReportsCustomImages
+					WHERE        (txtName LIKE '%School Logo%')
+					ORDER BY dtSubmittedTime DESC
+				</CommandText></Query><Fields><Field Name="txtSchoolLogoPath"><DataField>txtSchoolLogoPath</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="Students"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intNCYear"><Value>=Parameters!intNCYear.Value</Value></QueryParameter></QueryParameters><CommandText>SELECT	
+	TblPupilManagementPupils.txtSchoolID, 
+	LTRIM(TblPupilManagementPupils.txtSurname + ', ' + TblPupilManagementPupils.txtForename) + ' (' + txtSchoolID + ')' AS 'txtStudentName'
+FROM	TblPupilManagementPupils
+WHERE TblPupilManagementPupils.intSystemStatus = 1 
+AND TblPupilManagementPupils.intNCYear IN (@intNCYear)
+ORDER BY txtStudentName</CommandText></Query><Fields><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtStudentName"><DataField>txtStudentName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="YearGroups"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT 
+intNCYear,
+txtYearName
+FROM TblSchoolManagementYears
+ORDER BY intNCYear</CommandText></Query><Fields><Field Name="intNCYear"><DataField>intNCYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="TrackAndTrace"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@StartDate"><Value>=Parameters!StartDate.Value</Value></QueryParameter><QueryParameter Name="@EndDate"><Value>=Parameters!EndDate.Value</Value></QueryParameter><QueryParameter Name="@txtSchoolID"><Value>=Parameters!txtSchoolID.Value</Value></QueryParameter></QueryParameters><CommandText>
+-- only include dates that selected student was present for
+With InContactDates AS
+(
+	SELECT DISTINCT Convert(Date,Attendance.dtRegistrationDateTime) AS dInContactDate
+	FROM uf_Registration_AttendanceBetweenDates(@StartDate,DATEADD(DAY, 1, @EndDate),@txtSchoolID) AS Attendance
+	WHERE Attendance.txtRegistrationStatus ='Present'
+),
+
+-- TIMETABLE
+LessonScheduleForThatPeriod AS (
+	SELECT
+	InContactDates.dInContactDate,
+	LessonSchedule.txtCode AS txtLessonCode,
+	LessonSchedule.txtTeacher,
+	LessonSchedule.TblTimetableManagerScheduleID
+	FROM InContactDates
+		OUTER APPLY (
+		SELECT TblTimetableManagerSchedule.txtCode,
+		TblTimetableManagerSchedule.txtTeacher,
+		TblTimetableManagerSchedule.TblTimetableManagerScheduleID
+		FROM TblTimetableManagerSchedule
+		INNER JOIN TblTimetableManagerTimetables ON TblTimetableManagerSchedule.intTimetableID = TblTimetableManagerTimetables.TblTimetableManagerTimetablesID
+		INNER JOIN TblTimetableManagerPeriods ON TblTimetableManagerSchedule.intPeriod = TblTimetableManagerPeriods.TblTimetableManagerPeriodsID
+		INNER JOIN TblTimetableManagerDays ON TblTimetableManagerPeriods.intDay = TblTimetableManagerDays.TblTimetableManagerDaysID
+		INNER JOIN TblTimetableManagerWeeksAllocations ON TblTimetableManagerDays.intWeek = TblTimetableManagerWeeksAllocations.intWeek
+		WHERE TblTimetableManagerTimetables.intPublished = 1
+			AND (TblTimetableManagerWeeksAllocations.intYear = DatePart(year,@StartDate)  OR TblTimetableManagerWeeksAllocations.intYear = DatePart(year,@EndDate))
+			AND DatePart(weekday,InContactDates.dInContactDate) = TblTimetableManagerDays.intDay
+			AND DatePart(year,InContactDates.dInContactDate) = TblTimetableManagerWeeksAllocations.intYear
+			AND DatePart(week,InContactDates.dInContactDate) = TblTimetableManagerWeeksAllocations.intYearWeek
+	) AS LessonSchedule
+),
+
+SetsStudentIn AS
+(
+	SELECT
+		TblTeachingManagerSetLists.txtSchoolID,
+		'Teaching Set' AS txtContactGroup,
+		TblTeachingManagerSets.txtSetCode AS txtContactGroupName,
+		LessonScheduleForThatPeriod.txtTeacher,
+		LessonScheduleForThatPeriod.TblTimetableManagerScheduleID,
+		LessonScheduleForThatPeriod.dInContactDate
+		FROM TblTeachingManagerSetLists
+		INNER JOIN TblTeachingManagerSets ON TblTeachingManagerSetLists.intSetID = TblTeachingManagerSets.TblTeachingManagerSetsID
+		INNER JOIN LessonScheduleForThatPeriod ON TblTeachingManagerSets.txtSetCode = LessonScheduleForThatPeriod.txtLessonCode
+		WHERE TblTeachingManagerSetLists.txtSchoolID = @txtSchoolID
+),
+
+
+FormsStudentIn AS
+(
+	SELECT
+		TblPupilManagementPupils.txtSchoolID,
+		'Teaching Form' AS txtContactGroup,
+		TblTeachingManagerSubjectForms.txtTimetableCode AS txtContactGroupName,
+		LessonScheduleForThatPeriod.txtTeacher,
+		LessonScheduleForThatPeriod.TblTimetableManagerScheduleID,
+		LessonScheduleForThatPeriod.dInContactDate
+	FROM TblTeachingManagerSubjectForms
+	INNER JOIN TblPupilManagementPupils ON TblTeachingManagerSubjectForms.txtForm = TblPupilManagementPupils.txtForm AND TblPupilManagementPupils.intSystemStatus = 1
+	INNER JOIN LessonScheduleForThatPeriod ON TblTeachingManagerSubjectForms.txtTimetableCode = LessonScheduleForThatPeriod.txtLessonCode
+	WHERE TblPupilManagementPupils.txtSchoolID = @txtSchoolID
+),
+
+TutorialsScheduleForThatPeriod AS 
+(
+	SELECT
+	TutorialSchedule.txtSchoolID,
+	'Tutorial' AS txtContactGroup,
+	TutorialSchedule.txtDisplayName AS txtContactGroupName,
+	TutorialSchedule.TblTimetableManagerTutorialsId,
+	InContactDates.dInContactDate
+	FROM InContactDates
+		OUTER APPLY (
+		SELECT
+		TblTimetableManagerTutorials.txtDisplayName,
+		TblTimetableManagerTutorials.TblTimetableManagerTutorialsId,
+		TblTimetableManagerTutorialsPupils.txtSchoolId
+		FROM TblTimetableManagerTutorialsPupils
+		INNER JOIN TblTimetableManagerTutorials ON TblTimetableManagerTutorialsPupils.intTutorial = TblTimetableManagerTutorials.TblTimetableManagerTutorialsID
+		INNER JOIN TblTimetableManagerTimetables ON TblTimetableManagerTutorials.intTimetableID = TblTimetableManagerTimetables.TblTimetableManagerTimetablesID
+		--LEFT OUTER JOIN TblTimetableManagerTutorialsTeachers ON  TblTimetableManagerTutorials.TblTimetableManagerTutorialsID = TblTimetableManagerTutorialsTeachers.intTutorial
+		LEFT OUTER JOIN TblTimetableManagerTutorialsPeriods ON TblTimetableManagerTutorials.TblTimetableManagerTutorialsID = TblTimetableManagerTutorialsPeriods.intTutorial
+		INNER JOIN TblTimetableManagerPeriods ON TblTimetableManagerTutorialsPeriods.intPeriod = TblTimetableManagerPeriods.TblTimetableManagerPeriodsID
+		INNER JOIN TblTimetableManagerDays ON TblTimetableManagerPeriods.intDay = TblTimetableManagerDays.TblTimetableManagerDaysID
+		INNER JOIN TblTimetableManagerWeeksAllocations ON TblTimetableManagerDays.intWeek = TblTimetableManagerWeeksAllocations.intWeek
+		WHERE TblTimetableManagerTimetables.intPublished = 1
+			AND TblTimetableManagerTutorialsPupils.txtSchoolID = @txtSchoolID
+			AND (TblTimetableManagerWeeksAllocations.intYear = DatePart(year,@StartDate)  OR TblTimetableManagerWeeksAllocations.intYear = DatePart(year,@EndDate))
+			AND DatePart(weekday,InContactDates.dInContactDate) = TblTimetableManagerDays.intDay
+			AND DatePart(year,InContactDates.dInContactDate) = TblTimetableManagerWeeksAllocations.intYear
+			AND DatePart(week,InContactDates.dInContactDate) = TblTimetableManagerWeeksAllocations.intYearWeek
+
+	) AS TutorialSchedule
+),
+
+YearScheduleForThatPeriod AS 
+(
+SELECT
+	YearSchedule.txtSchoolID,
+	'Year Schedule' AS txtContactGroup,
+	YearSchedule.txtName AS txtContactGroupName,
+	YearSchedule.TblTimetableManagerYearScheduleID,
+	InContactDates.dInContactDate
+	FROM InContactDates
+		OUTER APPLY (
+		SELECT
+		TblTimetableManagerYearSchedule.txtName,
+		TblTimetableManagerYearSchedule.TblTimetableManagerYearScheduleID,
+		TblPupilManagementPupils.txtSchoolID
+		FROM TblTimetableManagerYearSchedule
+		INNER JOIN TblTimetableManagerTimetables ON TblTimetableManagerYearSchedule.intTimetableID = TblTimetableManagerTimetables.TblTimetableManagerTimetablesID 
+		INNER JOIN TblPupilManagementPupils ON TblTimetableManagerYearSchedule.intNCYear = TblPupilManagementPupils.intNCYear AND TblPupilManagementPupils.intSystemStatus = 1
+		INNER JOIN TblTimetableManagerPeriods ON TblTimetableManagerYearSchedule.intPeriod = TblTimetableManagerPeriods.TblTimetableManagerPeriodsID
+		INNER JOIN TblTimetableManagerDays ON TblTimetableManagerPeriods.intDay = TblTimetableManagerDays.TblTimetableManagerDaysID
+		INNER JOIN TblTimetableManagerWeeksAllocations ON TblTimetableManagerDays.intWeek = TblTimetableManagerWeeksAllocations.intWeek
+		WHERE TblTimetableManagerTimetables.intPublished = 1
+			AND TblPupilManagementPupils.txtSchoolID = @txtSchoolID
+			AND (TblTimetableManagerWeeksAllocations.intYear = DatePart(year,@StartDate)  OR TblTimetableManagerWeeksAllocations.intYear = DatePart(year,@EndDate))
+			AND DatePart(weekday,InContactDates.dInContactDate) = TblTimetableManagerDays.intDay
+			AND DatePart(year,InContactDates.dInContactDate) = TblTimetableManagerWeeksAllocations.intYear
+			AND DatePart(week,InContactDates.dInContactDate) = TblTimetableManagerWeeksAllocations.intYearWeek
+
+	) AS YearSchedule
+),
+
+--ACTIVITIES
+ActivityOccurrenceInThatPeriod AS
+(
+	SELECT
+		TblActivityManagerEventPupilLink.txtSchoolId,
+		'Activity' AS txtContactGroup,
+		TblActivityManagerGroup.txtName AS txtContactGroupName,
+		TblActivityManagerEvent.TblActivityManagerEventID,
+		InContactDates.dInContactDate
+	FROM InContactDates
+	INNER JOIN TblActivityManagerEventOccurrence ON InContactDates.dInContactDate = Convert(Date,TblActivityManagerEventOccurrence.dteOccurrenceDate)
+	INNER JOIN TblActivityManagerEvent ON TblActivityManagerEventOccurrence.intEventId = TblActivityManagerEvent.TblActivityManagerEventId
+	INNER JOIN TblActivityManagerEventPupilLink ON TblActivityManagerEvent.TblActivityManagerEventId = TblActivityManagerEventPupilLink.intEventId 
+	INNER JOIN TblActivityManagerGroup ON TblActivityManagerEvent.intGroup = TblActivityManagerGroup.TblActivityManagerGroupId
+	INNER JOIN TblActivityManagerActivity ON TblActivityManagerGroup.intActivity = TblActivityManagerActivity.TblActivityManagerActivityId 
+	WHERE TblActivityManagerEventPupilLink.txtSchoolID = @txtSchoolID
+),
+
+--EXAM MANAGER
+ExternalExamsScheduledForThatPeriod AS
+(
+	SELECT
+		VwExamManagerStudentExams.SchoolID AS txtSchoolID,
+		'External Exam' AS txtContactGroup,
+		VwExamManagerStudentExams.ComponentCode AS txtContactGroupName,
+		VwExamManagerStudentExams.Location AS txtLocation,
+		VwExamManagerStudentExams.ExamStart AS dtExamStart,
+		InContactDates.dInContactDate
+	FROM InContactDates
+	INNER JOIN VwExamManagerStudentExams ON InContactDates.dInContactDate = Convert(Date,VwExamManagerStudentExams.ExamStart)
+	WHERE VwExamManagerStudentExams.SchoolID = @txtSchoolID
+),
+
+--INTERNAL EXAMS
+InternalExamsScheduledForThatPeriod AS
+(
+	SELECT
+		TblInternalExamsEntries.txtSchoolID,
+		'Internal Exam' AS txtContactGroup,
+		TblInternalExamsPapers.txtPaperCode AS txtContactGroupName,
+		TblInternalExamsPapers.intVenue,
+		TblInternalExamsPapers.txtDate AS dtExamStart,
+		TblInternalExamsPapers.txtActualTime,
+		InContactDates.dInContactDate
+	FROM InContactDates
+	INNER JOIN TblInternalExamsPapers ON InContactDates.dInContactDate = Convert(Date,TblInternalExamsPapers.txtDate)
+	INNER JOIN TblInternalExamsEntries ON TblInternalExamsPapers.txtPaperCode = TblInternalExamsEntries.txtPaperCode AND TblInternalExamsPapers.intSessionID = TblInternalExamsEntries.intSessionID
+	WHERE TblInternalExamsEntries.txtSchoolID = @txtSchoolID
+),
+
+--MEDICAL CENTRE VISITS
+MedicalVisitsForThatPeriod AS
+(	
+		SELECT
+		TblPupilManagementPupils.txtSchoolID,
+		'Medical Visit' AS txtContactGroup,
+		TblMedicalVisitLocation.txtName AS txtContactGroupName,
+		(SELECT TOP 1 txtSubmitBy FROM TblMedicalAuditLog WHERE TblMedicalAuditLog.intMedicalAuditBaseID = TblMedicalAuditBase.TblMedicalAuditBaseID AND intMedicalAuditActionID NOT IN (2) ORDER BY dSubmitDateTime_utc ASC) AS txtTeacher,
+		InContactDates.dInContactDate
+	FROM InContactDates
+	INNER JOIN TblMedicalRecordVisit ON InContactDates.dInContactDate = Convert(Date,TblMedicalRecordVisit.dArrivedAt)
+	INNER JOIN TblMedicalAuditBase ON TblMedicalAuditBase.TblMedicalAuditBaseId = TblMedicalRecordVisit.intMedicalAuditBaseId
+	INNER JOIN TblPupilManagementPupils ON TblMedicalAuditBase.intPersonID = TblPupilManagementPupils.intPersonID
+	LEFT OUTER JOIN TblMedicalVisitLocation ON TblMedicalRecordVisit.intLocationID = TblMedicalVisitLocation.TblMedicalVisitLocationID
+	WHERE TblPupilManagementPupils.txtSchoolID = @txtSchoolID
+),
+
+--DETENTIONS
+DetentionsScheduledForThatPeriod AS
+(
+	SELECT
+		TblDisciplineManagerDetentionsPupils.txtSchoolID,
+		'Detention' AS txtContactGroup,
+		TblDisciplineManagerDetentionsSessions.txtSessionName AS txtContactGroupName,
+		TblDisciplineManagerDetentionsPupils.intDetentionSessionID,
+		TblDisciplineManagerDetentionsPupils.dDetentionDate,
+		InContactDates.dInContactDate
+	FROM InContactDates
+	INNER JOIN TblDisciplineManagerDetentionsPupils ON InContactDates.dInContactDate = Convert(Date,TblDisciplineManagerDetentionsPupils.dDetentionDate)
+	LEFT OUTER JOIN TblDisciplineManagerDetentionsSessions ON TblDisciplineManagerDetentionsPupils.intDetentionSessionID = TblDisciplineManagerDetentionsSessions.TblDisciplineManagerDetentionsSessionsID
+	WHERE TblDisciplineManagerDetentionsPupils.txtSchoolID = @txtSchoolID
+),
+
+--ADMISSIONS VISITS
+AdmissionsVisitsScheduledForThatPeriod AS
+(
+	SELECT 
+	TblAdmissionsVisitsItineraryPupilsLink.txtSchoolID,
+	'Admissions Visit' AS txtContactGroup,
+	TblAdmissionsVisits.txtVisitName AS txtContactGroupName,
+	TblAdmissionsVisits.TblAdmissionsVisitsID,
+	InContactDates.dInContactDate
+	FROM TblAdmissionsVisitsItinerary
+	INNER JOIN TblAdmissionsVisitsItineraryPupilsLink ON TblAdmissionsVisitsItineraryPupilsLink.intAdmissionsVisitsItineraryID = TblAdmissionsVisitsItinerary.TblAdmissionsVisitsItineraryID
+	INNER JOIN TblAdmissionsVisits ON TblAdmissionsVisits.TblAdmissionsVisitsID = TblAdmissionsVisitsItinerary.intVisitID
+	INNER JOIN InContactDates ON InContactDates.dInContactDate = Convert(Date,TblAdmissionsVisits.txtVisitStartDateTime)
+	WHERE TblAdmissionsVisitsItineraryPupilsLink.txtSchoolID = @txtSchoolID
+
+	UNION
+
+	SELECT 
+	TblAdmissionsVisitsItineraryPupilGuideLink.txtSchoolID,
+	'Admissions Visit' AS txtContactGroup,
+	TblAdmissionsVisits.txtVisitName AS txtContactGroupName,
+	TblAdmissionsVisits.TblAdmissionsVisitsID,
+	InContactDates.dInContactDate
+	FROM TblAdmissionsVisitsItinerary
+	INNER JOIN TblAdmissionsVisitsItineraryPupilGuideLink ON TblAdmissionsVisitsItineraryPupilGuideLink.intAdmissionsVisitsItineraryID = TblAdmissionsVisitsItinerary.TblAdmissionsVisitsItineraryID
+	INNER JOIN TblAdmissionsVisits ON TblAdmissionsVisits.TblAdmissionsVisitsID = TblAdmissionsVisitsItinerary.intVisitID
+	INNER JOIN InContactDates ON InContactDates.dInContactDate = Convert(Date,TblAdmissionsVisits.txtVisitStartDateTime)
+	WHERE TblAdmissionsVisitsItineraryPupilGuideLink.txtSchoolID = @txtSchoolID
+
+	UNION 
+
+	SELECT 
+	TblAdmissionsVisitsPupilsLink.txtSchoolID,
+	'Admissions Visit' AS txtContactGroup,
+	TblAdmissionsVisits.txtVisitName AS txtContactGroupName,
+	TblAdmissionsVisits.TblAdmissionsVisitsID,
+	InContactDates.dInContactDate
+	FROM TblAdmissionsVisits
+	INNER JOIN TblAdmissionsVisitsPupilsLink ON TblAdmissionsVisitsPupilsLink.intAdmissionsVisitsID = TblAdmissionsVisits.TblAdmissionsVisitsID
+	INNER JOIN InContactDates ON InContactDates.dInContactDate = Convert(Date,TblAdmissionsVisits.txtVisitStartDateTime)
+	WHERE TblAdmissionsVisitsPupilsLink.txtSchoolID = @txtSchoolID
+),
+
+StudentsInContact AS
+(
+	--teaching sets
+	SELECT 
+		SetsStudentIn.txtSchoolID,
+		SetsStudentIn.txtContactGroup,
+		SetsStudentIn.txtContactGroupName,
+		SetsStudentIn.dInContactDate,
+		TblTeachingManagerSetLists.txtSchoolID AS txtStudentInContactID
+	FROM SetsStudentIn
+	INNER JOIN TblTeachingManagerSets ON SetsStudentIn.txtContactGroupName = TblTeachingManagerSets.txtSetCode
+	INNER JOIN TblTeachingManagerSetLists ON TblTeachingManagerSets.TblTeachingManagerSetsID = TblTeachingManagerSetLists.intSetID
+
+	UNION ALL
+
+	-- teaching forms
+	SELECT 
+		FormsStudentIn.txtSchoolID,
+		FormsStudentIn.txtContactGroup,
+		FormsStudentIn.txtContactGroupName,
+		FormsStudentIn.dInContactDate,
+		TblPupilManagementPupils.txtSchoolID AS txtStudentInContactID
+	FROM FormsStudentIn
+	INNER JOIN TblTeachingManagerSubjectForms ON FormsStudentIn.txtContactGroupName = TblTeachingManagerSubjectForms.txtTimetableCode
+	INNER JOIN TblPupilManagementPupils ON TblTeachingManagerSubjectForms.txtForm = TblPupilManagementPupils.txtForm AND TblPupilManagementPupils.intSystemStatus = 1
+
+	UNION ALL
+	--tutorials
+	SELECT
+		TutorialsScheduleForThatPeriod.txtSchoolId,
+		TutorialsScheduleForThatPeriod.txtContactGroup,
+		TutorialsScheduleForThatPeriod.txtContactGroupName,
+		TutorialsScheduleForThatPeriod.dInContactDate,
+		TblTimetableManagerTutorialsPupils.txtSchoolId AS txtStudentInContactID
+	FROM TutorialsScheduleForThatPeriod
+	INNER JOIN TblTimetableManagerTutorials ON TutorialsScheduleForThatPeriod.TblTimetableManagerTutorialsId = TblTimetableManagerTutorials.TblTimetableManagerTutorialsID
+	INNER JOIN TblTimetableManagerTutorialsPupils ON  TblTimetableManagerTutorials.TblTimetableManagerTutorialsID = TblTimetableManagerTutorialsPupils.intTutorial
+
+	UNION ALL
+	--year schedule
+	SELECT
+		YearScheduleForThatPeriod.txtSchoolID,
+		YearScheduleForThatPeriod.txtContactGroup,
+		YearScheduleForThatPeriod.txtContactGroupName,
+		YearScheduleForThatPeriod.dInContactDate,
+		TblPupilManagementPupils.txtSchoolId AS txtStudentInContactID
+	FROM YearScheduleForThatPeriod
+	INNER JOIN TblTimetableManagerYearSchedule ON YearScheduleForThatPeriod.TblTimetableManagerYearScheduleID = TblTimetableManagerYearSchedule.TblTimetableManagerYearScheduleID
+	INNER JOIN TblPupilManagementPupils ON TblTimetableManagerYearSchedule.intNCYear = TblPupilManagementPupils.intNCYear AND TblPupilManagementPupils.intSystemStatus = 1
+
+	UNION ALL
+	--activity
+	SELECT
+		ActivityOccurrenceInThatPeriod.txtSchoolID,
+		ActivityOccurrenceInThatPeriod.txtContactGroup,
+		ActivityOccurrenceInThatPeriod.txtContactGroupName,
+		ActivityOccurrenceInThatPeriod.dInContactDate,
+		TblActivityManagerEventPupilLink.txtSchoolId AS txtStudentInContactID
+	FROM ActivityOccurrenceInThatPeriod
+	INNER JOIN TblActivityManagerEvent ON ActivityOccurrenceInThatPeriod.TblActivityManagerEventId = TblActivityManagerEvent.TblActivityManagerEventID
+	INNER JOIN TblActivityManagerEventPupilLink ON TblActivityManagerEvent.TblActivityManagerEventId = TblActivityManagerEventPupilLink.intEventId 
+
+	UNION ALL
+	--external exam
+	SELECT
+		ExternalExamsScheduledForThatPeriod.txtSchoolID,
+		ExternalExamsScheduledForThatPeriod.txtContactGroup,
+		ExternalExamsScheduledForThatPeriod.txtContactGroupName,
+		ExternalExamsScheduledForThatPeriod.dInContactDate,
+		VwExamManagerStudentExams.SchoolID AS txtStudentInContactID
+	FROM ExternalExamsScheduledForThatPeriod
+	INNER JOIN VwExamManagerStudentExams ON ExternalExamsScheduledForThatPeriod.txtLocation = VwExamManagerStudentExams.Location AND ExternalExamsScheduledForThatPeriod.dtExamStart = VwExamManagerStudentExams.ExamStart
+
+	UNION ALL
+	--internal exams
+	SELECT
+		InternalExamsScheduledForThatPeriod.txtSchoolID,
+		InternalExamsScheduledForThatPeriod.txtContactGroup,
+		InternalExamsScheduledForThatPeriod.txtContactGroupName,
+		InternalExamsScheduledForThatPeriod.dInContactDate,
+		TblInternalExamsEntries.txtSchoolID AS txtStudentInContactID
+	FROM InternalExamsScheduledForThatPeriod
+	INNER JOIN TblInternalExamsPapers ON InternalExamsScheduledForThatPeriod.intVenue = TblInternalExamsPapers.intVenue 
+		AND InternalExamsScheduledForThatPeriod.dtExamStart = TblInternalExamsPapers.txtDate
+		AND InternalExamsScheduledForThatPeriod.txtActualTime = TblInternalExamsPapers.txtActualTime
+	INNER JOIN TblInternalExamsEntries ON TblInternalExamsPapers.txtPaperCode = TblInternalExamsEntries.txtPaperCode AND TblInternalExamsPapers.intSessionID = TblInternalExamsEntries.intSessionID 
+
+	UNION ALL
+	--detentions
+	SELECT
+		DetentionsScheduledForThatPeriod.txtSchoolID,
+		DetentionsScheduledForThatPeriod.txtContactGroup,
+		DetentionsScheduledForThatPeriod.txtContactGroupName,
+		DetentionsScheduledForThatPeriod.dInContactDate,
+		TblDisciplineManagerDetentionsPupils.txtSchoolID AS txtStudentInContactID
+	FROM DetentionsScheduledForThatPeriod
+	INNER JOIN TblDisciplineManagerDetentionsPupils ON DetentionsScheduledForThatPeriod.intDetentionSessionID = TblDisciplineManagerDetentionsPupils.intDetentionSessionID 
+	AND DetentionsScheduledForThatPeriod.dDetentionDate = TblDisciplineManagerDetentionsPupils.dDetentionDate
+
+	UNION ALL
+	--admissions visit
+	SELECT
+		AdmissionsVisitsScheduledForThatPeriod.txtSchoolID,
+		AdmissionsVisitsScheduledForThatPeriod.txtContactGroup,
+		AdmissionsVisitsScheduledForThatPeriod.txtContactGroupName,
+		AdmissionsVisitsScheduledForThatPeriod.dInContactDate,
+		StudentsVisit.txtSchoolID AS txtStudentInContactID
+	FROM AdmissionsVisitsScheduledForThatPeriod
+	CROSS APPLY
+	(
+		SELECT 
+		TblAdmissionsVisitsItineraryPupilsLink.txtSchoolID
+		FROM TblAdmissionsVisitsItinerary
+		INNER JOIN TblAdmissionsVisitsItineraryPupilsLink ON TblAdmissionsVisitsItineraryPupilsLink.intAdmissionsVisitsItineraryID = TblAdmissionsVisitsItinerary.TblAdmissionsVisitsItineraryID
+		WHERE TblAdmissionsVisitsItinerary.intVisitID = AdmissionsVisitsScheduledForThatPeriod.TblAdmissionsVisitsID
+
+		UNION
+
+		SELECT 
+		TblAdmissionsVisitsItineraryPupilGuideLink.txtSchoolID
+		FROM TblAdmissionsVisitsItinerary
+		INNER JOIN TblAdmissionsVisitsItineraryPupilGuideLink ON TblAdmissionsVisitsItineraryPupilGuideLink.intAdmissionsVisitsItineraryID = TblAdmissionsVisitsItinerary.TblAdmissionsVisitsItineraryID
+		WHERE TblAdmissionsVisitsItinerary.intVisitID = AdmissionsVisitsScheduledForThatPeriod.TblAdmissionsVisitsID
+
+		UNION 
+
+		SELECT 
+		TblAdmissionsVisitsPupilsLink.txtSchoolID
+		FROM TblAdmissionsVisitsPupilsLink
+		WHERE TblAdmissionsVisitsPupilsLink.intAdmissionsVisitsID = AdmissionsVisitsScheduledForThatPeriod.TblAdmissionsVisitsID
+	) AS StudentsVisit
+),
+
+TeachersInContact AS
+(
+	--teaching sets
+	SELECT 
+		SetsStudentIn.txtSchoolID,
+		SetsStudentIn.txtContactGroup,
+		SetsStudentIn.txtContactGroupName,
+		SetsStudentIn.dInContactDate,
+		CASE WHEN TblCoverManagerCover.txtCoveredTeacher IS NOT NULL THEN TblCoverManagerCover.txtCoveredTeacher ELSE SetsStudentIn.txtTeacher END AS txtTeacher
+	FROM SetsStudentIn
+	LEFT OUTER JOIN TblCoverManagerCover 
+		ON SetsStudentIn.TblTimetableManagerScheduleID = TblCoverManagerCover.TblTimetableManagerScheduleID
+		AND SetsStudentIn.dInContactDate = Convert(date,TblCoverManagerCover.dteDate)
+
+
+	UNION ALL
+	-- teaching forms
+	SELECT 
+		FormsStudentIn.txtSchoolID,
+		FormsStudentIn.txtContactGroup,
+		FormsStudentIn.txtContactGroupName,
+		FormsStudentIn.dInContactDate,
+		CASE WHEN TblCoverManagerCover.txtCoveredTeacher IS NOT NULL THEN TblCoverManagerCover.txtCoveredTeacher ELSE FormsStudentIn.txtTeacher END AS txtTeacher
+	FROM FormsStudentIn
+	LEFT OUTER JOIN TblCoverManagerCover ON FormsStudentIn.TblTimetableManagerScheduleID = TblCoverManagerCover.TblTimetableManagerScheduleID
+
+	UNION ALL
+	--tutorials
+	SELECT
+		TutorialsScheduleForThatPeriod.txtSchoolId,
+		TutorialsScheduleForThatPeriod.txtContactGroup,
+		TutorialsScheduleForThatPeriod.txtContactGroupName,
+		TutorialsScheduleForThatPeriod.dInContactDate,
+		TblTimetableManagerTutorialsTeachers.txtTeacher
+	FROM TutorialsScheduleForThatPeriod
+	INNER JOIN TblTimetableManagerTutorialsTeachers ON  TutorialsScheduleForThatPeriod.TblTimetableManagerTutorialsID = TblTimetableManagerTutorialsTeachers.intTutorial
+	
+	UNION ALL
+	--year schedule
+	SELECT
+		YearScheduleForThatPeriod.txtSchoolID,
+		YearScheduleForThatPeriod.txtContactGroup,
+		YearScheduleForThatPeriod.txtContactGroupName,
+		YearScheduleForThatPeriod.dInContactDate,
+		TblTimetableManagerYearSchedule.txtTeacher
+	FROM YearScheduleForThatPeriod
+	INNER JOIN TblTimetableManagerYearSchedule ON YearScheduleForThatPeriod.TblTimetableManagerYearScheduleID = TblTimetableManagerYearSchedule.TblTimetableManagerYearScheduleID
+
+	UNION ALL
+	--activity
+	SELECT
+		ActivityOccurrenceInThatPeriod.txtSchoolID,
+		ActivityOccurrenceInThatPeriod.txtContactGroup,
+		ActivityOccurrenceInThatPeriod.txtContactGroupName,
+		ActivityOccurrenceInThatPeriod.dInContactDate,
+		TblActivityManagerEventTeacherLink.txtTeacherId AS txtTeacher
+	FROM ActivityOccurrenceInThatPeriod
+	INNER JOIN TblActivityManagerEvent ON ActivityOccurrenceInThatPeriod.TblActivityManagerEventId = TblActivityManagerEvent.TblActivityManagerEventID
+	INNER JOIN TblActivityManagerEventTeacherLink ON TblActivityManagerEvent.TblActivityManagerEventId = TblActivityManagerEventTeacherLink.intEventId 
+
+	UNION ALL
+	--medical visit
+		SELECT
+		MedicalVisitsForThatPeriod.txtSchoolID,
+		MedicalVisitsForThatPeriod.txtContactGroup,
+		MedicalVisitsForThatPeriod.txtContactGroupName,
+		MedicalVisitsForThatPeriod.dInContactDate,
+		MedicalVisitsForThatPeriod.txtTeacher
+	FROM MedicalVisitsForThatPeriod
+
+    UNION ALL
+	--detentions
+	SELECT
+		DetentionsScheduledForThatPeriod.txtSchoolID,
+		DetentionsScheduledForThatPeriod.txtContactGroup,
+		DetentionsScheduledForThatPeriod.txtContactGroupName,
+		DetentionsScheduledForThatPeriod.dInContactDate,
+		TblDisciplineManagerDetentionsTeachers.txtUserCode AS txtTeacher
+	FROM DetentionsScheduledForThatPeriod
+	INNER JOIN TblDisciplineManagerDetentionsTeachers ON DetentionsScheduledForThatPeriod.intDetentionSessionID = TblDisciplineManagerDetentionsTeachers.intDetentionSession 
+	AND DetentionsScheduledForThatPeriod.dDetentionDate = TblDisciplineManagerDetentionsTeachers.dDetentionDate
+
+	UNION ALL
+	--admissions visit
+	SELECT
+		AdmissionsVisitsScheduledForThatPeriod.txtSchoolID,
+		AdmissionsVisitsScheduledForThatPeriod.txtContactGroup,
+		AdmissionsVisitsScheduledForThatPeriod.txtContactGroupName,
+		AdmissionsVisitsScheduledForThatPeriod.dInContactDate,
+		StudentsVisit.txtUserCode AS txtTeacher
+	FROM AdmissionsVisitsScheduledForThatPeriod
+	CROSS APPLY
+	(
+		SELECT 
+		TblAdmissionsVisitsItineraryStaffLink.txtUserCode
+		FROM TblAdmissionsVisitsItinerary
+		INNER JOIN TblAdmissionsVisitsItineraryStaffLink ON TblAdmissionsVisitsItineraryStaffLink.intAdmissionsVisitsItineraryID = TblAdmissionsVisitsItinerary.TblAdmissionsVisitsItineraryID
+		WHERE TblAdmissionsVisitsItinerary.intVisitID = AdmissionsVisitsScheduledForThatPeriod.TblAdmissionsVisitsID
+
+		UNION
+
+		SELECT 
+		TblAdmissionsVisitsItineraryStaffGuideLink.txtUserCode
+		FROM TblAdmissionsVisitsItinerary
+		INNER JOIN TblAdmissionsVisitsItineraryStaffGuideLink ON TblAdmissionsVisitsItineraryStaffGuideLink.intAdmissionsVisitsItineraryID = TblAdmissionsVisitsItinerary.TblAdmissionsVisitsItineraryID
+		WHERE TblAdmissionsVisitsItinerary.intVisitID = AdmissionsVisitsScheduledForThatPeriod.TblAdmissionsVisitsID
+
+		UNION 
+
+		SELECT 
+		TblAdmissionsVisitsStaffLink.txtUserCode
+		FROM TblAdmissionsVisitsStaffLink
+		WHERE TblAdmissionsVisitsStaffLink.intAdmissionsVisitsID = AdmissionsVisitsScheduledForThatPeriod.TblAdmissionsVisitsID
+	) AS StudentsVisit
+)
+
+SELECT DISTINCT
+	StudentsInContact.txtSchoolID,
+	TblPupilManagementPupils.txtSurname,
+	TblPupilManagementPupils.txtForename,
+	TblSchoolManagementYears.txtYearName,
+	TblPupilManagementPupils.txtForm,
+	TblPupilManagementPupils.txtBoardingHouse,
+	TblPupilManagementPupils.txtType AS txtStatus,
+	TblPupilManagementPupils.txtAcademicHouse,
+	PastoralTutor.Firstname AS txtPastoralTutorFirstname,
+	PastoralTutor.Surname AS txtPastoralTutorSurname,
+	StudentsInContact.dInContactDate,
+	StudentsInContact.txtContactGroup,
+	StudentsInContact.txtContactGroupName,
+	'Student' AS txtPersonInContactWithType,
+	StudentsInContact.txtStudentInContactID AS txtPersonInContactWithID,
+	InContactWith.txtSurname AS txtPersonInContactWithSurname,
+	InContactWith.txtForename AS txtPersonInContactWithForename,
+	InContactWithYearGroup.txtYearName AS txtPersonInContactWithYearName,
+	InContactWith.txtForm AS txtPersonInContactWithForm,
+	InContactWith.txtBoardingHouse AS txtPersonInContactWithBoardingHouse
+FROM StudentsInContact
+--CROSS APPLY uf_Registration_AttendanceBetweenDates(StudentsInContact.dInContactDate,DateAdd(day,1,StudentsInContact.dInContactDate),StudentsInContact.txtStudentInContactID) AS Attendance
+INNER JOIN TblRegistrationSchoolRegistrationPupils 
+	ON StudentsInContact.txtStudentInContactID = TblRegistrationSchoolRegistrationPupils.txtSchoolID
+	AND TblRegistrationSchoolRegistrationPupils.blnRegistered = 1 
+	AND TblRegistrationSchoolRegistrationPupils.txtSubmitBy IS NOT NULL 
+INNER JOIN TblRegistrationSchoolRegistrationRegister 
+	ON TblRegistrationSchoolRegistrationPupils.intRegister = TblRegistrationSchoolRegistrationRegister.TblRegistrationSchoolRegistrationRegisterID
+INNER JOIN TblRegistrationSchoolRegistrationDateTime 
+	ON TblRegistrationSchoolRegistrationRegister.intRegistrationDateTime = TblRegistrationSchoolRegistrationDateTime.TblRegistrationSchoolRegistrationDateTimeID
+	AND Convert(Date,TblRegistrationSchoolRegistrationDateTime.txtDateTime) = StudentsInContact.dInContactDate
+INNER JOIN TblPupilManagementPupils ON StudentsInContact.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+LEFT OUTER JOIN TblSchoolManagementYears ON TblPupilManagementPupils.intNCYear = TblSchoolManagementYears.intNCYear
+LEFT OUTER JOIN TblStaff AS PastoralTutor ON TblPupilManagementPupils.txtTutor = PastoralTutor.User_Code
+INNER JOIN TblPupilManagementPupils AS InContactWith ON StudentsInContact.txtStudentInContactID = InContactWith.txtSchoolID
+LEFT OUTER JOIN TblSchoolManagementYears AS InContactWithYearGroup ON InContactWith.intNCYear = InContactWithYearGroup.intNCYear
+WHERE StudentsInContact.txtSchoolID &lt;&gt; StudentsInContact.txtStudentInContactID
+
+UNION ALL
+
+SELECT 
+	TeachersInContact.txtSchoolID,
+	TblPupilManagementPupils.txtSurname,
+	TblPupilManagementPupils.txtForename,
+	TblSchoolManagementYears.txtYearName,
+	TblPupilManagementPupils.txtForm,
+	TblPupilManagementPupils.txtBoardingHouse,
+	TblPupilManagementPupils.txtType AS txtStatus,
+	TblPupilManagementPupils.txtAcademicHouse,
+	PastoralTutor.Firstname AS txtPastoralTutorFirstname,
+	PastoralTutor.Surname AS txtPastoralTutorSurname,
+	TeachersInContact.dInContactDate,
+	TeachersInContact.txtContactGroup,
+	TeachersInContact.txtContactGroupName,
+	'Staff' AS txtPersonInContactWithType,
+	TeachersInContact.txtTeacher AS txtPersonInContactWithID,
+	TblStaff.Surname AS txtPersonInContactWithSurname,
+	TblStaff.Firstname AS txtPersonInContactWithForename,
+	NULL AS txtPersonInContactWithYearName,
+	NULL AS txtPersonInContactWithForm,
+	NULL AS txtPersonInContactWithBoardingHouse
+FROM TeachersInContact
+INNER JOIN TblPupilManagementPupils ON TeachersInContact.txtSchoolID = TblPupilManagementPupils.txtSchoolID
+LEFT OUTER JOIN TblSchoolManagementYears ON TblPupilManagementPupils.intNCYear = TblSchoolManagementYears.intNCYear
+LEFT OUTER JOIN TblStaff AS PastoralTutor ON TblPupilManagementPupils.txtTutor = PastoralTutor.User_Code
+INNER JOIN TblStaff ON TeachersInContact.txtTeacher = TblStaff.User_Code
+
+</CommandText></Query><Fields><Field Name="txtSchoolID"><DataField>txtSchoolID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSurname"><DataField>txtSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForename"><DataField>txtForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtYearName"><DataField>txtYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForm"><DataField>txtForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtBoardingHouse"><DataField>txtBoardingHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtStatus"><DataField>txtStatus</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="dInContactDate"><DataField>dInContactDate</DataField><rd:TypeName>System.DateTime</rd:TypeName></Field><Field Name="txtAcademicHouse"><DataField>txtAcademicHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtContactGroup"><DataField>txtContactGroup</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorFirstname"><DataField>txtPastoralTutorFirstname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtContactGroupName"><DataField>txtContactGroupName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithType"><DataField>txtPersonInContactWithType</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPastoralTutorSurname"><DataField>txtPastoralTutorSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithID"><DataField>txtPersonInContactWithID</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithSurname"><DataField>txtPersonInContactWithSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithForename"><DataField>txtPersonInContactWithForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithYearName"><DataField>txtPersonInContactWithYearName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithForm"><DataField>txtPersonInContactWithForm</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtPersonInContactWithBoardingHouse"><DataField>txtPersonInContactWithBoardingHouse</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet></DataSets><ReportSections><ReportSection><Body><ReportItems><Tablix Name="Tablix2"><TablixBody><TablixColumns><TablixColumn><Width>20cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>4.5cm</Height><TablixCells><TablixCell><CellContents><Rectangle Name="Rectangle3"><ReportItems><Tablix Name="Tablix8"><TablixBody><TablixColumns><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>3.5cm</Width></TablixColumn><TablixColumn><Width>3cm</Width></TablixColumn><TablixColumn><Width>4cm</Width></TablixColumn><TablixColumn><Width>3cm</Width></TablixColumn><TablixColumn><Width>4cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox13"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Student Details</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox9</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#8eceec</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><ColSpan>6</ColSpan></CellContents></TablixCell><TablixCell /><TablixCell /><TablixCell /><TablixCell /><TablixCell /></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox9"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Year Group:</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox6</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox16"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtYearName.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Normal</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox8</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox267"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Status:</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox266</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtType2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtStatus.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtType</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox268"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Academic House:</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox268</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtAcademicHouse"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtAcademicHouse.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtAcademicHouse</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox30"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Form:</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox27</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtForename2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtForm.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Normal</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtForename</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox324"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Boarding House:</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox323</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtBoardingHouse2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtBoardingHouse.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>txtBoardingHouse</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox76"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Pastoral Tutor:</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox76</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox77"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPastoralTutorFirstname.Value + " " + Fields!txtPastoralTutorSurname.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox77</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixRowHierarchy><DataSetName>TrackAndTrace</DataSetName><Height>1.5cm</Height><Width>20cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix9"><TablixBody><TablixColumns><TablixColumn><Width>4cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2cm</Width></TablixColumn><TablixColumn><Width>3cm</Width></TablixColumn><TablixColumn><Width>5.5cm</Width></TablixColumn><TablixColumn><Width>3cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox14"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Student Name</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox9</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#d88bc0</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox107"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Year Group</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox107</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#d88bc0</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox108"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Form</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox108</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#d88bc0</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox109"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Boarding House</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox109</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#d88bc0</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox112"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Contact Points</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox112</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#d88bc0</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox115"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Times in Contact</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox110</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#d88bc0</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox103"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPersonInContactWithSurname.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun><TextRun><Value>, </Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun><TextRun><Value>=Fields!txtPersonInContactWithForename.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox103</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtPersonInContactWithYearName"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPersonInContactWithYearName.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Normal</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtPersonInContactWithYearName</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtPersonInContactWithForm"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPersonInContactWithForm.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtPersonInContactWithForm</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtPersonInContactWithBoardingHouse"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPersonInContactWithBoardingHouse.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtPersonInContactWithBoardingHouse</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="Rectangle1"><ReportItems><Tablix Name="Tablix6"><TablixBody><TablixColumns><TablixColumn><Width>5.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox113"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtContactGroup.Value + ": " + Fields!txtContactGroupName.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox111</rd:DefaultName><Style><Border><Style>None</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="txtContactGroup_txtContactGroupName_Student"><GroupExpressions><GroupExpression>=Fields!txtContactGroup.Value</GroupExpression><GroupExpression>=Fields!txtContactGroupName.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!txtContactGroup.Value</Value></SortExpression><SortExpression><Value>=Fields!txtContactGroupName.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><Height>0.5cm</Height><Width>5.5cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border></Style></Rectangle></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox121"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Count(Fields!txtPersonInContactWithID.Value)</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox111</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup><RepeatOnNewPage>true</RepeatOnNewPage></TablixMember><TablixMember><Group Name="txtPersonInContactWithID_Student"><GroupExpressions><GroupExpression>=Fields!txtPersonInContactWithID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Count(Fields!txtPersonInContactWithID.Value)</Value><Direction>Descending</Direction></SortExpression><SortExpression><Value>=Fields!txtPersonInContactWithSurname.Value</Value></SortExpression><SortExpression><Value>=Fields!txtPersonInContactWithForename.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>TrackAndTrace</DataSetName><Filters><Filter><FilterExpression>=Fields!txtPersonInContactWithType.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>Student</FilterValue></FilterValues></Filter></Filters><Top>2cm</Top><Height>1cm</Height><Width>20cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix10"><TablixBody><TablixColumns><TablixColumn><Width>6.5cm</Width></TablixColumn><TablixColumn><Width>10.5cm</Width></TablixColumn><TablixColumn><Width>3cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox15"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Staff Name</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox9</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#fad182</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox118"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Contact Points</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox112</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#fad182</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox117"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Times in Contact</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><FontWeight>Bold</FontWeight><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox110</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><BackgroundColor>#fad182</BackgroundColor><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox104"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtPersonInContactWithSurname.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun><TextRun><Value>, </Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun><TextRun><Value>=Fields!txtPersonInContactWithForename.Value</Value><Style><FontStyle>Normal</FontStyle><FontFamily>arial</FontFamily><FontSize>9pt</FontSize><TextDecoration>None</TextDecoration><Color>#000000</Color></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox103</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Rectangle Name="Rectangle2"><ReportItems><Tablix Name="Tablix7"><TablixBody><TablixColumns><TablixColumn><Width>10.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.5cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox120"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtContactGroup.Value + ": " + Fields!txtContactGroupName.Value</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox111</rd:DefaultName><Style><Border><Style>None</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="txtContactGroup_txtContactGroupName2"><GroupExpressions><GroupExpression>=Fields!txtContactGroup.Value</GroupExpression><GroupExpression>=Fields!txtContactGroupName.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Fields!txtContactGroup.Value</Value></SortExpression><SortExpression><Value>=Fields!txtContactGroupName.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><Height>0.5cm</Height><Width>10.5cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border></Style></Rectangle></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox122"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Count(Fields!txtPersonInContactWithID.Value)</Value><Style><FontFamily>arial</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox111</rd:DefaultName><Style><Border><Style>Solid</Style><Width>0.5pt</Width></Border><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup><RepeatOnNewPage>true</RepeatOnNewPage></TablixMember><TablixMember><Group Name="txtPersonInContactWith_Staff"><GroupExpressions><GroupExpression>=Fields!txtPersonInContactWithID.Value</GroupExpression></GroupExpressions></Group><SortExpressions><SortExpression><Value>=Count(Fields!txtPersonInContactWithID.Value)</Value><Direction>Descending</Direction></SortExpression><SortExpression><Value>=Fields!txtPersonInContactWithSurname.Value</Value></SortExpression><SortExpression><Value>=Fields!txtPersonInContactWithForename.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>TrackAndTrace</DataSetName><Filters><Filter><FilterExpression>=Fields!txtPersonInContactWithType.Value</FilterExpression><Operator>Equal</Operator><FilterValues><FilterValue>Staff</FilterValue></FilterValues></Filter></Filters><Top>3.5cm</Top><Height>1cm</Height><Width>20cm</Width><ZIndex>2</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><KeepTogether>true</KeepTogether><Style><Border><Style>None</Style></Border></Style></Rectangle></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox2"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>No Students or Staff found with the criteria you chose.</Value><Style><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph><Paragraph><TextRuns><TextRun><Value>Alter your selection to re-search the iSAMS database.</Value><Style><FontSize>8pt</FontSize><FontWeight>Normal</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Style><Border><Style>None</Style><Width>0.5pt</Width></Border><VerticalAlign>Bottom</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><Group Name="txtSchoolID"><GroupExpressions><GroupExpression>=Fields!txtSchoolID.Value</GroupExpression></GroupExpressions><PageBreak><BreakLocation>Between</BreakLocation></PageBreak></Group></TablixMember><TablixMember><Visibility><Hidden>=IIF(CountRows("TrackAndTrace")=0,false,true)</Hidden></Visibility><KeepWithGroup>Before</KeepWithGroup></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>TrackAndTrace</DataSetName><Height>5.1cm</Height><Width>20cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><Height>2.00787in</Height><Style /></Body><Width>7.87402in</Width><Page><PageHeader><Height>2cm</Height><PrintOnFirstPage>true</PrintOnFirstPage><PrintOnLastPage>true</PrintOnLastPage><ReportItems><Textbox Name="Textbox1"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!txtForename.Value, "TrackAndTrace")</Value><Style><FontFamily>arial</FontFamily><FontSize>24pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value xml:space="preserve"> </Value><Style><FontFamily>arial</FontFamily><FontSize>24pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=First(Fields!txtSurname.Value, "TrackAndTrace")</Value><Style><FontFamily>arial</FontFamily><FontSize>24pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style /></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Height>1.4cm</Height><Width>16.9cm</Width><Style><Border><Style>None</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox><Image Name="Image1"><Source>Embedded</Source><Value>iSAMSLine</Value><Sizing>FitProportional</Sizing><Top>1.6cm</Top><Height>0.2cm</Height><Width>20cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border></Style></Image><Image Name="Image13"><Source>External</Source><Value>
+								=IIF(
+								Right(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"),1)="/",
+								Left(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"), Len(First(Fields!txtiSAMSAddress.Value, "iSAMSAddress"))-1),
+								First(Fields!txtiSAMSAddress.Value, "iSAMSAddress")
+								) &amp; First(Fields!txtSchoolLogoPath.Value, "SchoolLogo")
+							</Value><Sizing>FitProportional</Sizing><Left>16.9cm</Left><Height>1.4cm</Height><Width>3.1cm</Width><ZIndex>2</ZIndex><Style><Border><Style>None</Style></Border></Style></Image></ReportItems><Style><Border><Style>None</Style></Border></Style></PageHeader><PageFooter><Height>0.8cm</Height><PrintOnFirstPage>true</PrintOnFirstPage><PrintOnLastPage>true</PrintOnLastPage><ReportItems><Textbox Name="textbox84"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Printed on </Value><Style><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Now()</Value><Style><FontWeight>Bold</FontWeight><Format>dd MMMM yyyy</Format></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><Top>0.2cm</Top><Height>0.6cm</Height><Width>16.9cm</Width><Style><Border><Width>2pt</Width></Border><TopBorder><Style>Solid</Style></TopBorder><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox><Textbox Name="textbox83"><CanGrow>true</CanGrow><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>="Page " &amp; Globals!PageNumber &amp; " of " &amp; Globals!TotalPages</Value><Style><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Top>0.2cm</Top><Left>16.9cm</Left><Height>0.6cm</Height><Width>3.1cm</Width><ZIndex>1</ZIndex><Style><Border><Width>2pt</Width></Border><TopBorder><Style>Solid</Style></TopBorder><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>1pt</PaddingTop><PaddingBottom>1pt</PaddingBottom></Style></Textbox></ReportItems><Style><Border><Style>None</Style></Border></Style></PageFooter><PageHeight>29.7cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>0.5cm</LeftMargin><RightMargin>0.5cm</RightMargin><TopMargin>0.5cm</TopMargin><BottomMargin>0.5cm</BottomMargin><ColumnSpacing>0.13cm</ColumnSpacing><Style /></Page></ReportSection></ReportSections><ReportParameters><ReportParameter Name="intNCYear"><DataType>String</DataType><Prompt>Year Group:</Prompt><ValidValues><DataSetReference><DataSetName>YearGroups</DataSetName><ValueField>intNCYear</ValueField><LabelField>txtYearName</LabelField></DataSetReference></ValidValues></ReportParameter><ReportParameter Name="txtSchoolID"><DataType>String</DataType><Prompt>Student:</Prompt><ValidValues><DataSetReference><DataSetName>Students</DataSetName><ValueField>txtSchoolID</ValueField><LabelField>txtStudentName</LabelField></DataSetReference></ValidValues></ReportParameter><ReportParameter Name="StartDate"><DataType>DateTime</DataType><Prompt>From:</Prompt></ReportParameter><ReportParameter Name="EndDate"><DataType>DateTime</DataType><Prompt>To:</Prompt></ReportParameter></ReportParameters><EmbeddedImages><EmbeddedImage Name="iSAMSLine"><MIMEType>image/png</MIMEType><ImageData>iVBORw0KGgoAAAANSUhEUgAAAs8AAAAECAIAAAD+oEW+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAINSURBVGhD7ZYxSoNBEIUtNL1NFImeIPEQ1h7BSwiJpWhl5Q38QYx1tJF4CisLo8cQrd1kYJnMPOaNqRcey8zb7+tn67D7rBncLeoblAaQBK6eIWBKnQDQXxALSj1nLN9QlwKm9A11KWBKCEhKOei+Bt3nUfdR3sNucXrzdnl8+9y/ft5b5ql/Vd8aX1Kgxlt5V5K0kphZ85aOBgKXAqbUc2B52KxByYFVyjA7OH8/O/m93/2e9n6X2fl52K5vjS8pYEoISIIvCQR8SYEab+VdSdJKYmbNWzoagK6eIbCGTXvfjzsvs/2L+Wj8OiyZzI/H8+HkdVQjq351b1ZY6vm/lm6oSwGzQkASfEkg4EsKwECMukkricnaro2U5RvqUsCUvqEuBUwJAUkp27WxmaWjgcClgCn1HFgeNmtQcmCVMrRrA2KBK0laScyseUtHA9DVMwTWsHZtOEASfEkg4EsKwECMukkricnaro2U5RvqUsCUvqEuBUwJAUkp27WxmaWjgcClgCn1HFgeNmtQcmCVMrRrA2KBK0laScyseUtHA9DVMwTWsHZtOEASfEkg4EsKwECMukkricnaro2U5RvqUsCUvqEuBUwJAUkp27WxmaWjgcClgCn1HFgeNmtQcmCVMrRrA2KBK0laScyseUtHA9DVMwTWsHZtOEASfEkg4EsKwECMukkriS3X+fAPfoNWybNefjEAAAAASUVORK5CYII=</ImageData></EmbeddedImage></EmbeddedImages><ConsumeContainerWhitespace>true</ConsumeContainerWhitespace><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>2ba30111-5750-4b41-991f-c5b9ca723e3e</rd:ReportID></Report>

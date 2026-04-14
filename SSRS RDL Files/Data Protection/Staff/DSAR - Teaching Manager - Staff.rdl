@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"><Body><ReportItems><Tablix Name="Tablix1"><TablixBody><TablixColumns><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox1"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>ID</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox1</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox3"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Name</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox3</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="intPersonID"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!intPersonID.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>intPersonID</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtSurname"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSurname.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun><TextRun><Value>, </Value><Style><FontFamily>Arial</FontFamily></Style></TextRun><TextRun><Value>=Fields!txtForename.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtSurname</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="intPersonID"><GroupExpressions><GroupExpression>=Fields!intPersonID.Value</GroupExpression></GroupExpressions></Group></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>SubjectsTeachingGroups</DataSetName><Height>1.2cm</Height><Width>5cm</Width><Style><Border><Style>None</Style></Border></Style></Tablix><Tablix Name="Tablix2"><TablixBody><TablixColumns><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn><TablixColumn><Width>2.5cm</Width></TablixColumn></TablixColumns><TablixRows><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="Textbox2"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Teaching Manager Academic Year</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox2</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox4"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Teaching Group Type</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox4</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox5"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Teaching Group Code</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox5</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox6"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Teaching Group Name</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox6</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox7"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Set Number</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox7</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="Textbox13"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>Subject Name</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>Textbox13</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow><TablixRow><Height>0.6cm</Height><TablixCells><TablixCell><CellContents><Textbox Name="txtTeachingManagerAcademicYear"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtTeachingManagerAcademicYear.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtTeachingManagerAcademicYear</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtTeachingGroupType"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtTeachingGroupType.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtTeachingGroupType</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtTeachingGroupCode"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtTeachingGroupCode.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtTeachingGroupCode</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtTeachingGroupName"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtTeachingGroupName.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtTeachingGroupName</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtSetNumber"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSetNumber.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtSetNumber</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell><TablixCell><CellContents><Textbox Name="txtSubjectName"><KeepTogether>true</KeepTogether><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!txtSubjectName.Value</Value><Style><FontFamily>Arial</FontFamily></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs><rd:DefaultName>txtSubjectName</rd:DefaultName><Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style></Textbox></CellContents></TablixCell></TablixCells></TablixRow></TablixRows></TablixBody><TablixColumnHierarchy><TablixMembers><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /></TablixMembers></TablixColumnHierarchy><TablixRowHierarchy><TablixMembers><TablixMember><KeepWithGroup>After</KeepWithGroup></TablixMember><TablixMember><Group Name="TeachingGroups" /><SortExpressions><SortExpression><Value>=Fields!txtSubjectName.Value</Value></SortExpression><SortExpression><Value>=Fields!txtTeachingGroupCode.Value</Value></SortExpression></SortExpressions></TablixMember></TablixMembers></TablixRowHierarchy><DataSetName>SubjectsTeachingGroups</DataSetName><Left>5cm</Left><Height>1.2cm</Height><Width>15cm</Width><ZIndex>1</ZIndex><Style><Border><Style>None</Style></Border></Style></Tablix></ReportItems><Height>0.47244in</Height><Style /></Body><Width>7.87402in</Width><Page><PageHeight>29.7cm</PageHeight><PageWidth>21cm</PageWidth><LeftMargin>2cm</LeftMargin><RightMargin>2cm</RightMargin><TopMargin>2cm</TopMargin><BottomMargin>2cm</BottomMargin><ColumnSpacing>0.13cm</ColumnSpacing><Style /></Page><AutoRefresh>0</AutoRefresh><DataSources><DataSource Name="iSAMS"><DataSourceReference>iSAMS</DataSourceReference><rd:SecurityType>None</rd:SecurityType><rd:DataSourceID>09c25523-b7f0-40b2-a998-41c5672584d9</rd:DataSourceID></DataSource></DataSources><DataSets><DataSet Name="SubjectsTeachingGroups"><Query><DataSourceName>iSAMS</DataSourceName><QueryParameters><QueryParameter Name="@intPersonId"><Value>=Parameters!intPersonId.Value</Value></QueryParameter></QueryParameters><CommandText>WITH CurentAndDevelopmentTeachingGroups AS
+(
+SELECT
+'Development' AS txtTeachingManagerAcademicYear,
+'Set' AS txtTeachingGroupType,
+TblTeachingManagerDevelopmentSet.txtSetCode AS txtTeachingGroupCode,
+TblTeachingManagerDevelopmentSet.txtName AS txtTeachingGroupName,
+TblTeachingManagerDevelopmentSet.txtSetNumber,
+TblTeachingManagerSubjects.txtSubjectName,
+TblTeachingManagerDevelopmentSetAssociatedTeachers.txtTeacher
+FROM TblTeachingManagerDevelopmentSetAssociatedTeachers
+INNER JOIN TblTeachingManagerDevelopmentSet ON TblTeachingManagerDevelopmentSetAssociatedTeachers.intSetID = TblTeachingManagerDevelopmentSet.TblTeachingManagerDevelopmentSetID
+LEFT OUTER JOIN TblTeachingManagerSubjects ON TblTeachingManagerDevelopmentSet.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+UNION
+
+SELECT
+'Development' AS txtTeachingManagerAcademicYear,
+'Set' AS txtTeachingGroupType,
+TblTeachingManagerDevelopmentSet.txtSetCode AS txtTeachingGroupCode,
+TblTeachingManagerDevelopmentSet.txtName AS txtTeachingGroupName,
+TblTeachingManagerDevelopmentSet.txtSetNumber,
+TblTeachingManagerSubjects.txtSubjectName,
+TblTeachingManagerDevelopmentSet.txtTeacher
+FROM TblTeachingManagerDevelopmentSet
+LEFT OUTER JOIN TblTeachingManagerSubjects ON TblTeachingManagerDevelopmentSet.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+UNION 
+
+SELECT
+'Development' AS txtTeachingManagerAcademicYear,
+'Form' AS txtTeachingGroupType,
+txtTimetableCode AS txtTeachingGroupCode,
+'' AS txtTeachingGroupName,
+'' AS txtSetNumber,
+TblTeachingManagerSubjects.txtSubjectName,
+TblTeachingManagerDevelopmentSubjectForm.txtTeacher
+FROM TblTeachingManagerDevelopmentSubjectForm
+LEFT OUTER JOIN TblTeachingManagerSubjects ON TblTeachingManagerDevelopmentSubjectForm.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+UNION 
+
+SELECT
+'Current' AS txtTeachingManagerAcademicYear,
+'Set' AS txtTeachingGroupType,
+TblTeachingManagerSets.txtSetCode AS txtTeachingGroupCode,
+TblTeachingManagerSets.txtName AS txtTeachingGroupName,
+TblTeachingManagerSets.txtSetNumber,
+TblTeachingManagerSubjects.txtSubjectName,
+TblTeachingManagerSetAssociatedTeachers.txtTeacher
+FROM TblTeachingManagerSetAssociatedTeachers
+INNER JOIN TblTeachingManagerSets ON TblTeachingManagerSetAssociatedTeachers.intSetID = TblTeachingManagerSets.TblTeachingManagerSetsID
+LEFT OUTER JOIN TblTeachingManagerSubjects ON TblTeachingManagerSets.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+UNION 
+
+SELECT
+'Current' AS txtTeachingManagerAcademicYear,
+'Set' AS txtTeachingGroupType,
+TblTeachingManagerSets.txtSetCode AS txtTeachingGroupCode,
+TblTeachingManagerSets.txtName AS txtTeachingGroupName,
+TblTeachingManagerSets.txtSetNumber,
+TblTeachingManagerSubjects.txtSubjectName,
+TblTeachingManagerSets.txtTeacher
+FROM TblTeachingManagerSets
+LEFT OUTER JOIN TblTeachingManagerSubjects ON TblTeachingManagerSets.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+UNION  
+
+SELECT
+'Current' AS txtTeachingManagerAcademicYear,
+'Form' AS txtTeachingGroupType,
+txtTimetableCode AS txtTeachingGroupCode,
+'' AS txtTeachingGroupName,
+'' AS txtSetNumber,
+TblTeachingManagerSubjects.txtSubjectName,
+TblTeachingManagerSubjectForms.txtTeacher
+FROM TblTeachingManagerSubjectForms
+LEFT OUTER JOIN TblTeachingManagerSubjects ON TblTeachingManagerSubjectForms.intSubject = TblTeachingManagerSubjects.TblTeachingManagerSubjectsID
+
+)
+
+
+
+SELECT 
+
+--core
+TblStaff.intPersonID,
+TblStaff.Surname AS txtSurname,
+TblStaff.Firstname AS txtForename,
+
+-- Subject and Sets
+CurentAndDevelopmentTeachingGroups.txtTeachingManagerAcademicYear,
+CurentAndDevelopmentTeachingGroups.txtTeachingGroupType,
+CurentAndDevelopmentTeachingGroups.txtTeachingGroupCode,
+CurentAndDevelopmentTeachingGroups.txtTeachingGroupName,
+CurentAndDevelopmentTeachingGroups.txtSetNumber,
+CurentAndDevelopmentTeachingGroups.txtSubjectName
+
+FROM TblStaff
+LEFT OUTER JOIN CurentAndDevelopmentTeachingGroups ON TblStaff.user_code = CurentAndDevelopmentTeachingGroups.txtTeacher
+WHERE TblStaff.intPersonID = @intPersonId</CommandText></Query><Fields><Field Name="intPersonID"><DataField>intPersonID</DataField><rd:TypeName>System.Int32</rd:TypeName></Field><Field Name="txtSurname"><DataField>txtSurname</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtForename"><DataField>txtForename</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTeachingManagerAcademicYear"><DataField>txtTeachingManagerAcademicYear</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTeachingGroupType"><DataField>txtTeachingGroupType</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTeachingGroupCode"><DataField>txtTeachingGroupCode</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtTeachingGroupName"><DataField>txtTeachingGroupName</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSetNumber"><DataField>txtSetNumber</DataField><rd:TypeName>System.String</rd:TypeName></Field><Field Name="txtSubjectName"><DataField>txtSubjectName</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet><DataSet Name="iSAMSAddress"><Query><DataSourceName>iSAMS</DataSourceName><CommandText>SELECT txtInternaliSAMSAddress
+FROM TbliSAMSManagerSettings</CommandText></Query><Fields><Field Name="txtInternaliSAMSAddress"><DataField>txtInternaliSAMSAddress</DataField><rd:TypeName>System.String</rd:TypeName></Field></Fields></DataSet></DataSets><ReportParameters><ReportParameter Name="intPersonId"><DataType>String</DataType><DefaultValue><Values><Value>16330</Value></Values></DefaultValue><Prompt>Staff:</Prompt></ReportParameter></ReportParameters><ConsumeContainerWhitespace>true</ConsumeContainerWhitespace><rd:ReportUnitType>Cm</rd:ReportUnitType><rd:ReportID>c59d5b76-daca-48bd-a551-042d4b03db8c</rd:ReportID></Report>
